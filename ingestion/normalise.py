@@ -122,7 +122,10 @@ def normalise_devicestatus(doc: dict[str, Any]) -> DeviceStatusCycle | None:
     if isinstance(iob_block, list) and iob_block:
         iob_block = iob_block[0]
     iob_val = _num(iob_block.get("iob")) if isinstance(iob_block, dict) else _num(src.get("IOB"))
-    units = src.get("units") or suggested.get("units")
+    # NOTE: in oref `units` is the SMB bolus amount (a number), not a display unit. Only
+    # keep it as a reported-unit string when it genuinely is one (e.g. "mg/dl").
+    units_val = src.get("units")
+    units = units_val if isinstance(units_val, str) else None
 
     return DeviceStatusCycle(
         ts_ms=ts,

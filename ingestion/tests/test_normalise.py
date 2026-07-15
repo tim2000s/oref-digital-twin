@@ -63,6 +63,13 @@ def test_devicestatus_without_openaps_is_dropped():
     assert normalise_devicestatus(fx.DEVICESTATUS_NO_OREF) is None
 
 
+def test_numeric_units_not_treated_as_unit_string():
+    # oref `units` is the SMB bolus amount; it must not leak into device_reported_units
+    c = normalise_devicestatus(fx.DEVICESTATUS)
+    assert c.device_reported_units is None
+    assert c.enacted_smb_u == 0.6
+
+
 def test_profile_mmol_converts_glucose_blocks():
     p = normalise_profile(fx.PROFILE_MMOL)
     assert p.units == "mmol" and p.dia_h == 6
