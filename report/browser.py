@@ -10,6 +10,7 @@ and render the deterministic report — in Pyodide.
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any, Callable
 
@@ -23,7 +24,25 @@ from .grounding import check_narrative
 from .template import render_report
 
 MAX_CYCLES = 400                       # cap oref calls for browser responsiveness
-_MAXIOB_RE = re.compile(r"max[\s_]?iob[\s:]*([0-9]+(?:\.[0-9]+)?)", re.IGNORECASE)
+
+# maxIOB parsing modelled on the Boost analyser (`maxIOB: ?([0-9.,]+)`), generalised:
+#   - case-insensitive; "maxIOB" | "max_iob" | "max iob"
+#   - separator ":" | "=" | JSON quote+colon | bare space
+#   - decimal "." OR "," (European locale / some AAPS builds) -> normalised to "."
+# Covers AAPS console/reason ("maxIOB: 8.0", "maxIOB 1,0") and Trio/oref JSON ("max_iob":8).
+_MAXIOB_RE = re.compile(r"max[\s_]?iob[\"']?\s*[:=]?\s*([0-9]+(?:[.,][0-9]+)?)", re.IGNORECASE)
+
+
+def _parse_max_iob(text: str | None) -> float | None:
+    if not text:
+        return None
+    m = _MAXIOB_RE.search(text)
+    if not m:
+        return None
+    try:
+        return float(m.group(1).replace(",", "."))
+    except ValueError:
+        return None
 
 
 def _active_profile(profiles: list[ProfileSnapshot]) -> ProfileSnapshot | None:
@@ -39,11 +58,14 @@ def infer_settings(pull) -> tuple[dict[str, Any], list[str]]:
     notes: list[str] = []
     max_iob = None
     for c in reversed(pull.devicestatus):          # most recent first
-        if c.reason:
-            m = _MAXIOB_RE.search(c.reason)
-            if m:
-                max_iob = float(m.group(1))
-                break
+        # search the reason AND the whole openaps blob (the value may live in a nested
+        # field, a console line, or the reason text depending on AAPS/Trio build).
+        haystack = c.reason or ""
+        if c.raw_openaps:
+            haystack += " " + json.dumps(c.raw_openaps)
+        max_iob = _parse_max_iob(haystack)
+        if max_iob is not None:
+            break
     if max_iob is None:
         notes.append("Could not infer max_iob from devicestatus — counterfactuals skipped.")
     enable_smb = any(t.is_smb for t in pull.treatments)

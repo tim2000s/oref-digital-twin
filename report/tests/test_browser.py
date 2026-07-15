@@ -43,6 +43,33 @@ def test_gate_narrative_wires_through():
     assert any(v["kind"] == "ungrounded_number" for v in bad["violations"])
 
 
+def test_parse_max_iob_varieties():
+    from report.browser import _parse_max_iob
+    # AAPS console/reason with colon; dot and comma decimals
+    assert _parse_max_iob("COB: 0; maxIOB: 8.0; SMB 0.3U") == 8.0
+    assert _parse_max_iob("maxIOB: 1,0 (masked)") == 1.0            # European comma decimal
+    assert _parse_max_iob("... maxIOB 11.2 ...") == 11.2            # bare space
+    # Trio/oref JSON spelling
+    assert _parse_max_iob('{"max_iob":6,"enableSMB":true}') == 6.0
+    assert _parse_max_iob('"max_iob": 4.5') == 4.5
+    assert _parse_max_iob("MAXIOB=7") == 7.0                        # case-insensitive, equals
+    # no match
+    assert _parse_max_iob("COB: 0; IOB 1.2; temp 0.5") is None
+    assert _parse_max_iob(None) is None
+
+
+def test_infer_settings_finds_max_iob_in_raw_openaps():
+    from ingestion.models import DeviceStatusCycle
+    from report.browser import infer_settings
+
+    class _Pull:
+        devicestatus = [DeviceStatusCycle(ts_ms=1, reason="temp 0.4",
+                                          raw_openaps={"suggested": {"max_iob": 6, "reason": "temp 0.4"}})]
+        treatments = []
+    settings, _ = infer_settings(_Pull())
+    assert settings["max_iob"] == 6.0
+
+
 def test_infer_settings_reads_max_iob_from_reason():
     from ingestion.pull import pull_from_raw
     from report.browser import infer_settings
