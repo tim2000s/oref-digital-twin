@@ -102,3 +102,21 @@ def test_counterfactuals_run_when_oref_runner_supplied():
 
 def test_no_counterfactuals_without_runner():
     assert build_report(RAW)["counterfactuals"] == []
+
+
+def test_max_iob_override_is_used():
+    # override wins over any inferred value, so the baseline lever reflects it
+    result = build_report(RAW, oref_runner=_fake_oref_runner, max_iob_override=5.0)
+    cfs = result["counterfactuals"]
+    assert cfs and any("5.0" in c["label"] for c in cfs)   # baseline 5.0 -> 4.0, not the 11.2 reason
+
+
+def test_override_unblocks_when_inference_fails():
+    # devicestatus with no maxIOB anywhere -> inference fails, override rescues it
+    raw = dict(RAW)
+    raw["devicestatus"] = [{
+        "_id": "d9", "created_at": "2023-11-14T22:14:00.000Z", "device": "openaps://phone",
+        "openaps": {"iob": [{"iob": 1.0}], "enacted": {"bg": 128, "reason": "temp 0.4"}},
+    }]
+    result = build_report(raw, oref_runner=_fake_oref_runner, max_iob_override=6.0)
+    assert result["counterfactuals"], "override should unblock counterfactuals"

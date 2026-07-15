@@ -112,6 +112,7 @@ def build_report(
     oref_runner: Callable | None = None,
     settings: dict[str, Any] | None = None,
     deltas: list[tuple[str, dict]] | None = None,
+    max_iob_override: float | None = None,
 ) -> dict[str, Any]:
     """raw: {base_url, start_ms, end_ms, entries, treatments, devicestatus, profiles}.
 
@@ -135,11 +136,16 @@ def build_report(
         profile = _active_profile(pull.profiles)
         if settings is None:
             settings, _notes = infer_settings(pull)
+        if max_iob_override is not None:
+            settings = {**settings, "max_iob": float(max_iob_override)}
         if profile is None:
             cf_note = "Settings experiments skipped: no Nightscout profile found."
         elif settings.get("max_iob") is None:
-            cf_note = (f"Settings experiments skipped: could not read max_iob from the "
-                       f"devicestatus reason ({n_loop} loop cycles seen).")
+            recent = next((c.reason for c in reversed(pull.devicestatus) if c.reason), None)
+            snippet = (recent[:120] + "…") if recent else "(no reason text present)"
+            cf_note = (f"Settings experiments skipped: max IOB isn't in your Nightscout data "
+                       f"({n_loop} cycles). Enter Max IOB above to run them. "
+                       f"Sample reason: {snippet}")
         else:
             deltas = deltas or _default_deltas(settings, profile)
             if not deltas:

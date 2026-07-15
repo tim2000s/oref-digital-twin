@@ -103,8 +103,11 @@ async function run() {
     const B = pyodide.pyimport('report.browser');
     // Run decision-level counterfactuals via real oref0 (web/oref-bundle.js) when available.
     const runner = (typeof globalThis.orefDetermine === 'function') ? B.make_js_oref_runner() : null;
+    const kwargs = { oref_runner: runner };
+    const maxIob = parseFloat($('maxiob').value);
+    if (!isNaN(maxIob)) kwargs.max_iob_override = maxIob;
     const resultProxy = runner
-      ? B.build_report.callKwargs(pyodide.toPy(raw), { oref_runner: runner })
+      ? B.build_report.callKwargs(pyodide.toPy(raw), kwargs)
       : B.build_report(pyodide.toPy(raw));
     const result = resultProxy.toJs({ dict_converter: Object.fromEntries });
 
