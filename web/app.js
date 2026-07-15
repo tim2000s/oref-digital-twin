@@ -101,7 +101,12 @@ async function run() {
 
     setStatus('Analysing…');
     const B = pyodide.pyimport('report.browser');
-    const result = B.build_report(pyodide.toPy(raw)).toJs({ dict_converter: Object.fromEntries });
+    // Run decision-level counterfactuals via real oref0 (web/oref-bundle.js) when available.
+    const runner = (typeof globalThis.orefDetermine === 'function') ? B.make_js_oref_runner() : null;
+    const resultProxy = runner
+      ? B.build_report.callKwargs(pyodide.toPy(raw), { oref_runner: runner })
+      : B.build_report(pyodide.toPy(raw));
+    const result = resultProxy.toJs({ dict_converter: Object.fromEntries });
 
     let html = mdToHtml(result.report_md);
 

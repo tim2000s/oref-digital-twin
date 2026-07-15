@@ -8,7 +8,6 @@ the same pattern as ingestion's HTTP transport.
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
@@ -27,6 +26,8 @@ class OracleError(RuntimeError):
 
 
 def _node_runner(oracle_dir: Path, node_bin: str = "node", timeout_s: float = 60.0) -> Runner:
+    import subprocess  # lazy: not available under Pyodide, and only the CLI/server path needs it
+
     script = oracle_dir / "determine.js"
 
     def run(requests: list[dict]) -> list[dict]:
