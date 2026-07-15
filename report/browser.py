@@ -17,7 +17,7 @@ from typing import Any, Callable
 from diagnostics import run_diagnostics
 from ingestion.models import ProfileSnapshot
 from ingestion.pull import pull_from_raw
-from replay import OrefOracle, from_cycle, run_counterfactual
+from replay import OrefOracle, apply_delta, from_cycle, run_counterfactual
 from variant import detect_variant
 
 from .grounding import check_narrative
@@ -115,6 +115,17 @@ def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[
     if not requests:
         return [], stats
     oracle = OrefOracle(runner=runner)
+    # probe baseline AND altered (first lever) to see which side errors, and capture the message
+    base_probe = oracle.evaluate(requests)
+    stats["oref_ok"] = sum(1 for r in base_probe if isinstance(r, dict) and r.get("ok"))
+    err = next((r.get("error") for r in base_probe if isinstance(r, dict) and not r.get("ok")), None)
+    stats["first_error"] = f"baseline: {err}" if err else None
+    if deltas:
+        alt_probe = oracle.evaluate([apply_delta(r, deltas[0][1]) for r in requests])
+        stats["oref_ok_altered"] = sum(1 for r in alt_probe if isinstance(r, dict) and r.get("ok"))
+        aerr = next((r.get("error") for r in alt_probe if isinstance(r, dict) and not r.get("ok")), None)
+        if aerr and not stats["first_error"]:
+            stats["first_error"] = f"altered({deltas[0][0]}): {aerr}"
     results = []
     for label, delta in deltas:
         cf = run_counterfactual(oracle, requests, delta, label=label, ts_of=ts)
@@ -184,14 +195,21 @@ def build_report(
                     counterfactuals, stats = _run_counterfactuals(
                         pull, settings, profile, oref_runner, deltas)
                     built = stats.get("built", 0)
+                    oref_ok = stats.get("oref_ok", 0)
                     if built < 20:
                         cf_note = (f"Only {built} of {stats.get('considered')} recent cycles were "
                                    f"usable (no-iob {stats.get('no_iob')}, no-bg {stats.get('no_bg')}, "
                                    f"no-request {stats.get('no_request')}). Diagnostic — "
                                    f"{_openaps_shape(pull)}")
+                    elif oref_ok == 0 or stats.get("oref_ok_altered") == 0:
+                        counterfactuals = []
+                        cf_note = (f"oref evaluated baseline {oref_ok}/{built}, "
+                                   f"altered {stats.get('oref_ok_altered')}/{built}. "
+                                   f"First error: {stats.get('first_error')}")
                     elif counterfactuals and all(c.get("n_changed", 0) == 0 for c in counterfactuals):
-                        cf_note = (f"Ran over {built} cycles: none of these levers changed the "
-                                   "controller's decision — they don't bind at your settings.")
+                        cf_note = (f"Ran over {built} cycles ({oref_ok} evaluated): none of these "
+                                   "levers changed the controller's decision — they don't bind at "
+                                   "your settings.")
                 except Exception as exc:  # surface, never break the report
                     counterfactuals = []
                     cf_note = f"Settings experiments errored: {type(exc).__name__}: {exc}"
