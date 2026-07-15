@@ -114,36 +114,51 @@ def normalise_devicestatus(doc: dict[str, Any]) -> DeviceStatusCycle | None:
     if not isinstance(openaps, dict):
         # No oref payload (e.g. a pure uploader/pump status) — not a loop cycle.
         return None
-    # Prefer `enacted`, fall back to `suggested`; oref writes both, enacted wins.
     enacted = openaps.get("enacted") if isinstance(openaps.get("enacted"), dict) else {}
     suggested = openaps.get("suggested") if isinstance(openaps.get("suggested"), dict) else {}
-    src = {**suggested, **enacted}  # enacted overrides suggested
+    # A pump/uploader-only devicestatus (no suggested AND no enacted) is not a loop cycle —
+    # drop it so it doesn't dilute the cycle list with bg/iob-less rows. Mirrors the Boost
+    # analyser's fetcher, which skips records with an empty `suggested`.
+    if not suggested and not enacted:
+        return None
+
+    # INPUT fields come from `suggested` (what determine-basal actually computed from),
+    # falling back to `enacted` — not an enacted-override merge, which can null a good bg.
+    def _pref(key: str) -> Any:
+        v = suggested.get(key)
+        return v if v is not None else enacted.get(key)
+
+    # Scalar IOB: openaps.iob[0].iob (the real iob_data), else the rT `IOB` field.
+    iob_val = None
     iob_block = openaps.get("iob")
     if isinstance(iob_block, list) and iob_block:
         iob_block = iob_block[0]
-    iob_val = _num(iob_block.get("iob")) if isinstance(iob_block, dict) else _num(src.get("IOB"))
-    # NOTE: in oref `units` is the SMB bolus amount (a number), not a display unit. Only
-    # keep it as a reported-unit string when it genuinely is one (e.g. "mg/dl").
-    units_val = src.get("units")
+    if isinstance(iob_block, dict):
+        iob_val = _num(iob_block.get("iob"))
+    if iob_val is None:
+        iob_val = _num(_pref("IOB"))
+
+    # NOTE: in oref `units` is the SMB bolus amount (a number), not a display unit.
+    units_val = _pref("units")
     units = units_val if isinstance(units_val, str) else None
 
     return DeviceStatusCycle(
         ts_ms=ts,
         device=doc.get("device"),
-        bg_mgdl=_num(src.get("bg")),
-        iob=iob_val if iob_val is not None else _num(src.get("IOB")),
-        cob=_num(src.get("COB")),
-        eventual_bg_mgdl=_num(src.get("eventualBG")),
-        insulin_req=_num(src.get("insulinReq")),
-        sensitivity_ratio=_num(src.get("sensitivityRatio")),
-        reason=src.get("reason"),
-        enacted_smb_u=_num(enacted.get("units")),  # SMB bolus, U
+        bg_mgdl=_num(_pref("bg")),
+        iob=iob_val,
+        cob=_num(_pref("COB")),
+        eventual_bg_mgdl=_num(_pref("eventualBG")),
+        insulin_req=_num(_pref("insulinReq")),
+        sensitivity_ratio=_num(_pref("sensitivityRatio")),
+        reason=enacted.get("reason") or suggested.get("reason"),
+        enacted_smb_u=_num(enacted.get("units")),  # SMB bolus, U (decision field)
         enacted_rate=_num(enacted.get("rate")),
         enacted_duration_min=_num(enacted.get("duration")),
-        pred_iob=_pred(src.get("predBGs"), "IOB"),
-        pred_zt=_pred(src.get("predBGs"), "ZT"),
-        pred_cob=_pred(src.get("predBGs"), "COB"),
-        pred_uam=_pred(src.get("predBGs"), "UAM"),
+        pred_iob=_pred(_pref("predBGs"), "IOB"),
+        pred_zt=_pred(_pref("predBGs"), "ZT"),
+        pred_cob=_pred(_pref("predBGs"), "COB"),
+        pred_uam=_pred(_pref("predBGs"), "UAM"),
         device_reported_units=units,
         raw_openaps=openaps,
     )

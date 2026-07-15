@@ -134,10 +134,35 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int) -> tupl
     return profile, warnings
 
 
-# fidelity warnings inherent to devicestatus-based reconstruction
+def _num0(v: Any) -> float:
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else 0.0
+
+
+def _iob_data_from_cycle(cycle: DeviceStatusCycle) -> tuple[dict, bool]:
+    """Real iob_data (iob, activity, basaliob, bolusiob) from openaps.iob when present.
+
+    Returns (iob_data, activity_known). Using the logged iob_data — activity included —
+    makes bgi/eventualBG faithful instead of assuming activity 0.
+    """
+    raw = cycle.raw_openaps or {}
+    ib = raw.get("iob")
+    if isinstance(ib, list) and ib:
+        ib = ib[0]
+    if isinstance(ib, dict) and ib.get("iob") is not None:
+        return ({
+            "iob": _num0(ib.get("iob")),
+            "activity": _num0(ib.get("activity")),
+            "basaliob": _num0(ib.get("basaliob")),
+            "bolusiob": _num0(ib.get("bolusiob")),
+            "time": cycle.ts_ms,
+        }, True)
+    return ({"iob": cycle.iob or 0.0, "activity": 0.0, "basaliob": 0.0, "bolusiob": 0.0,
+             "time": cycle.ts_ms}, False)
+
+
+# fidelity warning inherent to devicestatus-based reconstruction
 _INHERENT_FIDELITY = [
     "currenttemp unknown from devicestatus — assumed none.",
-    "insulin activity unknown — assumed 0; bgi/eventualBG approximate.",
 ]
 
 
@@ -165,11 +190,13 @@ def from_cycle(
         return None, warnings + ["cannot build a faithful profile (missing max_iob/target)."]
 
     warnings += _INHERENT_FIDELITY
+    iob_data, activity_known = _iob_data_from_cycle(cycle)
+    if not activity_known:
+        warnings.append("insulin activity unknown — assumed 0; bgi/eventualBG approximate.")
     request = {
         "glucose_status": gs,
         "currenttemp": {"duration": 0, "rate": 0, "temp": "absolute"},
-        "iob_data": {"iob": cycle.iob or 0.0, "activity": 0.0, "basaliob": 0.0,
-                     "bolusiob": 0.0, "time": cycle.ts_ms},
+        "iob_data": iob_data,
         "profile": profile,
         "autosens_data": {"ratio": cycle.sensitivity_ratio or 1.0},
         "meal_data": {"carbs": 0, "mealCOB": cycle.cob or 0},

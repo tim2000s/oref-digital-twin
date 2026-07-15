@@ -64,7 +64,6 @@ DEVICESTATUS = {
             "eventualBG": 110,
             "insulinReq": 0.2,
             "sensitivityRatio": 0.93,
-            "units": "mg/dl",
             "reason": "suggested reason",
             "predBGs": {"IOB": [128, 124, 120], "ZT": [128, 130, 131]},
         },
