@@ -97,6 +97,7 @@ def render_report(
     diagnostics: dict,
     variant: dict | None = None,
     counterfactuals: list[dict] | None = None,
+    counterfactual_note: str | None = None,
 ) -> str:
     """Render a full deterministic Markdown report from structured findings."""
     counts = diagnostics.get("counts", {})
@@ -112,6 +113,9 @@ def render_report(
     parts += _glycemia_block(diagnostics.get("glycemia", {}))
     parts.append("")
     parts += _findings_block(diagnostics.get("findings", []))
-    parts += _counterfactual_block(counterfactuals)
+    if counterfactuals:
+        parts += _counterfactual_block(counterfactuals)
+    elif counterfactual_note:
+        parts += ["", "## Settings experiments (decision-level)", "", f"_{counterfactual_note}_"]
     parts += ["", "---", "", DISCLAIMER]
     return "\n".join(parts)

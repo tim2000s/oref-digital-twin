@@ -64,7 +64,7 @@ def _default_deltas(settings: dict[str, Any], profile: ProfileSnapshot | None) -
     return out
 
 
-def _run_counterfactuals(pull, settings, profile, runner, deltas) -> list[dict]:
+def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[dict], int]:
     cycles = pull.devicestatus[-MAX_CYCLES:]
     requests, ts = [], []
     for c in cycles:
@@ -75,13 +75,13 @@ def _run_counterfactuals(pull, settings, profile, runner, deltas) -> list[dict]:
             requests.append(req)
             ts.append(c.ts_ms)
     if not requests:
-        return []
+        return [], 0
     oracle = OrefOracle(runner=runner)
     results = []
     for label, delta in deltas:
         cf = run_counterfactual(oracle, requests, delta, label=label, ts_of=ts)
         results.append(cf.to_dict())
-    return results
+    return results, len(requests)
 
 
 def build_report(
@@ -105,24 +105,49 @@ def build_report(
     diagnostics = run_diagnostics(pull, variant=verdict.to_dict())
 
     counterfactuals: list[dict] = []
-    if oref_runner is not None:
+    cf_note: str | None = None
+    n_loop = len(pull.devicestatus)
+    if oref_runner is None:
+        cf_note = "Settings experiments skipped: the in-browser oref engine did not load."
+    else:
         profile = _active_profile(pull.profiles)
         if settings is None:
             settings, _notes = infer_settings(pull)
-        if profile is not None and settings.get("max_iob") is not None:
+        if profile is None:
+            cf_note = "Settings experiments skipped: no Nightscout profile found."
+        elif settings.get("max_iob") is None:
+            cf_note = (f"Settings experiments skipped: could not read max_iob from the "
+                       f"devicestatus reason ({n_loop} loop cycles seen).")
+        else:
             deltas = deltas or _default_deltas(settings, profile)
-            if deltas:
-                counterfactuals = _run_counterfactuals(pull, settings, profile, oref_runner, deltas)
+            if not deltas:
+                cf_note = "Settings experiments skipped: no applicable levers for this profile."
+            else:
+                try:
+                    counterfactuals, n_built = _run_counterfactuals(
+                        pull, settings, profile, oref_runner, deltas)
+                    if not counterfactuals or n_built == 0:
+                        cf_note = (f"Settings experiments: could not build oref inputs from any of "
+                                   f"the last {min(n_loop, MAX_CYCLES)} cycles (max_iob "
+                                   f"{settings.get('max_iob')}).")
+                    elif all(c.get("n_evaluated", 0) == 0 for c in counterfactuals):
+                        cf_note = (f"Settings experiments: oref evaluated 0 of {n_built} cycles — "
+                                   "the in-browser engine returned no decisions.")
+                        counterfactuals = []
+                except Exception as exc:  # surface, never break the report
+                    counterfactuals = []
+                    cf_note = f"Settings experiments errored: {type(exc).__name__}: {exc}"
 
     diag_d = diagnostics.to_dict()
     variant_d = verdict.to_dict()
-    report_md = render_report(diag_d, variant_d, counterfactuals)
+    report_md = render_report(diag_d, variant_d, counterfactuals, counterfactual_note=cf_note)
 
     return {
         "report_md": report_md,
         "diagnostics": diag_d,
         "variant": variant_d,
         "counterfactuals": counterfactuals,
+        "counterfactual_note": cf_note,
         "coverage": {"cgm": pull.cgm.to_dict(), "loop": pull.loop.to_dict(), "warnings": pull.warnings()},
     }
 
