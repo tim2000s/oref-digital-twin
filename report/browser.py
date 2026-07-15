@@ -180,6 +180,23 @@ def build_report(
     }
 
 
+def settings_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
+    """Validate uploaded raw key/values (AAPS prefs / Trio JSON) into replay settings.
+
+    Returns the replay-lever settings plus any validation issues / values needing
+    confirmation, so the caller can feed `settings` into build_report and warn the user.
+    """
+    from settings import validate
+
+    v = validate(raw)
+    return {
+        "settings": v.replay_settings(),
+        "all_values": v.values,
+        "needs_confirm": v.needs_confirm,
+        "issues": [i.to_dict() for i in v.issues],
+    }
+
+
 def make_js_oref_runner():
     """A runner backed by globalThis.orefDetermine (oref0-in-WASM). Pyodide-only."""
     import js

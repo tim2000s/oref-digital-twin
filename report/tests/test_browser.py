@@ -1,7 +1,12 @@
 """End-to-end of the Pyodide entrypoint: raw NS JSON -> report, all in Python."""
 
 from ingestion.tests import fixtures as fx
-from report.browser import abstracted_findings, build_report, gate_narrative
+from report.browser import (
+    abstracted_findings,
+    build_report,
+    gate_narrative,
+    settings_from_raw,
+)
 
 RAW = {
     "base_url": "https://example.test",
@@ -109,6 +114,31 @@ def test_max_iob_override_is_used():
     result = build_report(RAW, oref_runner=_fake_oref_runner, max_iob_override=5.0)
     cfs = result["counterfactuals"]
     assert cfs and any("5.0" in c["label"] for c in cfs)   # baseline 5.0 -> 4.0, not the 11.2 reason
+
+
+def test_settings_from_raw_aaps_keys():
+    # AAPS prefs export style: string values, AAPS pref keys
+    raw = {"openapsma_max_iob": "6.0", "enableSMB_always": "true", "maxSMBBasalMinutes": "45"}
+    out = settings_from_raw(raw)
+    assert out["settings"]["max_iob"] == 6.0
+    assert out["settings"]["enable_smb"] is True
+    assert out["settings"]["max_smb_minutes"] == 45
+
+
+def test_settings_from_raw_trio_json():
+    # Trio / oref preferences style: native JSON types, oref keys
+    raw = {"max_iob": 5, "enableSMB_always": True, "maxSMBBasalMinutes": 30, "not_a_key": 1}
+    out = settings_from_raw(raw)
+    assert out["settings"]["max_iob"] == 5.0
+    assert out["settings"]["enable_smb"] is True
+    assert any(i["kind"] == "unknown_key" for i in out["issues"])   # unknown key reported
+
+
+def test_uploaded_settings_drive_counterfactuals():
+    parsed = settings_from_raw({"max_iob": 4, "enableSMB_always": True})
+    result = build_report(RAW, oref_runner=_fake_oref_runner, settings=parsed["settings"])
+    cfs = result["counterfactuals"]
+    assert cfs and any("4.0" in c["label"] for c in cfs)   # baseline came from the uploaded file
 
 
 def test_override_unblocks_when_inference_fails():

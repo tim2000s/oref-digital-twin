@@ -8,6 +8,7 @@
  */
 
 import { NARRATOR_URL } from './config.js';
+import { loadSettingsFromFile } from './settings.js';
 
 const PYODIDE_CDN = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/';
 const PACKAGES_ZIP = './odt-packages.zip';
@@ -104,14 +105,34 @@ async function run() {
     // Run decision-level counterfactuals via real oref0 (web/oref-bundle.js) when available.
     const runner = (typeof globalThis.orefDetermine === 'function') ? B.make_js_oref_runner() : null;
     const kwargs = { oref_runner: runner };
+
+    // Optional settings file (AAPS prefs / Trio JSON) — extracted and validated locally.
+    const file = $('prefsfile').files[0];
+    let settingsNote = '';
+    if (file) {
+      setStatus('Reading settings file…');
+      const loaded = await loadSettingsFromFile(file, $('prefspw').value);
+      if (loaded.needsPassword) throw new Error('That AAPS file is encrypted — enter your master password and try again.');
+      const parsed = B.settings_from_raw(pyodide.toPy(loaded.raw)).toJs({ dict_converter: Object.fromEntries });
+      if (parsed.settings && Object.keys(parsed.settings).length) {
+        kwargs.settings = pyodide.toPy(parsed.settings);
+        settingsNote = `Settings loaded from ${loaded.format} (${Object.keys(parsed.settings).length} values`
+          + (parsed.needs_confirm.length ? `, ${parsed.needs_confirm.length} to confirm` : '') + ').';
+      } else {
+        settingsNote = 'No recognised settings found in that file.';
+      }
+    }
+
     const maxIob = parseFloat($('maxiob').value);
     if (!isNaN(maxIob)) kwargs.max_iob_override = maxIob;
+    setStatus('Analysing…');
     const resultProxy = runner
       ? B.build_report.callKwargs(pyodide.toPy(raw), kwargs)
       : B.build_report(pyodide.toPy(raw));
     const result = resultProxy.toJs({ dict_converter: Object.fromEntries });
 
     let html = mdToHtml(result.report_md);
+    if (settingsNote) html = `<p class="muted">${settingsNote}</p>` + html;
 
     if ($('narrate').checked && NARRATOR_URL) {
       setStatus('Generating written summary…');

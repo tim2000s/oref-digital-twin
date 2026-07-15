@@ -40,3 +40,4 @@ coverage/
 # web build artifact (Pyodide package bundle)
 web/odt-packages.zip
 _site/
+web/aaps_prefs.mjs
