@@ -16,7 +16,7 @@ dev = ["pytest>=7"]
 odt-ingest = "ingestion.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["ingestion*", "variant*"]
+include = ["ingestion*", "variant*", "diagnostics*"]
 
 [tool.pytest.ini_options]
-testpaths = ["ingestion/tests", "variant/tests"]
+testpaths = ["ingestion/tests", "variant/tests", "diagnostics/tests"]
