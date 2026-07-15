@@ -86,24 +86,53 @@ def _default_deltas(settings: dict[str, Any], profile: ProfileSnapshot | None) -
     return out
 
 
-def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[dict], int]:
+def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[dict], dict]:
+    from ingestion.models import GlucoseReading
+
+    # BG for glucose_status: real CGM plus each cycle's own bg (devicestatus is dense), so a
+    # sparse entries feed doesn't starve request-building.
+    merged_entries = list(pull.entries) + [
+        GlucoseReading(ts_ms=c.ts_ms, sgv_mgdl=c.bg_mgdl)
+        for c in pull.devicestatus if c.bg_mgdl is not None
+    ]
     cycles = pull.devicestatus[-MAX_CYCLES:]
+    stats = {"considered": len(cycles), "no_iob": 0, "no_bg": 0, "no_request": 0, "built": 0}
     requests, ts = [], []
     for c in cycles:
-        if c.iob is None or c.bg_mgdl is None:
+        if c.iob is None:
+            stats["no_iob"] += 1
             continue
-        req, _w = from_cycle(c, profile, pull.entries, settings)
-        if req is not None:
-            requests.append(req)
-            ts.append(c.ts_ms)
+        if c.bg_mgdl is None:
+            stats["no_bg"] += 1
+            continue
+        req, _w = from_cycle(c, profile, merged_entries, settings)
+        if req is None:
+            stats["no_request"] += 1
+            continue
+        requests.append(req)
+        ts.append(c.ts_ms)
+    stats["built"] = len(requests)
     if not requests:
-        return [], 0
+        return [], stats
     oracle = OrefOracle(runner=runner)
     results = []
     for label, delta in deltas:
         cf = run_counterfactual(oracle, requests, delta, label=label, ts_of=ts)
         results.append(cf.to_dict())
-    return results, len(requests)
+    return results, stats
+
+
+def _openaps_shape(pull) -> str:
+    """Compact description of the most-recent cycle's openaps fields, for diagnosing parse gaps."""
+    if not pull.devicestatus:
+        return "no devicestatus"
+    c = pull.devicestatus[-1]
+    raw = c.raw_openaps or {}
+    sug = list((raw.get("suggested") or {}).keys())
+    ena = list((raw.get("enacted") or {}).keys())
+    top = list(raw.keys())
+    return (f"parsed bg={c.bg_mgdl} iob={c.iob}; openaps={top}; "
+            f"suggested={sug[:20]}; enacted={ena[:20]}")
 
 
 def build_report(
@@ -152,16 +181,17 @@ def build_report(
                 cf_note = "Settings experiments skipped: no applicable levers for this profile."
             else:
                 try:
-                    counterfactuals, n_built = _run_counterfactuals(
+                    counterfactuals, stats = _run_counterfactuals(
                         pull, settings, profile, oref_runner, deltas)
-                    if not counterfactuals or n_built == 0:
-                        cf_note = (f"Settings experiments: could not build oref inputs from any of "
-                                   f"the last {min(n_loop, MAX_CYCLES)} cycles (max_iob "
-                                   f"{settings.get('max_iob')}).")
-                    elif all(c.get("n_evaluated", 0) == 0 for c in counterfactuals):
-                        cf_note = (f"Settings experiments: oref evaluated 0 of {n_built} cycles — "
-                                   "the in-browser engine returned no decisions.")
-                        counterfactuals = []
+                    built = stats.get("built", 0)
+                    if built < 20:
+                        cf_note = (f"Only {built} of {stats.get('considered')} recent cycles were "
+                                   f"usable (no-iob {stats.get('no_iob')}, no-bg {stats.get('no_bg')}, "
+                                   f"no-request {stats.get('no_request')}). Diagnostic — "
+                                   f"{_openaps_shape(pull)}")
+                    elif counterfactuals and all(c.get("n_changed", 0) == 0 for c in counterfactuals):
+                        cf_note = (f"Ran over {built} cycles: none of these levers changed the "
+                                   "controller's decision — they don't bind at your settings.")
                 except Exception as exc:  # surface, never break the report
                     counterfactuals = []
                     cf_note = f"Settings experiments errored: {type(exc).__name__}: {exc}"

@@ -115,6 +115,8 @@ def render_report(
     parts += _findings_block(diagnostics.get("findings", []))
     if counterfactuals:
         parts += _counterfactual_block(counterfactuals)
+        if counterfactual_note:
+            parts += ["", f"_{counterfactual_note}_"]
     elif counterfactual_note:
         parts += ["", "## Settings experiments (decision-level)", "", f"_{counterfactual_note}_"]
     parts += ["", "---", "", DISCLAIMER]
