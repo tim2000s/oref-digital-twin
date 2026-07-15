@@ -58,7 +58,9 @@ class SettingSpec:
 SETTINGS: dict[str, SettingSpec] = {
     s.key: s for s in [
         # --- replay levers (map to replay.settings_delta) ---
-        SettingSpec("max_iob", "float", "U", ("max_iob", "Max IOB", "openapsma_max_iob", "maxIOB"),
+        SettingSpec("max_iob", "float", "U",
+                    ("max_iob", "Max IOB", "maxIOB",
+                     "boost_max_iob", "openapsmb_max_iob", "openapsma_max_iob"),  # Boost / AAPS-SMB / AMA
                     True, "Maximum insulin on board the loop may reach.", 0, 25),
         SettingSpec("max_basal", "float", "U/h", ("max_basal", "Max basal", "maxBasal"),
                     True, "Maximum temp basal rate.", 0, 25),
@@ -69,10 +71,10 @@ SETTINGS: dict[str, SettingSpec] = {
         SettingSpec("carb_ratio", "float", "g/U", ("carb_ratio", "CR", "carbratio", "IC"),
                     True, "Carb ratio.", 2, 150),
         SettingSpec("max_smb_minutes", "int", "min",
-                    ("maxSMBBasalMinutes", "Max SMB Basal Minutes", "max_smb_minutes"),
+                    ("maxSMBBasalMinutes", "Max SMB Basal Minutes", "max_smb_minutes", "smbmaxminutes"),
                     True, "SMB size cap as minutes of basal.", 0, 120),
         SettingSpec("max_uam_minutes", "int", "min",
-                    ("maxUAMSMBBasalMinutes", "Max UAM SMB Basal Minutes", "max_uam_minutes"),
+                    ("maxUAMSMBBasalMinutes", "Max UAM SMB Basal Minutes", "max_uam_minutes", "uamsmbmaxminutes"),
                     True, "UAM SMB size cap as minutes of basal.", 0, 120),
         SettingSpec("enable_smb", "bool", None,
                     ("enableSMB_always", "Enable SMB Always", "enableSMB", "use_smb"),

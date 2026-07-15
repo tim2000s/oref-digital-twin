@@ -118,8 +118,12 @@ async function run() {
         kwargs.settings = pyodide.toPy(parsed.settings);
         settingsNote = `Settings loaded from ${loaded.format} (${Object.keys(parsed.settings).length} values`
           + (parsed.needs_confirm.length ? `, ${parsed.needs_confirm.length} to confirm` : '') + ').';
+        if (parsed.settings.max_iob === undefined && parsed.unmapped_iob_keys.length) {
+          settingsNote += ` Max IOB not recognised; IOB-like keys in your file: ${parsed.unmapped_iob_keys.join(', ')}.`;
+        }
       } else {
-        settingsNote = 'No recognised settings found in that file.';
+        settingsNote = 'No recognised settings found in that file.'
+          + (parsed.unmapped_iob_keys.length ? ` IOB-like keys present: ${parsed.unmapped_iob_keys.join(', ')}.` : '');
       }
     }
 

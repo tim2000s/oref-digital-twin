@@ -125,6 +125,22 @@ def test_settings_from_raw_aaps_keys():
     assert out["settings"]["max_smb_minutes"] == 45
 
 
+def test_settings_from_raw_boost_and_smb_keys():
+    # Boost prefs export: boost_max_iob + AAPS SMB minute caps
+    raw = {"boost_max_iob": "11.2", "smbmaxminutes": "60", "uamsmbmaxminutes": "30",
+           "enableSMB_always": "true"}
+    out = settings_from_raw(raw)
+    assert out["settings"]["max_iob"] == 11.2
+    assert out["settings"]["max_smb_minutes"] == 60
+    assert out["settings"]["max_uam_minutes"] == 30
+
+
+def test_unmapped_iob_keys_surfaced():
+    out = settings_from_raw({"some_weird_iob_setting": "9"})
+    assert "some_weird_iob_setting" in out["unmapped_iob_keys"]
+    assert "max_iob" not in out["settings"]
+
+
 def test_settings_from_raw_trio_json():
     # Trio / oref preferences style: native JSON types, oref keys
     raw = {"max_iob": 5, "enableSMB_always": True, "maxSMBBasalMinutes": 30, "not_a_key": 1}

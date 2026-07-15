@@ -186,14 +186,17 @@ def settings_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     Returns the replay-lever settings plus any validation issues / values needing
     confirmation, so the caller can feed `settings` into build_report and warn the user.
     """
-    from settings import validate
+    from settings import resolve_alias, validate
 
     v = validate(raw)
+    # keys that mention IOB but map to nothing — helps diagnose an unknown build's naming
+    unmapped_iob = [k for k in raw if "iob" in str(k).lower() and resolve_alias(k) is None]
     return {
         "settings": v.replay_settings(),
         "all_values": v.values,
         "needs_confirm": v.needs_confirm,
         "issues": [i.to_dict() for i in v.issues],
+        "unmapped_iob_keys": unmapped_iob,
     }
 
 
