@@ -100,21 +100,21 @@ def _normalise_all(raw: list[dict], fn) -> tuple[list, int]:
     return out, dropped
 
 
-def run_pull(
-    config: NightscoutConfig,
+def pull_from_raw(
+    base_url: str,
     start_ms: int,
     end_ms: int,
-    *,
-    client: NightscoutClient | None = None,
-    window_days: int = 7,
+    raw_entries: list[dict],
+    raw_treatments: list[dict],
+    raw_devicestatus: list[dict],
+    raw_profiles: list[dict],
 ) -> PullResult:
-    client = client or NightscoutClient(config)
+    """Normalise + assemble already-fetched Nightscout JSON into a PullResult.
 
-    raw_entries = client.fetch_entries(start_ms, end_ms, window_days)
-    raw_treatments = client.fetch_treatments(start_ms, end_ms, window_days)
-    raw_devicestatus = client.fetch_devicestatus(start_ms, end_ms, window_days)
-    raw_profiles = client.fetch_profiles()
-
+    This is the seam the browser (Pyodide) uses: the JS side does the `fetch` (so the token
+    and CORS live in the browser) and hands the raw arrays here. `run_pull` is the same
+    thing with the fetching done by the Python client.
+    """
     entries, d_e = _normalise_all(raw_entries, normalise_entry)
     treatments, d_t = _normalise_all(raw_treatments, normalise_treatment)
     devicestatus, d_d = _normalise_all(raw_devicestatus, normalise_devicestatus)
@@ -125,7 +125,7 @@ def run_pull(
     devicestatus.sort(key=lambda c: c.ts_ms)
 
     return PullResult(
-        base_url=config.base_url,
+        base_url=base_url,
         start_ms=start_ms,
         end_ms=end_ms,
         entries=entries,
@@ -141,4 +141,23 @@ def run_pull(
             "devicestatus": d_d,
             "profiles": d_p,
         },
+    )
+
+
+def run_pull(
+    config: NightscoutConfig,
+    start_ms: int,
+    end_ms: int,
+    *,
+    client: NightscoutClient | None = None,
+    window_days: int = 7,
+) -> PullResult:
+    """Fetch from Nightscout and assemble a PullResult (server/CLI path)."""
+    client = client or NightscoutClient(config)
+    return pull_from_raw(
+        config.base_url, start_ms, end_ms,
+        client.fetch_entries(start_ms, end_ms, window_days),
+        client.fetch_treatments(start_ms, end_ms, window_days),
+        client.fetch_devicestatus(start_ms, end_ms, window_days),
+        client.fetch_profiles(),
     )

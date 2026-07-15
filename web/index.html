@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>oref digital twin</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    label { display: block; margin: .6rem 0 .2rem; font-weight: 600; }
+    input { width: 100%; padding: .5rem; box-sizing: border-box; }
+    button { margin-top: 1rem; padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
+    #status { color: #888; margin: 1rem 0; }
+    #report { border-top: 1px solid #8884; margin-top: 1.5rem; padding-top: 1rem; }
+    .muted { color: #888; font-size: .9rem; }
+    .warn { color: #b45; }
+  </style>
+</head>
+<body>
+  <h1>oref digital twin</h1>
+  <p class="muted">Read-only, advisory-only. Your Nightscout token and data stay in this
+    browser — they are never sent to any server. Not medical advice.</p>
+
+  <label for="url">Nightscout URL</label>
+  <input id="url" placeholder="https://your-nightscout.example" />
+  <label for="token">Access token (read-only)</label>
+  <input id="token" type="password" placeholder="token" />
+  <label for="days">Days to analyse</label>
+  <input id="days" type="number" value="14" min="1" max="90" />
+
+  <button id="run" disabled>Analyse</button>
+
+  <label style="margin-top:1.5rem"><input type="checkbox" id="narrate" /> Also generate a
+    written summary (sends only anonymous findings — no data or token — to the narration service)</label>
+
+  <p id="status">Loading Python runtime…</p>
+  <div id="report"></div>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

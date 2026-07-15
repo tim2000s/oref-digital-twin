@@ -36,3 +36,7 @@ coverage/
 .idea/
 .vscode/
 *.swp
+
+# web build artifact (Pyodide package bundle)
+web/odt-packages.zip
+_site/
