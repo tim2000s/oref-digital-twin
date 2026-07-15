@@ -7,10 +7,10 @@
  * re-verified by the grounding gate (also in Pyodide) before it is shown.
  */
 
+import { NARRATOR_URL } from './config.js';
+
 const PYODIDE_CDN = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/';
 const PACKAGES_ZIP = './odt-packages.zip';
-// Set to your deployed Worker URL to enable narration.
-const NARRATOR_URL = '';
 
 const DAY_MS = 86_400_000;
 const $ = (id) => document.getElementById(id);

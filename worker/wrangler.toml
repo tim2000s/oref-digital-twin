@@ -6,13 +6,14 @@ compatibility_date = "2024-11-01"
 [ai]
 binding = "AI"
 
-# Lock CORS to your Pages origin in production (leave unset to echo the caller's origin).
+# CORS: only allow the Pages site to call the Worker.
 [vars]
-ALLOWED_ORIGIN = ""
+ALLOWED_ORIGIN = "https://tim2000s.github.io"
 
-# Optional per-IP rate limit. Uncomment and configure to enable (binds as env.RL):
-# [[unsafe.bindings]]
-# name = "RL"
-# type = "ratelimit"
-# namespace_id = "1001"
-# simple = { limit = 20, period = 60 }
+# Per-IP rate limit (binds as env.RL): 20 requests per 60 seconds.
+# A public keyless endpoint can be abused, which would burn the Workers AI allocation.
+[[unsafe.bindings]]
+name = "RL"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }

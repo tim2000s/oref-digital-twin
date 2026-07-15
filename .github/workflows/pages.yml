@@ -24,7 +24,7 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp web/index.html web/app.js web/odt-packages.zip _site/
+          cp web/index.html web/app.js web/config.js web/odt-packages.zip _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
