@@ -5,6 +5,14 @@
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __esm = (fn, res, err) => function __init() {
+    if (err) throw err[0];
+    try {
+      return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+    } catch (e) {
+      throw err = [e], e;
+    }
+  };
   var __commonJS = (cb, mod) => function __require() {
     try {
       return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -29,9 +37,29 @@
     mod
   ));
 
+  // process-shim.mjs
+  var write, process;
+  var init_process_shim = __esm({
+    "process-shim.mjs"() {
+      write = () => true;
+      process = {
+        env: {},
+        browser: true,
+        argv: [],
+        version: "",
+        versions: {},
+        platform: "browser",
+        stderr: { write },
+        stdout: { write },
+        nextTick: (fn, ...args) => queueMicrotask(() => fn(...args))
+      };
+    }
+  });
+
   // node_modules/lodash/_baseClamp.js
   var require_baseClamp = __commonJS({
     "node_modules/lodash/_baseClamp.js"(exports, module) {
+      init_process_shim();
       function baseClamp(number, lower, upper) {
         if (number === number) {
           if (upper !== void 0) {
@@ -50,6 +78,7 @@
   // node_modules/lodash/_freeGlobal.js
   var require_freeGlobal = __commonJS({
     "node_modules/lodash/_freeGlobal.js"(exports, module) {
+      init_process_shim();
       var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
       module.exports = freeGlobal;
     }
@@ -58,6 +87,7 @@
   // node_modules/lodash/_root.js
   var require_root = __commonJS({
     "node_modules/lodash/_root.js"(exports, module) {
+      init_process_shim();
       var freeGlobal = require_freeGlobal();
       var freeSelf = typeof self == "object" && self && self.Object === Object && self;
       var root = freeGlobal || freeSelf || Function("return this")();
@@ -68,6 +98,7 @@
   // node_modules/lodash/_Symbol.js
   var require_Symbol = __commonJS({
     "node_modules/lodash/_Symbol.js"(exports, module) {
+      init_process_shim();
       var root = require_root();
       var Symbol2 = root.Symbol;
       module.exports = Symbol2;
@@ -77,6 +108,7 @@
   // node_modules/lodash/_arrayMap.js
   var require_arrayMap = __commonJS({
     "node_modules/lodash/_arrayMap.js"(exports, module) {
+      init_process_shim();
       function arrayMap(array, iteratee) {
         var index = -1, length = array == null ? 0 : array.length, result = Array(length);
         while (++index < length) {
@@ -91,6 +123,7 @@
   // node_modules/lodash/isArray.js
   var require_isArray = __commonJS({
     "node_modules/lodash/isArray.js"(exports, module) {
+      init_process_shim();
       var isArray = Array.isArray;
       module.exports = isArray;
     }
@@ -99,6 +132,7 @@
   // node_modules/lodash/_getRawTag.js
   var require_getRawTag = __commonJS({
     "node_modules/lodash/_getRawTag.js"(exports, module) {
+      init_process_shim();
       var Symbol2 = require_Symbol();
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
@@ -128,6 +162,7 @@
   // node_modules/lodash/_objectToString.js
   var require_objectToString = __commonJS({
     "node_modules/lodash/_objectToString.js"(exports, module) {
+      init_process_shim();
       var objectProto = Object.prototype;
       var nativeObjectToString = objectProto.toString;
       function objectToString(value) {
@@ -140,6 +175,7 @@
   // node_modules/lodash/_baseGetTag.js
   var require_baseGetTag = __commonJS({
     "node_modules/lodash/_baseGetTag.js"(exports, module) {
+      init_process_shim();
       var Symbol2 = require_Symbol();
       var getRawTag = require_getRawTag();
       var objectToString = require_objectToString();
@@ -159,6 +195,7 @@
   // node_modules/lodash/isObjectLike.js
   var require_isObjectLike = __commonJS({
     "node_modules/lodash/isObjectLike.js"(exports, module) {
+      init_process_shim();
       function isObjectLike(value) {
         return value != null && typeof value == "object";
       }
@@ -169,6 +206,7 @@
   // node_modules/lodash/isSymbol.js
   var require_isSymbol = __commonJS({
     "node_modules/lodash/isSymbol.js"(exports, module) {
+      init_process_shim();
       var baseGetTag = require_baseGetTag();
       var isObjectLike = require_isObjectLike();
       var symbolTag = "[object Symbol]";
@@ -182,6 +220,7 @@
   // node_modules/lodash/_baseToString.js
   var require_baseToString = __commonJS({
     "node_modules/lodash/_baseToString.js"(exports, module) {
+      init_process_shim();
       var Symbol2 = require_Symbol();
       var arrayMap = require_arrayMap();
       var isArray = require_isArray();
@@ -209,6 +248,7 @@
   // node_modules/lodash/_trimmedEndIndex.js
   var require_trimmedEndIndex = __commonJS({
     "node_modules/lodash/_trimmedEndIndex.js"(exports, module) {
+      init_process_shim();
       var reWhitespace = /\s/;
       function trimmedEndIndex(string) {
         var index = string.length;
@@ -223,6 +263,7 @@
   // node_modules/lodash/_baseTrim.js
   var require_baseTrim = __commonJS({
     "node_modules/lodash/_baseTrim.js"(exports, module) {
+      init_process_shim();
       var trimmedEndIndex = require_trimmedEndIndex();
       var reTrimStart = /^\s+/;
       function baseTrim(string) {
@@ -235,6 +276,7 @@
   // node_modules/lodash/isObject.js
   var require_isObject = __commonJS({
     "node_modules/lodash/isObject.js"(exports, module) {
+      init_process_shim();
       function isObject(value) {
         var type = typeof value;
         return value != null && (type == "object" || type == "function");
@@ -246,6 +288,7 @@
   // node_modules/lodash/toNumber.js
   var require_toNumber = __commonJS({
     "node_modules/lodash/toNumber.js"(exports, module) {
+      init_process_shim();
       var baseTrim = require_baseTrim();
       var isObject = require_isObject();
       var isSymbol = require_isSymbol();
@@ -279,6 +322,7 @@
   // node_modules/lodash/toFinite.js
   var require_toFinite = __commonJS({
     "node_modules/lodash/toFinite.js"(exports, module) {
+      init_process_shim();
       var toNumber = require_toNumber();
       var INFINITY = 1 / 0;
       var MAX_INTEGER = 17976931348623157e292;
@@ -300,6 +344,7 @@
   // node_modules/lodash/toInteger.js
   var require_toInteger = __commonJS({
     "node_modules/lodash/toInteger.js"(exports, module) {
+      init_process_shim();
       var toFinite = require_toFinite();
       function toInteger(value) {
         var result = toFinite(value), remainder = result % 1;
@@ -312,6 +357,7 @@
   // node_modules/lodash/toString.js
   var require_toString = __commonJS({
     "node_modules/lodash/toString.js"(exports, module) {
+      init_process_shim();
       var baseToString = require_baseToString();
       function toString(value) {
         return value == null ? "" : baseToString(value);
@@ -323,6 +369,7 @@
   // node_modules/lodash/endsWith.js
   var require_endsWith = __commonJS({
     "node_modules/lodash/endsWith.js"(exports, module) {
+      init_process_shim();
       var baseClamp = require_baseClamp();
       var baseToString = require_baseToString();
       var toInteger = require_toInteger();
@@ -343,6 +390,7 @@
   // node_modules/oref0/lib/round-basal.js
   var require_round_basal = __commonJS({
     "node_modules/oref0/lib/round-basal.js"(exports, module) {
+      init_process_shim();
       var endsWith = require_endsWith();
       var round_basal = function round_basal2(basal, profile) {
         var lowest_rate_scale = 20;
@@ -370,6 +418,7 @@
   // node_modules/oref0/lib/determine-basal/determine-basal.js
   var require_determine_basal = __commonJS({
     "node_modules/oref0/lib/determine-basal/determine-basal.js"(exports, module) {
+      init_process_shim();
       var round_basal = require_round_basal();
       function round(value, digits) {
         if (!digits) {
@@ -1271,6 +1320,7 @@
   var require_basal_set_temp = __commonJS({
     "node_modules/oref0/lib/basal-set-temp.js"(exports, module) {
       "use strict";
+      init_process_shim();
       function reason(rT, msg) {
         rT.reason = (rT.reason ? rT.reason + ". " : "") + msg;
         console.error(msg);
@@ -1322,6 +1372,7 @@
   });
 
   // browser-entry.mjs
+  init_process_shim();
   var import_determine_basal = __toESM(require_determine_basal(), 1);
   var import_basal_set_temp = __toESM(require_basal_set_temp(), 1);
   function runOne(req) {
