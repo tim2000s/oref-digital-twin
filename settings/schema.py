@@ -34,6 +34,12 @@ class SettingSpec:
     description: str
     min: float | None = None
     max: float | None = None
+    # Is a zero reading implausible for this setting? Only true where withholding the value
+    # is SAFE — i.e. where the replay refuses to run rather than substituting a default.
+    # For the caps (max_smb_minutes, max_uam_minutes, max_basal) zero is a real, deliberate
+    # configuration meaning "off", and withholding it would make build_profile substitute a
+    # *more permissive* default, simulating insulin the real configuration forbids.
+    zero_suspect: bool = False
 
     def coerce(self, v: Any) -> tuple[Any, bool]:
         try:
@@ -61,7 +67,10 @@ SETTINGS: dict[str, SettingSpec] = {
         SettingSpec("max_iob", "float", "U",
                     ("max_iob", "Max IOB", "maxIOB",
                      "boost_max_iob", "openapsmb_max_iob", "openapsma_max_iob"),  # Boost / AAPS-SMB / AMA
-                    True, "Maximum insulin on board the loop may reach.", 0, 25),
+                    True, "Maximum insulin on board the loop may reach.", 0, 25,
+                    # Safe to withhold: from_cycle refuses the cycle when max_iob is absent,
+                    # so a suspect zero skips the counterfactual instead of inventing one.
+                    zero_suspect=True),
         SettingSpec("max_basal", "float", "U/h", ("max_basal", "Max basal", "maxBasal"),
                     True, "Maximum temp basal rate.", 0, 25),
         SettingSpec("target_bg", "float", "mg/dL", ("target_bg", "Target", "target"),

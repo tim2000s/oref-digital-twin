@@ -34,7 +34,9 @@ def test_build_profile_uses_settings_and_flags_missing():
     assert prof["current_basal"] == 1.0 and prof["sens"] == 50.0
     assert prof["target_bg"] == 105.0 and prof["max_iob"] == 6.0
     assert prof["enableSMB_always"] is True
-    assert warn == []  # nothing missing
+    # nothing missing from the *profile* — the SMB caps are separately reported as
+    # substituted, which is expected here since the settings dict does not carry them.
+    assert not [w for w in warn if "profile is missing" in w or "settings missing" in w]
 
 
 def test_build_profile_warns_when_max_iob_missing():
@@ -91,3 +93,21 @@ def test_negative_max_iob_is_clamped_like_apply_delta():
 
     req = {"profile": dict(prof)}
     assert apply_delta(req, {"max_iob": -3.0})["profile"]["max_iob"] == prof["max_iob"]
+
+
+def test_zero_smb_cap_survives_into_the_oref_profile():
+    """A deliberate 'SMB off' must reach oref as 0, not be replaced by the 30-min default."""
+    prof, _ = build_profile(_snapshot(),
+                            {"max_iob": 6.0, "enable_smb": True, "max_smb_minutes": 0,
+                             "max_uam_minutes": 0},
+                            at_ms=1_700_000_000_000)
+    assert prof["maxSMBBasalMinutes"] == 0
+    assert prof["maxUAMSMBBasalMinutes"] == 0
+
+
+def test_substituted_smb_caps_are_warned_about():
+    """Permissive defaults are allowed, but never silently."""
+    _, warn = build_profile(_snapshot(), {"max_iob": 6.0, "enable_smb": True},
+                            at_ms=1_700_000_000_000)
+    assert any("max_smb_minutes unknown" in w for w in warn)
+    assert any("more SMB than your settings allow" in w for w in warn)
