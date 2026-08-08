@@ -109,6 +109,16 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int) -> tupl
             warnings.append(f"settings missing '{key}' — required for faithful replay.")
 
     max_basal = settings.get("max_basal", (basal or 0.0) * 4)
+    # Clamp exactly as replay.settings_delta does. Otherwise a negative baseline is compared
+    # against a clamped altered run and the counterfactual diff is meaningless while still
+    # rendering as a real delivery delta.
+    max_iob = settings.get("max_iob")
+    if max_iob is not None and float(max_iob) < 0:
+        warnings.append(f"max_iob {max_iob} is negative — clamped to 0 for replay.")
+        max_iob = 0.0
+    if max_basal is not None and float(max_basal) < 0:
+        warnings.append(f"max_basal {max_basal} is negative — clamped to 0 for replay.")
+        max_basal = 0.0
     profile = {
         "dia": snapshot.dia_h or 6.0,
         "current_basal": basal or 0.0,
@@ -116,7 +126,7 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int) -> tupl
         "max_daily_basal": basal or 0.0,
         "max_daily_safety_multiplier": settings.get("max_daily_safety_multiplier", 3),
         "current_basal_safety_multiplier": settings.get("current_basal_safety_multiplier", 4),
-        "max_iob": settings.get("max_iob"),
+        "max_iob": max_iob,
         "sens": sens,
         "carb_ratio": cr,
         "min_bg": low if low is not None else target,

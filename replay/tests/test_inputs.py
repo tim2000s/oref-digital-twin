@@ -75,3 +75,19 @@ def test_from_cycle_builds_request_with_fidelity_warnings():
     # inherent fidelity limits are always disclosed
     assert any("activity unknown" in w for w in warn)
     assert any("currenttemp" in w for w in warn)
+
+
+def test_negative_max_iob_is_clamped_like_apply_delta():
+    """build_profile must clamp exactly as settings_delta does.
+
+    Otherwise an unclamped negative baseline is diffed against a clamped altered run and
+    the counterfactual reports a delivery delta that means nothing.
+    """
+    from replay.settings_delta import apply_delta
+
+    prof, warn = build_profile(_snapshot(), {"max_iob": -3.0}, at_ms=1_700_000_000_000)
+    assert prof["max_iob"] == 0.0
+    assert any("negative" in w for w in warn)
+
+    req = {"profile": dict(prof)}
+    assert apply_delta(req, {"max_iob": -3.0})["profile"]["max_iob"] == prof["max_iob"]

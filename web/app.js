@@ -67,9 +67,15 @@ async function fetchNightscout(base, token, days) {
            profiles: Array.isArray(profiles) ? profiles : [profiles] };
 }
 
+// Escape before any interpolation into innerHTML. Settings-file keys and error strings are
+// attacker-influenced (a hostile prefs export is a normal thing to be handed in a forum),
+// and this page holds a Nightscout token and a master-password field in the DOM.
+const esc = (s) => String(s)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
 // --- minimal, safe Markdown -> HTML (headings, bold, list items) ---
 function mdToHtml(md) {
-  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return esc(md).split('\n').map((line) => {
     if (line.startsWith('### ')) return `<h3>${line.slice(4)}</h3>`;
     if (line.startsWith('## ')) return `<h2>${line.slice(3)}</h2>`;
@@ -97,8 +103,10 @@ async function run() {
   $('run').disabled = true;
   try {
     setStatus('Fetching Nightscout…');
-    const raw = await fetchNightscout($('url').value.trim(), $('token').value.trim(),
-                                     parseInt($('days').value, 10) || 14);
+    // clamp to the same bounds as the input's min/max — a typed 3650 would fire 522
+    // windowed requests at someone's Nightscout.
+    const days = Math.min(90, Math.max(1, parseInt($('days').value, 10) || 14));
+    const raw = await fetchNightscout($('url').value.trim(), $('token').value.trim(), days);
 
     setStatus('Analysing…');
     const B = pyodide.pyimport('report.browser');
@@ -114,36 +122,61 @@ async function run() {
       const loaded = await loadSettingsFromFile(file, $('prefspw').value);
       if (loaded.needsPassword) throw new Error('That AAPS file is encrypted — enter your master password and try again.');
       const parsed = B.settings_from_raw(pyodide.toPy(loaded.raw)).toJs({ dict_converter: Object.fromEntries });
+      const blocked = parsed.blocked || [];
       if (parsed.settings && Object.keys(parsed.settings).length) {
         kwargs.settings = pyodide.toPy(parsed.settings);
-        settingsNote = `Settings loaded from ${loaded.format} (${Object.keys(parsed.settings).length} values`
-          + (parsed.needs_confirm.length ? `, ${parsed.needs_confirm.length} to confirm` : '') + ').';
+        settingsNote = `Settings loaded from ${esc(loaded.format)} `
+          + `(${Object.keys(parsed.settings).length} values used`;
+        settingsNote += blocked.length
+          ? `, ${blocked.length} withheld pending confirmation: ${esc(blocked.join(', '))}).`
+          : ').';
         if (parsed.settings.max_iob === undefined && parsed.unmapped_iob_keys.length) {
-          settingsNote += ` Max IOB not recognised; IOB-like keys in your file: ${parsed.unmapped_iob_keys.join(', ')}.`;
+          settingsNote += ` Max IOB not recognised; IOB-like keys in your file: ${esc(parsed.unmapped_iob_keys.join(', '))}.`;
         }
       } else {
         settingsNote = 'No recognised settings found in that file.'
-          + (parsed.unmapped_iob_keys.length ? ` IOB-like keys present: ${parsed.unmapped_iob_keys.join(', ')}.` : '');
+          + (blocked.length ? ` Withheld pending confirmation: ${esc(blocked.join(', '))}.` : '')
+          + (parsed.unmapped_iob_keys.length ? ` IOB-like keys present: ${esc(parsed.unmapped_iob_keys.join(', '))}.` : '');
+      }
+      if (loaded.collisions && loaded.collisions.length) {
+        settingsNote += ` <span class="warn">Duplicate keys in that file (last value used):`
+          + ` ${esc(loaded.collisions.join(', '))}.</span>`;
+      }
+      for (const i of (parsed.issues || [])) {
+        if (i.kind === 'out_of_range' || i.kind === 'needs_confirm') {
+          settingsNote += ` <span class="warn">${esc(i.message)}</span>`;
+        }
       }
     }
 
     const maxIob = parseFloat($('maxiob').value);
     if (!isNaN(maxIob)) kwargs.max_iob_override = maxIob;
     setStatus('Analysing…');
-    const resultProxy = runner
-      ? B.build_report.callKwargs(pyodide.toPy(raw), kwargs)
-      : B.build_report(pyodide.toPy(raw));
+    // Always pass kwargs: with the ternary, a failed oref bundle silently dropped the
+    // uploaded settings and the Max IOB override while still claiming they were loaded.
+    const rawPy = pyodide.toPy(raw);
+    const resultProxy = B.build_report.callKwargs(rawPy, kwargs);
     const result = resultProxy.toJs({ dict_converter: Object.fromEntries });
+    resultProxy.destroy();
+    rawPy.destroy();
 
     let html = mdToHtml(result.report_md);
     if (settingsNote) html = `<p class="muted">${settingsNote}</p>` + html;
 
     if ($('narrate').checked && NARRATOR_URL) {
       setStatus('Generating written summary…');
-      const source = B.abstracted_findings(pyodide.toPy(result)).toJs({ dict_converter: Object.fromEntries });
+      const resultPy = pyodide.toPy(result);
+      const sourceProxy = B.abstracted_findings(resultPy);
+      const source = sourceProxy.toJs({ dict_converter: Object.fromEntries });
+      sourceProxy.destroy();
+      resultPy.destroy();
       const narrative = await narrate(source);
       if (narrative) {
-        const gate = B.gate_narrative(narrative, pyodide.toPy(source)).toJs({ dict_converter: Object.fromEntries });
+        const sourcePy = pyodide.toPy(source);
+        const gateProxy = B.gate_narrative(narrative, sourcePy);
+        const gate = gateProxy.toJs({ dict_converter: Object.fromEntries });
+        gateProxy.destroy();
+        sourcePy.destroy();
         if (gate.passed) {
           html = `<h2>Summary</h2>${mdToHtml(narrative)}<hr>` + html;
         } else {
@@ -156,7 +189,7 @@ async function run() {
     setStatus('Done.');
   } catch (e) {
     setStatus('');
-    $('report').innerHTML = `<p class="warn">${e.message}</p>
+    $('report').innerHTML = `<p class="warn">${esc(e.message)}</p>
       <p class="muted">If this is a CORS error, enable CORS on your Nightscout instance rather than proxying your data.</p>`;
   } finally {
     $('run').disabled = false;

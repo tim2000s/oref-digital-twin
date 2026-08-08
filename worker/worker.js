@@ -27,11 +27,31 @@ const SYSTEM_PROMPT = [
   '- Lead with anything critical. Be plain and British-spelled. Do not add a diagnosis.',
 ].join('\n');
 
+// Fallback limiter for when the Ratelimit binding is absent. Per-isolate and therefore
+// weak — isolates are ephemeral and per-colo — but it blunts a single-source flood, which
+// is better than the previous behaviour of skipping the limit entirely and silently.
+const FALLBACK_LIMIT = 20;
+const FALLBACK_WINDOW_MS = 60_000;
+const FALLBACK_MAX_KEYS = 5000;
+const _hits = new Map();
+
+function fallbackAllow(key, now) {
+  if (_hits.size > FALLBACK_MAX_KEYS) _hits.clear();   // bound memory; coarse by design
+  const rec = _hits.get(key);
+  if (!rec || now - rec.start >= FALLBACK_WINDOW_MS) {
+    _hits.set(key, { start: now, n: 1 });
+    return true;
+  }
+  rec.n += 1;
+  return rec.n <= FALLBACK_LIMIT;
+}
+
 function cors(origin) {
   return {
     'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Vary': 'Origin',
   };
 }
 
@@ -59,11 +79,22 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors(allowOrigin) });
     if (request.method !== 'POST') return json({ error: 'POST only' }, 405, allowOrigin);
 
-    // optional rate limit (bind a Ratelimit as env.RL to enable)
+    // Enforce the origin allowlist, don't just advertise it in a response header. Setting
+    // Access-Control-Allow-Origin alone stops another site *reading* the reply; it does not
+    // stop the request being made, billed, or run against the AI allocation.
+    if (env.ALLOWED_ORIGIN && origin && origin !== env.ALLOWED_ORIGIN) {
+      return json({ error: 'origin not allowed' }, 403, allowOrigin);
+    }
+
+    // Rate limit. env.RL is the Cloudflare Ratelimit binding when it is actually bound;
+    // if it is not, fall back to the in-isolate limiter rather than skipping silently —
+    // this is a public, keyless endpoint spending a Workers AI allocation.
+    const ip = request.headers.get('CF-Connecting-IP') || 'anon';
     if (env.RL) {
-      const ip = request.headers.get('CF-Connecting-IP') || 'anon';
       const { success } = await env.RL.limit({ key: ip });
       if (!success) return json({ error: 'rate limited' }, 429, allowOrigin);
+    } else if (!fallbackAllow(ip, Date.now())) {
+      return json({ error: 'rate limited' }, 429, allowOrigin);
     }
 
     const raw = await request.text();
