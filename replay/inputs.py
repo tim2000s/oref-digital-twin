@@ -141,6 +141,20 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int) -> tupl
         "maxSMBBasalMinutes": settings.get("max_smb_minutes", 30),
         "maxUAMSMBBasalMinutes": settings.get("max_uam_minutes", 30),
     }
+
+    # These defaults are permissive: absent an SMB cap we assume 30 minutes, and absent a
+    # max basal we assume 4x the scheduled rate. If SMB is on and the real caps are unknown,
+    # the replay may allow more insulin than the user's own configuration would. Say so —
+    # a substituted dosing bound must never pass silently.
+    if profile["enableSMB_always"] or profile["enableSMB_uam"]:
+        for friendly, oref_field in (("max_smb_minutes", "maxSMBBasalMinutes"),
+                                     ("max_uam_minutes", "maxUAMSMBBasalMinutes")):
+            if settings.get(friendly) is None:
+                warnings.append(f"{friendly} unknown — assumed {profile[oref_field]} min; "
+                                f"replay may permit more SMB than your settings allow.")
+    if settings.get("max_basal") is None:
+        warnings.append(f"max_basal unknown — assumed {max_basal} U/h (4x scheduled basal).")
+
     return profile, warnings
 
 

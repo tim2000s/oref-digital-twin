@@ -87,10 +87,13 @@ def validate(raw: dict[str, Any], confidences: dict[str, float] | None = None) -
             needs.add(key)
             blocked.add(key)
 
-        # A zero on a numeric replay lever is almost always a failed read, and where it is
-        # genuine it disables or degenerates the lever (max_iob 0 doses nothing; sens 0 is a
-        # division by zero in oref). Either way it must not silently drive a counterfactual.
-        elif spec.replay_lever and spec.kind in ("float", "int") and coerced == 0:
+        # A zero is only suspect where the schema says so (see SettingSpec.zero_suspect).
+        # It must NOT be a blanket rule over the replay levers: `max_smb_minutes: 0`,
+        # `max_uam_minutes: 0` and `max_basal: 0` are deliberate "off" settings, and
+        # withholding them makes build_profile fall back to 30 / 30 / 4x basal — simulating
+        # insulin the real configuration forbids. Blocking must never be more permissive
+        # than accepting.
+        elif spec.zero_suspect and coerced == 0:
             unit = f" {spec.unit}" if spec.unit else ""
             out.issues.append(SettingIssue(
                 key, "needs_confirm",

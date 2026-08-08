@@ -79,10 +79,19 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors(allowOrigin) });
     if (request.method !== 'POST') return json({ error: 'POST only' }, 405, allowOrigin);
 
-    // Enforce the origin allowlist, don't just advertise it in a response header. Setting
-    // Access-Control-Allow-Origin alone stops another site *reading* the reply; it does not
-    // stop the request being made, billed, or run against the AI allocation.
-    if (env.ALLOWED_ORIGIN && origin && origin !== env.ALLOWED_ORIGIN) {
+    // Origin check — be precise about what this is worth.
+    //
+    // It buys one real thing: a browser sets Origin itself and page script cannot forge it,
+    // so another *site* cannot drive this endpoint with its visitors' browsers. Setting
+    // Access-Control-Allow-Origin alone would not stop that — it only stops the other site
+    // reading the reply, after the request has been made, billed and run.
+    //
+    // It buys nothing against a direct caller: curl can omit Origin or send the expected
+    // value, so this is friction, not authorization. A public, keyless static page cannot
+    // hold a secret, so there is no capability to demand instead — the rate limiter below
+    // is the actual control on the AI allocation. A missing Origin is rejected too, since
+    // the only legitimate client is a browser on the Pages site and it always sends one.
+    if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) {
       return json({ error: 'origin not allowed' }, 403, allowOrigin);
     }
 

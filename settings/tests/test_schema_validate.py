@@ -85,3 +85,20 @@ def test_low_confidence_is_withheld_from_replay():
 def test_good_value_is_not_blocked():
     v = validate({"max_iob": "6"})
     assert v.blocked == [] and v.replay_settings() == {"max_iob": 6.0}
+
+
+def test_zero_is_kept_for_caps_where_zero_means_off():
+    """max_smb_minutes/max_uam_minutes/max_basal = 0 is a deliberate 'off', not a bad read.
+
+    Withholding them would be worse than accepting: build_profile substitutes 30 / 30 /
+    4x basal, so the replay would simulate insulin the real configuration forbids.
+    """
+    v = validate({"maxSMBBasalMinutes": "0", "maxUAMSMBBasalMinutes": "0", "max_basal": "0"})
+    assert v.blocked == []
+    assert v.replay_settings() == {"max_smb_minutes": 0, "max_uam_minutes": 0, "max_basal": 0.0}
+
+
+def test_zero_still_suspect_where_withholding_is_safe():
+    """max_iob is flagged zero_suspect: from_cycle refuses the cycle rather than defaulting."""
+    v = validate({"max_iob": "0"})
+    assert "max_iob" in v.blocked and v.replay_settings() == {}
