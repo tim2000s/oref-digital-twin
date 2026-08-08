@@ -20,15 +20,33 @@ import re
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-# small integers that appear as ordinary prose ("within 2 hours") and need no grounding
+# small integers that appear as ordinary prose ("within 2 hours") and need no grounding.
+# The exemption is withdrawn when the number is attached to a dosing/glucose unit — "3
+# units" is a dose, not prose, and must be grounded like any other figure.
 _STRUCTURAL = {0.0, 1.0, 2.0, 3.0, 24.0}
 _NUM_RE = re.compile(r"-?\d+(?:\.\d+)?")
+_UNIT_AFTER_RE = re.compile(r"\s*(?:u\b|iu\b|units?\b|u/h\b|mg/dl\b|mmol)", re.IGNORECASE)
 
-# Imperative dosing directives — advisory-only tool must not emit these. Targeted at
-# second-person advice and clause-initial imperatives, NOT descriptive counterfactuals
-# ("lowering max IOB to 3 changed the decision" is a description, not a prescription).
-_DOSE_NOUNS = r"(?:basal|isf|sensitivity|carb\s*ratio|\bcr\b|target|max[\s_]?iob|smb|dose|insulin|correction)"
-_IMPERATIVE_VERB = r"(?:set|increase|decrease|raise|lower|reduce|adjust|change|bump|drop)"
+# Dosing directives — an advisory-only tool must not emit these. Targeted at second-person
+# advice, clause-initial imperatives and *hedged* advice, but NOT descriptive
+# counterfactuals ("lowering max IOB to 3 changed the decision" is a description).
+_DOSE_NOUNS = (r"(?:basal|isf|sensitivity|carb\s*ratio|\bcr\b|target|max[\s_]?iob|smb|dose|"
+               r"insulin|correction|units?|\bu\b)")
+# bare stems only — the imperative mood. Gerunds are handled by the hedged pattern below,
+# so that a descriptive "Lowering max IOB…" is not mistaken for an instruction.
+_IMPERATIVE_VERB = r"(?:set|increase|decrease|raise|lower|reduce|adjust|change|bump|drop|cut)"
+# any inflection, used only where a hedge or an explicit quantity already signals advice
+_VERB_ANY = (r"(?:set|setting|increase|increasing|decrease|decreasing|raise|raising|lower|"
+             r"lowering|reduce|reducing|adjust|adjusting|change|changing|bump|bumping|drop|"
+             r"dropping|cut|cutting|run|running|add|adding|try|trying|use|using)")
+_CHANGE_VERB = (r"(?:set|increase|increasing|decrease|decreasing|raise|raising|lower|lowering|"
+                r"reduce|reducing|adjust|adjusting|bump|bumping|drop|dropping|cut|cutting|"
+                r"add|adding|try|trying)")
+_HEDGE = (r"(?:consider|considering|suggest\w*|recommend\w*|advis\w+|worth|sensible|perhaps|"
+          r"maybe|you\s+may\s+want|you\s+might\s+want|it\s+would\s+be\s+\w+\s+to|"
+          r"it\s+may\s+be\s+\w+\s+to|i'?d\s+\w+)")
+_COMPARATIVE = r"(?:more|less|higher|lower|bigger|smaller|extra)"
+_QTY_UNITS = r"\d+(?:[.,]\d+)?\s*(?:u\b|iu\b|units?\b)"
 _PRESCRIPTION_RES = [
     # second person: "you should/could/need to ... <dose noun>"
     re.compile(rf"\byou\s+(?:should|could|ought to|need to|must|may want to|might want to)\b[^.]*\b{_DOSE_NOUNS}\b",
@@ -37,6 +55,13 @@ _PRESCRIPTION_RES = [
     re.compile(rf"(?:^|[.;:]\s+){_IMPERATIVE_VERB}\s+(?:your\s+)?{_DOSE_NOUNS}\b", re.IGNORECASE),
     # possessive directive with a value: "your max IOB to 8"
     re.compile(rf"\byour\s+{_DOSE_NOUNS}\b[^.]*\bto\s+-?\d", re.IGNORECASE),
+    # hedged advice: "consider increasing …", "I'd suggest reducing basal", "it would be
+    # sensible to run more insulin". A hedge plus an action verb (or a comparative) plus a
+    # dosing noun or an explicit quantity, all inside one sentence.
+    re.compile(rf"\b{_HEDGE}\b[^.]{{0,80}}?\b(?:{_VERB_ANY}|{_COMPARATIVE})\b[^.]{{0,40}}?"
+               rf"(?:\b{_DOSE_NOUNS}\b|{_QTY_UNITS})", re.IGNORECASE),
+    # explicit quantity directive regardless of hedging: "increase by 3 units", "add 2 units"
+    re.compile(rf"\b{_CHANGE_VERB}\b[^.]{{0,25}}?{_QTY_UNITS}", re.IGNORECASE),
 ]
 
 _CAVEAT_MARKERS = ("decision-level", "not the resulting", "not predict", "cannot predict",
@@ -74,13 +99,21 @@ def _source_numbers(source: dict) -> set[float]:
     return nums
 
 
-def _is_grounded(n: float, allowed: set[float]) -> bool:
-    if n in _STRUCTURAL:
+# A relative tolerance alone is far too loose on large source values (1% of an epoch-ms
+# timestamp is ~1.8e10), so cap it. And only collapse to integers where a half-unit drift
+# is immaterial: "62.4%" may be narrated as "62%", but a source 6.4 U must NOT ground a
+# narrated 5.5 U.
+_ABS_TOL_CAP = 5.0
+_INT_ROUND_MIN = 10.0
+
+
+def _is_grounded(n: float, allowed: set[float], *, structural_ok: bool = True) -> bool:
+    if structural_ok and n in _STRUCTURAL:
         return True
     for a in allowed:
-        if abs(a - n) <= max(0.05, 0.01 * abs(a)):
+        if abs(a - n) <= min(max(0.05, 0.01 * abs(a)), _ABS_TOL_CAP):
             return True
-        if round(a, 1) == round(n, 1) or round(a) == round(n):
+        if abs(a) >= _INT_ROUND_MIN and abs(a - n) <= 0.5 and round(a) == round(n):
             return True
     return False
 
@@ -99,14 +132,16 @@ def check_narrative(narrative: str, source: dict) -> GateResult:
     text = narrative or ""
     low = text.lower()
 
-    # 1. numbers
+    # 1. numbers — a figure carrying a dose/glucose unit forfeits the structural exemption
     allowed = _source_numbers(source)
-    for tok in _NUM_RE.findall(text):
+    for m in _NUM_RE.finditer(text):
+        tok = m.group(0)
         try:
             n = float(tok)
         except ValueError:
             continue
-        if not _is_grounded(n, allowed):
+        unit_attached = bool(_UNIT_AFTER_RE.match(text[m.end():m.end() + 12]))
+        if not _is_grounded(n, allowed, structural_ok=not unit_attached):
             violations.append(Violation("ungrounded_number", f"'{tok}' is not present in the findings."))
 
     # 2. prescriptions

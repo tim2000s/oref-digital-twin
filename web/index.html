@@ -3,6 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--
+    This page handles a Nightscout read-only token and an AAPS master password, so the
+    script surface is locked down: only this origin and the pinned Pyodide CDN may supply
+    script, and nothing may be posted anywhere. Pyodide compiles CPython to WASM, so
+    'unsafe-eval'/'wasm-unsafe-eval' are unavoidable. connect-src has to allow any https
+    host because the Nightscout URL is supplied by the user at runtime.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    script-src 'self' https://cdn.jsdelivr.net 'unsafe-eval' 'wasm-unsafe-eval';
+    style-src 'self' 'unsafe-inline';
+    connect-src 'self' https: blob:;
+    worker-src 'self' blob:;
+    img-src 'self' data:;
+    base-uri 'none';
+    form-action 'none';
+    object-src 'none';
+  " />
   <title>oref digital twin</title>
   <style>
     :root { color-scheme: light dark; }
@@ -42,7 +60,11 @@
   <p id="status">Loading Python runtime…</p>
   <div id="report"></div>
 
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+  <!-- SRI pins the loader against a CDN compromise. Regenerate if the version is bumped:
+       curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"
+          integrity="sha384-tVslJOEkg7nVRW3Y3/ReGX0NnonNrbcmt1R5qFbQXQdGa2chRkoJYHAjAsv3zoTq"
+          crossorigin="anonymous"></script>
   <script src="./oref-bundle.js"></script>
   <script type="module" src="./app.js"></script>
 </body>

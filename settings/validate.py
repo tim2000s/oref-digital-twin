@@ -32,10 +32,18 @@ class ValidatedSettings:
     values: dict[str, Any] = field(default_factory=dict)
     issues: list[SettingIssue] = field(default_factory=list)
     needs_confirm: list[str] = field(default_factory=list)
+    blocked: list[str] = field(default_factory=list)   # parsed, but not safe to act on
 
     def replay_settings(self) -> dict[str, Any]:
-        """The subset the replay oracle can vary (replay_lever specs only)."""
-        return {k: v for k, v in self.values.items() if SETTINGS[k].replay_lever}
+        """The subset the replay oracle can vary (replay_lever specs only).
+
+        Anything out of range, zero-valued or read with low confidence is withheld: an
+        unconfirmed insulin-relevant number must never silently drive a counterfactual
+        (DESIGN §5.2). It stays in `values` so the caller can display it and ask.
+        """
+        blocked = set(self.blocked)
+        return {k: v for k, v in self.values.items()
+                if SETTINGS[k].replay_lever and k not in blocked}
 
     def is_clean(self) -> bool:
         return not self.issues
@@ -44,6 +52,7 @@ class ValidatedSettings:
         return {
             "values": self.values,
             "needs_confirm": self.needs_confirm,
+            "blocked": self.blocked,
             "issues": [i.to_dict() for i in self.issues],
         }
 
@@ -52,6 +61,7 @@ def validate(raw: dict[str, Any], confidences: dict[str, float] | None = None) -
     confidences = confidences or {}
     out = ValidatedSettings()
     needs: set[str] = set()
+    blocked: set[str] = set()
 
     for raw_name, raw_val in raw.items():
         key = resolve_alias(raw_name)
@@ -75,6 +85,19 @@ def validate(raw: dict[str, Any], confidences: dict[str, float] | None = None) -
                 f"{key}={coerced}{unit} is outside the plausible range "
                 f"[{spec.min}, {spec.max}] — confirm before use.", coerced))
             needs.add(key)
+            blocked.add(key)
+
+        # A zero on a numeric replay lever is almost always a failed read, and where it is
+        # genuine it disables or degenerates the lever (max_iob 0 doses nothing; sens 0 is a
+        # division by zero in oref). Either way it must not silently drive a counterfactual.
+        elif spec.replay_lever and spec.kind in ("float", "int") and coerced == 0:
+            unit = f" {spec.unit}" if spec.unit else ""
+            out.issues.append(SettingIssue(
+                key, "needs_confirm",
+                f"{key}=0{unit} would disable this lever — confirm it was read correctly.",
+                coerced))
+            needs.add(key)
+            blocked.add(key)
 
         conf = confidences.get(raw_name)
         if conf is not None and conf < LOW_CONFIDENCE:
@@ -82,6 +105,8 @@ def validate(raw: dict[str, Any], confidences: dict[str, float] | None = None) -
                 key, "needs_confirm",
                 f"{key} was read with low confidence ({conf}); please confirm.", coerced))
             needs.add(key)
+            blocked.add(key)
 
     out.needs_confirm = sorted(needs)
+    out.blocked = sorted(blocked)
     return out

@@ -54,3 +54,34 @@ def test_replay_settings_filters_to_levers():
 def test_int_coercion_rounds():
     v = validate({"maxSMBBasalMinutes": "45.0"})
     assert v.values["max_smb_minutes"] == 45 and isinstance(v.values["max_smb_minutes"], int)
+
+
+def test_out_of_range_is_withheld_from_replay():
+    """An implausible insulin value may be reported but must never drive a counterfactual."""
+    v = validate({"max_iob": "500"})
+    assert v.values["max_iob"] == 500.0          # still visible to the caller
+    assert "max_iob" in v.blocked
+    assert "max_iob" not in v.replay_settings()  # withheld
+
+
+def test_negative_value_is_withheld_from_replay():
+    v = validate({"max_iob": "-3"})
+    assert "max_iob" in v.blocked
+    assert v.replay_settings() == {}
+
+
+def test_zero_lever_is_withheld_pending_confirmation():
+    """0 is inside max_iob's [0, 25] range but disables the lever — almost always a bad read."""
+    v = validate({"max_iob": "0"})
+    assert "max_iob" in v.needs_confirm and "max_iob" in v.blocked
+    assert v.replay_settings() == {}
+
+
+def test_low_confidence_is_withheld_from_replay():
+    v = validate({"Max IOB": "6"}, confidences={"Max IOB": 0.5})
+    assert "max_iob" in v.blocked and v.replay_settings() == {}
+
+
+def test_good_value_is_not_blocked():
+    v = validate({"max_iob": "6"})
+    assert v.blocked == [] and v.replay_settings() == {"max_iob": 6.0}

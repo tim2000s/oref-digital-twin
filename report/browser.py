@@ -243,6 +243,7 @@ def settings_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         "settings": v.replay_settings(),
         "all_values": v.values,
         "needs_confirm": v.needs_confirm,
+        "blocked": v.blocked,          # parsed but withheld from replay until confirmed
         "issues": [i.to_dict() for i in v.issues],
         "unmapped_iob_keys": unmapped_iob,
     }
@@ -260,6 +261,22 @@ def make_js_oref_runner():
     return runner
 
 
+def _strip_timestamps(cfs: list[dict]) -> list[dict]:
+    """Drop per-cycle wall-clock timestamps from counterfactual examples.
+
+    `ts_ms` pins the exact minute a loop decision was taken. That is personal health data
+    under the standard this project holds itself to (DESIGN §9), and the narrator has no
+    use for it — it needs the magnitudes, not when they happened.
+    """
+    out = []
+    for cf in cfs:
+        c = dict(cf)
+        c["examples"] = [{k: v for k, v in ex.items() if k != "ts_ms"}
+                         for ex in cf.get("examples", [])]
+        out.append(c)
+    return out
+
+
 def abstracted_findings(result: dict[str, Any]) -> dict[str, Any]:
     """The only payload allowed to leave the browser for narration — no raw data/token."""
     diag = result.get("diagnostics", {})
@@ -268,7 +285,7 @@ def abstracted_findings(result: dict[str, Any]) -> dict[str, Any]:
         "glycemia": diag.get("glycemia", {}),
         "findings": diag.get("findings", []),
         "variant": result.get("variant", {}),
-        "counterfactuals": result.get("counterfactuals", []),
+        "counterfactuals": _strip_timestamps(result.get("counterfactuals", [])),
     }
 
 

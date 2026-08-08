@@ -70,3 +70,75 @@ def test_structural_small_integers_allowed():
            "fix. Overnight SMBs — association only, does not prove causation — over 2 nights.")
     res = check_narrative(txt, SOURCE)
     assert res.passed, res.to_dict()
+
+
+# --- hedged / indirect dosing advice ---------------------------------------------------
+# The narrator is a small instruct model told not to prescribe. It complies by hedging, so
+# the hedged forms are the ones that actually reach users. Each of these passed the gate
+# before the patterns below were added.
+
+HEDGED = [
+    "Increase by 3 units before meals.",
+    "Consider increasing by 2 units when you are high.",
+    "Try 3 units more at breakfast.",
+    "It would be sensible to run a little more insulin overnight.",
+    "I'd suggest reducing basal overnight.",
+    "Perhaps a little more basal overnight would help.",
+    "You may want to add 2 units.",
+    "It may be worth raising your target.",
+]
+
+
+def test_hedged_prescriptions_are_blocked():
+    for txt in HEDGED:
+        res = check_narrative(txt, SOURCE)
+        assert any(v.kind == "prescription" for v in res.violations), f"not blocked: {txt!r}"
+
+
+DESCRIPTIVE = [
+    "Lowering max IOB to 3 changed the decision on 5 cycles.",
+    "The loop delivered 1.2 units at 3am.",
+    "Overnight SMBs totalling 4 units were seen.",
+    "Consider that your max IOB of 6 was reached on 12 cycles.",
+]
+
+
+def test_descriptive_counterfactuals_are_not_prescriptions():
+    """Describing what the controller did is not advice; the gate must not block it."""
+    src = dict(SOURCE)
+    src["findings"] = SOURCE["findings"] + [
+        {"key": "ctx", "severity": "info", "title": "Context",
+         "detail": "max IOB 6; 5 cycles; 1.2 U; 4 SMBs; 3 lows; 12 cycles"}]
+    for txt in DESCRIPTIVE:
+        res = check_narrative(txt, src)
+        assert not any(v.kind == "prescription" for v in res.violations), f"false positive: {txt!r}"
+
+
+# --- number grounding ------------------------------------------------------------------
+
+def test_number_with_dose_unit_forfeits_structural_exemption():
+    """'3' is ordinary prose; '3 units' is a dose and must be grounded."""
+    src = {"findings": [], "glycemia": {}}
+    assert not check_narrative("Give it 3 hours to settle.", src).violations
+    res = check_narrative("That is 3 units of insulin.", src)
+    assert any(v.kind == "ungrounded_number" for v in res.violations)
+
+
+def test_half_unit_drift_is_not_grounded():
+    """A source 6.4 must not ground a narrated 5.5 — that is a material dosing error."""
+    src = {"findings": [], "glycemia": {"max_iob": 6.4}}
+    res = check_narrative("Your max IOB is 5.5 U.", src)
+    assert any(v.kind == "ungrounded_number" for v in res.violations)
+
+
+def test_integer_rounding_still_allowed_for_large_values():
+    """62.4% narrated as 62% is a legitimate rounding, not a fabrication."""
+    src = {"findings": [], "glycemia": {"tir": 62.4}}
+    assert check_narrative("Time in range was 62%.", src).passed
+
+
+def test_large_source_value_does_not_ground_arbitrary_numbers():
+    """A 1% tolerance on an epoch-ms timestamp used to ground anything within ~1.8e10."""
+    src = {"findings": [], "counterfactuals": [{"examples": [{"ts_ms": 1754006400000}]}]}
+    res = check_narrative("The change was worth 1750000000 U.", src)
+    assert any(v.kind == "ungrounded_number" for v in res.violations)

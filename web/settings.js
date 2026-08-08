@@ -7,12 +7,25 @@
  */
 import { decryptAapsPrefs } from './aaps_prefs.mjs';
 
-function flatten(obj, out = {}) {
+// Nested sections are flattened onto one namespace, so the same leaf key can appear twice
+// with different values. Last-wins silently would let the wrong insulin-relevant number
+// through, so collisions are collected and reported rather than swallowed.
+function flatten(obj, out = {}, collisions = new Set()) {
   for (const [k, v] of Object.entries(obj || {})) {
-    if (v !== null && typeof v === 'object' && !Array.isArray(v)) flatten(v, out);
-    else out[k] = v;
+    if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+      flatten(v, out, collisions);
+    } else {
+      if (Object.prototype.hasOwnProperty.call(out, k) && out[k] !== v) collisions.add(k);
+      out[k] = v;
+    }
   }
   return out;
+}
+
+function flattenWithCollisions(obj) {
+  const collisions = new Set();
+  const raw = flatten(obj, {}, collisions);
+  return { raw, collisions: [...collisions] };
 }
 
 function isAapsEncrypted(obj) {
@@ -37,12 +50,12 @@ export async function loadSettingsFromFile(file, password) {
   if (isAapsEncrypted(obj)) {
     if (!password) return { format: 'aaps-encrypted', needsPassword: true };
     const content = await decryptAapsPrefs(text, password);   // throws on wrong password
-    return { raw: flatten(content), format: 'aaps-encrypted' };
+    return { ...flattenWithCollisions(content), format: 'aaps-encrypted' };
   }
   if (isAapsUnencrypted(obj)) {
     const content = await decryptAapsPrefs(text, '');         // returns content.content directly
-    return { raw: flatten(content), format: 'aaps' };
+    return { ...flattenWithCollisions(content), format: 'aaps' };
   }
   // Trio / oref preferences, or any plain settings JSON.
-  return { raw: flatten(obj), format: 'trio/plain' };
+  return { ...flattenWithCollisions(obj), format: 'trio/plain' };
 }
