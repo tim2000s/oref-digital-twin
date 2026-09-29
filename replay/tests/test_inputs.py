@@ -141,10 +141,12 @@ def test_pump_history_from_nightscout_treatments():
           Treatment(ts_ms=at - h, event_type="Meal Bolus", insulin_u=0.0, carbs_g=30)]
     hist = pump_history(tr, at, dia_h=6.0)
     boluses = [e["amount"] for e in hist if e["_type"] == "Bolus"]
-    assert boluses == [1.5, 0.4]
+    assert boluses == [0.4, 1.5]                  # newest first, as oref0 requires
+    stamps = [e["timestamp"] for e in hist]
+    assert stamps == sorted(stamps, reverse=True)
     temps = [e for e in hist if e["_type"] == "TempBasal"]
     durs = [e for e in hist if e["_type"] == "TempBasalDuration"]
-    assert [t["rate"] for t in temps] == [2.1, 0.0] and [d["duration (min)"] for d in durs] == [30, 60]
+    assert [t["rate"] for t in temps] == [0.0, 2.1] and [d["duration (min)"] for d in durs] == [60, 30]
     assert all(t["timestamp"] == d["timestamp"] for t, d in zip(temps, durs))
     assert all(e["timestamp"].endswith("Z") for e in hist)
 

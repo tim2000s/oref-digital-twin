@@ -97,3 +97,25 @@ def test_single_iob_object_is_refused_by_the_oracle():
                           "time": cyc.ts_ms}
     res = OrefOracle().evaluate([legacy])[0]
     assert not res["ok"] and "low-glucose guard" in res["error"]
+
+
+def test_every_dose_in_the_history_is_counted():
+    """oref0 skips records that arrive out of newest-first order, so a history in the wrong
+    order loses every dose after the first. Three boluses must all count."""
+    from ingestion.models import Treatment
+
+    base = 1_758_376_800_000
+    cyc = DeviceStatusCycle(ts_ms=base, bg_mgdl=150, iob=0.0, sensitivity_ratio=1.0)
+    entries = [GlucoseReading(ts_ms=base - m * 60_000, sgv_mgdl=150) for m in (0, 5, 15, 45)]
+    doses = [(170, 2.0), (90, 1.0), (20, 1.5)]
+    one = []
+    for ago, u in doses:
+        tr = [Treatment(ts_ms=base - ago * 60_000, event_type="Correction Bolus", insulin_u=u)]
+        req, _ = from_cycle(cyc, _snapshot(), entries, settings=SETTINGS, treatments=tr)
+        one.append(OrefOracle().evaluate([req])[0]["iob_rebuilt"])
+    tr = [Treatment(ts_ms=base - ago * 60_000, event_type="Correction Bolus", insulin_u=u)
+          for ago, u in doses]
+    req, _ = from_cycle(cyc, _snapshot(), entries, settings=SETTINGS, treatments=tr)
+    together = OrefOracle().evaluate([req])[0]["iob_rebuilt"]
+    assert all(v > 0.1 for v in one)
+    assert abs(together - sum(one)) < 0.01

@@ -200,6 +200,10 @@ def pump_history(treatments: list[Treatment], at_ms: int, dia_h: float) -> list[
     an hour, and any temp basal that ran into that window. Temp basals use the absolute rate;
     AndroidAPS uploads it as `absolute` and Trio as `rate`. oref0 pairs a TempBasal with the
     TempBasalDuration carrying the same timestamp.
+
+    The list is returned newest first, as a pump reports it. oref0's history reader skips any
+    record newer than the one before it, treating it as a duplicate from an overlapping
+    download, so an oldest-first list silently loses every record after the first.
     """
     lo = at_ms - int((dia_h + 1.0) * 3_600_000)
     out: list[dict] = []
@@ -217,10 +221,11 @@ def pump_history(treatments: list[Treatment], at_ms: int, dia_h: float) -> list[
             if t.ts_ms + t.duration_min * 60_000 < lo:
                 continue
             ts = _iso(t.ts_ms)
-            out.append({"_type": "TempBasalDuration", "duration (min)": float(t.duration_min),
-                        "timestamp": ts})
             out.append({"_type": "TempBasal", "temp": "absolute", "rate": float(rate),
                         "timestamp": ts})
+            out.append({"_type": "TempBasalDuration", "duration (min)": float(t.duration_min),
+                        "timestamp": ts})
+    out.reverse()
     return out
 
 

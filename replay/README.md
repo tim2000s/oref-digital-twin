@@ -47,8 +47,14 @@ Each result reports oref's rebuilt IOB (`iob_rebuilt`) beside the logged figure,
 states how often the two agree within 0.5 U. A wide gap means treatments are missing from
 Nightscout, and the replayed decisions then rest on too little insulin.
 
-Still approximated: the temp basal running at decision time (`currenttemp`, assumed none), and
-the insulin curve when the settings do not name it (rapid-acting, peak 75 min, with a warning).
+The insulin curve matters as much as the history. When the settings do not name it, the report
+tries the three curves AndroidAPS and Trio ship (rapid-acting peak 75 min, ultra-rapid 55, the
+Lyumjev preset at 45) on a sample of cycles and keeps the one whose rebuilt IOB is closest to
+the logged figure. On two days of one AndroidAPS user on Lyumjev the median gap was 0.71 U,
+0.40 U and 0.26 U respectively on that sample; over all 400 replayed cycles on the chosen curve
+it was 0.14 U, with 88% of cycles within 0.5 U (correlation 0.984).
+
+Still approximated: the temp basal running at decision time (`currenttemp`, assumed none).
 `lib/iob` splits temp basals on the basal schedule by local clock hour: the Node oracle sets the
 profile's time zone, and the browser runs in the viewer's own.
 

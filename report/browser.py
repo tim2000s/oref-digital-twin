@@ -86,6 +86,46 @@ def _default_deltas(settings: dict[str, Any], profile: ProfileSnapshot | None) -
     return out
 
 
+# The insulin curves AndroidAPS and Trio ship: rapid-acting (peak 75 min), ultra-rapid (55)
+# and the Lyumjev preset (ultra-rapid, peak 45).
+CURVE_CANDIDATES = (("rapid-acting", None), ("ultra-rapid", None), ("ultra-rapid", 45))
+CURVE_SAMPLE = 60
+
+
+def _choose_insulin_curve(pull, settings, profile, entries, runner) -> tuple[dict, dict]:
+    """Pick the insulin curve whose rebuilt IOB best matches what the loop logged.
+
+    The settings rarely name the insulin, and the curve moves oref's rebuilt IOB a long way: on
+    one AndroidAPS user on Lyumjev the median gap to the logged figure was 0.66 U on the
+    rapid-acting default and 0.14 U on the Lyumjev preset. A curve named in the settings is
+    used as given.
+    """
+    if settings.get("insulin_curve"):
+        return settings, {"insulin_curve": settings["insulin_curve"], "insulin_curve_source": "settings"}
+    cycles = [c for c in pull.devicestatus if c.iob is not None and c.bg_mgdl is not None]
+    step = max(len(cycles) // CURVE_SAMPLE, 1)
+    sample = cycles[::step][-CURVE_SAMPLE:]
+    fit = {}
+    oracle = OrefOracle(runner=runner)
+    for curve, peak in CURVE_CANDIDATES:
+        trial = {**settings, "insulin_curve": curve}
+        if peak:
+            trial["insulin_peak_min"] = peak
+        reqs = [r for r in (from_cycle(c, profile, entries, trial, pull.treatments)[0]
+                            for c in sample) if r is not None]
+        gaps = sorted(abs(r["iob_rebuilt"] - q["iob_logged"])
+                      for r, q in zip(oracle.evaluate(reqs), reqs)
+                      if r.get("ok") and r.get("iob_rebuilt") is not None
+                      and q.get("iob_logged") is not None)
+        if gaps:
+            fit[f"{curve}{'' if peak is None else f' peak {peak}'}"] = (gaps[len(gaps) // 2], trial)
+    if not fit:
+        return settings, {"insulin_curve_source": "default"}
+    label, (gap, trial) = min(fit.items(), key=lambda kv: kv[1][0])
+    return trial, {"insulin_curve": label, "insulin_curve_source": "matched to logged IOB",
+                   "insulin_curve_fit_u": {k: round(v[0], 2) for k, v in fit.items()}}
+
+
 def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[dict], dict]:
     from ingestion.models import GlucoseReading
 
@@ -97,6 +137,8 @@ def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[
     ]
     cycles = pull.devicestatus[-MAX_CYCLES:]
     stats = {"considered": len(cycles), "no_iob": 0, "no_bg": 0, "no_request": 0, "built": 0}
+    settings, curve_stats = _choose_insulin_curve(pull, settings, profile, merged_entries, runner)
+    stats.update(curve_stats)
     requests, ts = [], []
     for c in cycles:
         if c.iob is None:
