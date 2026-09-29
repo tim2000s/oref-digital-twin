@@ -33,13 +33,24 @@ print(cf.n_changed, cf.mean_delta_u, cf.caveat)
 
 ## Fidelity (read this)
 
-devicestatus logs the loop's *decision*, not every input. Two inputs are approximated
-from devicestatus alone — the running `currenttemp` (assumed none) and insulin `activity`
-(assumed 0, degrading bgi/eventualBG) — and each request carries warnings saying so. The
-**counterfactual diff is robust to this**: the same approximation applies to baseline and
-altered runs, so it cancels in the delta. High-fidelity absolute replay (not just diffs)
-should recompute IOB and glucose_status from raw entries/treatments via oref0's own libs —
-a documented follow-up.
+Insulin on board is rebuilt for each cycle by oref0's own `lib/iob` from the Nightscout
+boluses, SMBs and temp basals, inside the oracle (`oracle/request.js`), and determine-basal
+receives the 48-step projection that library produces. Before 30 September 2026 the replay
+passed the single IOB object logged in devicestatus. determine-basal walks the projection to
+build its predicted-glucose curves; given one object it threw inside a try block, left
+minPredBG and minGuardBG at 999 and switched off its low-glucose guard. Across 225 scenarios
+checked, that changed the decision in 28, and gave more insulin in every one of them. A cycle
+with no treatments to rebuild from is now refused, and the oracle refuses a request that
+carries only a single `iob_data` object.
+
+Each result reports oref's rebuilt IOB (`iob_rebuilt`) beside the logged figure, and the report
+states how often the two agree within 0.5 U. A wide gap means treatments are missing from
+Nightscout, and the replayed decisions then rest on too little insulin.
+
+Still approximated: the temp basal running at decision time (`currenttemp`, assumed none), and
+the insulin curve when the settings do not name it (rapid-acting, peak 75 min, with a warning).
+`lib/iob` splits temp basals on the basal schedule by local clock hour: the Node oracle sets the
+profile's time zone, and the browser runs in the viewer's own.
 
 ## Tests
 

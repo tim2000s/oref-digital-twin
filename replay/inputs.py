@@ -1,28 +1,33 @@
 """Reconstruct oref determine-basal requests from normalised data.
 
-This is the honest limit of devicestatus-based replay: the loop logs its *decision*, not
-every input. So reconstruction is best-effort and each request carries fidelity warnings.
-Two inputs cannot be recovered faithfully from devicestatus alone and are approximated:
+The loop logs its decision, not every input, so reconstruction is best-effort and each request
+carries fidelity warnings.
 
-  * `currenttemp` — the temp basal running at decision time (assumed none);
-  * insulin `activity` — the IOB curve's instantaneous activity (assumed 0), which
-    degrades bgi/eventualBG.
+Insulin on board is rebuilt from the Nightscout treatments by oref0's own lib/iob, run inside
+the oracle (see oracle/request.js). determine-basal needs the 48-step forward projection that
+library returns: it walks it to build every predicted-glucose curve, and given a single IOB
+object instead it throws inside a try block, leaves minPredBG and minGuardBG at 999 and so
+disables its own low-glucose guard. Until 30 September 2026 this module passed the single
+object logged in devicestatus, which made absolute replayed decisions wrong in the unsafe
+direction. A cycle without treatments to rebuild from is now refused.
 
-High-fidelity replay recomputes IOB (activity included) and glucose_status from raw
-entries/treatments via oref0's own iob/glucose libs — a documented follow-up. What IS
-faithful here: the profile (from the Nightscout profile + the user's settings) and the
-counterfactual *diff*, since the same approximations apply to baseline and altered runs,
-so they cancel in the delta.
+Still approximated: `currenttemp`, the temp basal running at decision time, is assumed none.
+The profile comes from the Nightscout profile and the user's settings.
 """
 
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from ingestion.models import DeviceStatusCycle, GlucoseReading, ProfileSnapshot
+from typing import Any
+
+from ingestion.models import DeviceStatusCycle, GlucoseReading, ProfileSnapshot, Treatment
 
 # oref profile fields that must come from settings (not the Nightscout profile)
 REQUIRED_SETTINGS = ("max_iob",)
+
+# insulin curves oref0's lib/iob knows, with its default peak for each
+INSULIN_CURVES = {"rapid-acting": 75, "ultra-rapid": 55, "bilinear": None}
 
 
 def _seconds_of_day(ts_ms: int, tz: str | None) -> int:
@@ -184,6 +189,72 @@ def _iob_data_from_cycle(cycle: DeviceStatusCycle) -> tuple[dict, bool]:
              "time": cycle.ts_ms}, False)
 
 
+def _iso(ts_ms: int) -> str:
+    return datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+
+def pump_history(treatments: list[Treatment], at_ms: int, dia_h: float) -> list[dict]:
+    """Nightscout boluses and temp basals as oref0 pump-history records, up to `at_ms`.
+
+    Everything that can still be acting is included: boluses and SMBs from the last DIA plus
+    an hour, and any temp basal that ran into that window. Temp basals use the absolute rate;
+    AndroidAPS uploads it as `absolute` and Trio as `rate`. oref0 pairs a TempBasal with the
+    TempBasalDuration carrying the same timestamp.
+    """
+    lo = at_ms - int((dia_h + 1.0) * 3_600_000)
+    out: list[dict] = []
+    for t in treatments:
+        if t.ts_ms > at_ms:
+            continue
+        if t.insulin_u is not None and t.insulin_u > 0:
+            if t.ts_ms >= lo:
+                out.append({"_type": "Bolus", "amount": round(float(t.insulin_u), 3),
+                            "timestamp": _iso(t.ts_ms)})
+        elif (t.event_type or "").lower() == "temp basal":
+            rate = t.absolute if t.absolute is not None else t.rate
+            if rate is None or t.duration_min is None:
+                continue
+            if t.ts_ms + t.duration_min * 60_000 < lo:
+                continue
+            ts = _iso(t.ts_ms)
+            out.append({"_type": "TempBasalDuration", "duration (min)": float(t.duration_min),
+                        "timestamp": ts})
+            out.append({"_type": "TempBasal", "temp": "absolute", "rate": float(rate),
+                        "timestamp": ts})
+    return out
+
+
+def basal_schedule(snapshot: ProfileSnapshot) -> list[dict]:
+    """The Nightscout basal profile in oref0's basalprofile shape."""
+    out = []
+    for i, b in enumerate(sorted(snapshot.basal, key=lambda b: b.seconds_from_midnight)):
+        m = b.seconds_from_midnight // 60
+        out.append({"i": i, "start": f"{m // 60:02d}:{m % 60:02d}:00", "minutes": m,
+                    "rate": float(b.value)})
+    return out
+
+
+def iob_inputs(snapshot: ProfileSnapshot, settings: dict, treatments: list[Treatment],
+               at_ms: int) -> tuple[dict, list[str]]:
+    """What oref0's lib/iob needs to produce the 48-step projection for one cycle."""
+    warnings: list[str] = []
+    dia = snapshot.dia_h or 6.0
+    curve = settings.get("insulin_curve")
+    if curve not in INSULIN_CURVES:
+        if curve is not None:
+            warnings.append(f"insulin curve '{curve}' not known to oref0 — assumed rapid-acting.")
+        else:
+            warnings.append("insulin curve unknown — assumed rapid-acting (peak 75 min).")
+        curve = "rapid-acting"
+    peak = settings.get("insulin_peak_min")
+    profile = {"dia": dia, "curve": curve, "basalprofile": basal_schedule(snapshot),
+               "current_basal": _block_value_at(snapshot.basal, _seconds_of_day(at_ms, snapshot.timezone), 0.0)}
+    if peak is not None:
+        profile.update({"useCustomPeakTime": True, "insulinPeakTime": float(peak)})
+    return ({"history": pump_history(treatments, at_ms, dia), "profile": profile,
+             "clock": _iso(at_ms), "tz": snapshot.timezone}, warnings)
+
+
 # fidelity warning inherent to devicestatus-based reconstruction
 _INHERENT_FIDELITY = [
     "currenttemp unknown from devicestatus — assumed none.",
@@ -195,11 +266,19 @@ def from_cycle(
     snapshot: ProfileSnapshot,
     entries: list[GlucoseReading],
     settings: dict,
+    treatments: list[Treatment] | None = None,
     *,
     micro_bolus_allowed: bool = True,
 ) -> tuple[dict | None, list[str]]:
-    """Build a determine-basal request for one cycle. Returns (request|None, warnings)."""
+    """Build a determine-basal request for one cycle. Returns (request|None, warnings).
+
+    `treatments` are the Nightscout treatments the insulin-on-board projection is rebuilt
+    from. Without them the cycle is refused: the logged IOB alone cannot give oref the
+    projection its low-glucose guard depends on.
+    """
     warnings: list[str] = []
+    if treatments is None:
+        return None, ["no treatments to rebuild insulin on board from — cycle not replayed."]
     gs = build_glucose_status(entries, cycle.ts_ms)
     if gs is None:
         gs = ({"glucose": cycle.bg_mgdl, "delta": 0.0, "short_avgdelta": 0.0,
@@ -214,13 +293,16 @@ def from_cycle(
         return None, warnings + ["cannot build a faithful profile (missing max_iob/target)."]
 
     warnings += _INHERENT_FIDELITY
-    iob_data, activity_known = _iob_data_from_cycle(cycle)
-    if not activity_known:
-        warnings.append("insulin activity unknown — assumed 0; bgi/eventualBG approximate.")
+    iob_in, iwarn = iob_inputs(snapshot, settings, treatments, cycle.ts_ms)
+    warnings += iwarn
+    # The logged IOB travels with the request only so the oracle can report how far oref's
+    # rebuilt figure sits from it; determine-basal is given the rebuilt projection.
+    logged, _ = _iob_data_from_cycle(cycle)
     request = {
         "glucose_status": gs,
         "currenttemp": {"duration": 0, "rate": 0, "temp": "absolute"},
-        "iob_data": iob_data,
+        "iob_inputs": iob_in,
+        "iob_logged": logged.get("iob"),
         "profile": profile,
         "autosens_data": {"ratio": cycle.sensitivity_ratio or 1.0},
         "meal_data": {"carbs": 0, "mealCOB": cycle.cob or 0},

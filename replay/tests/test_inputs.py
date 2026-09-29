@@ -61,7 +61,7 @@ def test_build_profile_picks_time_of_day_block():
 def test_from_cycle_returns_none_without_max_iob():
     cyc = DeviceStatusCycle(ts_ms=1_700_000_000_000, bg_mgdl=150, iob=1.0)
     entries = _entries(1_700_000_000_000, [(0, 150), (5, 148)])
-    req, warn = from_cycle(cyc, _snapshot(), entries, settings={})
+    req, warn = from_cycle(cyc, _snapshot(), entries, settings={}, treatments=[])
     assert req is None
     assert any("max_iob" in w for w in warn)
 
@@ -69,14 +69,16 @@ def test_from_cycle_returns_none_without_max_iob():
 def test_from_cycle_builds_request_with_fidelity_warnings():
     cyc = DeviceStatusCycle(ts_ms=1_700_000_000_000, bg_mgdl=150, iob=1.0, sensitivity_ratio=0.9)
     entries = _entries(1_700_000_000_000, [(0, 150), (5, 148), (15, 140)])
-    req, warn = from_cycle(cyc, _snapshot(), entries, settings={"max_iob": 6.0})
+    req, warn = from_cycle(cyc, _snapshot(), entries, settings={"max_iob": 6.0}, treatments=[])
     assert req is not None
     assert req["glucose_status"]["glucose"] == 150
     assert req["autosens_data"]["ratio"] == 0.9
     assert req["profile"]["max_iob"] == 6.0
     # inherent fidelity limits are always disclosed
-    assert any("activity unknown" in w for w in warn)
     assert any("currenttemp" in w for w in warn)
+    assert any("insulin curve unknown" in w for w in warn)
+    # determine-basal is never handed the single logged object
+    assert "iob_data" not in req and req["iob_logged"] == 1.0
 
 
 def test_negative_max_iob_is_clamped_like_apply_delta():
@@ -111,3 +113,47 @@ def test_substituted_smb_caps_are_warned_about():
                             at_ms=1_700_000_000_000)
     assert any("max_smb_minutes unknown" in w for w in warn)
     assert any("more SMB than your settings allow" in w for w in warn)
+
+
+def test_from_cycle_refuses_without_treatments():
+    """Without treatments the IOB projection cannot be rebuilt, and a single logged IOB object
+    switches off oref's low-glucose guard, so the cycle is refused rather than replayed."""
+    cyc = DeviceStatusCycle(ts_ms=1_700_000_000_000, bg_mgdl=150, iob=1.0)
+    entries = _entries(1_700_000_000_000, [(0, 150), (5, 148)])
+    req, warn = from_cycle(cyc, _snapshot(), entries, settings={"max_iob": 6.0})
+    assert req is None
+    assert any("no treatments" in w for w in warn)
+
+
+def test_pump_history_from_nightscout_treatments():
+    from ingestion.models import Treatment
+    from replay.inputs import pump_history
+
+    at = 1_700_000_000_000
+    h = 3_600_000
+    tr = [Treatment(ts_ms=at - 8 * h, event_type="Correction Bolus", insulin_u=2.0),   # too old
+          Treatment(ts_ms=at - 2 * h, event_type="Correction Bolus", insulin_u=1.5),
+          Treatment(ts_ms=at - 30 * 60_000, event_type="SMB", insulin_u=0.4, is_smb=True),
+          Treatment(ts_ms=at - 20 * 60_000, event_type="Temp Basal", absolute=2.1, rate=2.1,
+                    duration_min=30),
+          Treatment(ts_ms=at - 10 * 60_000, event_type="Temp Basal", rate=0.0, duration_min=60),
+          Treatment(ts_ms=at + 60_000, event_type="SMB", insulin_u=0.5),                     # future
+          Treatment(ts_ms=at - h, event_type="Meal Bolus", insulin_u=0.0, carbs_g=30)]
+    hist = pump_history(tr, at, dia_h=6.0)
+    boluses = [e["amount"] for e in hist if e["_type"] == "Bolus"]
+    assert boluses == [1.5, 0.4]
+    temps = [e for e in hist if e["_type"] == "TempBasal"]
+    durs = [e for e in hist if e["_type"] == "TempBasalDuration"]
+    assert [t["rate"] for t in temps] == [2.1, 0.0] and [d["duration (min)"] for d in durs] == [30, 60]
+    assert all(t["timestamp"] == d["timestamp"] for t, d in zip(temps, durs))
+    assert all(e["timestamp"].endswith("Z") for e in hist)
+
+
+def test_basal_schedule_shape():
+    from replay.inputs import basal_schedule
+
+    snap = _snapshot()
+    snap.basal = [ProfileBlock(0, 0.8), ProfileBlock(6 * 3600 + 1800, 1.1)]
+    sched = basal_schedule(snap)
+    assert sched == [{"i": 0, "start": "00:00:00", "minutes": 0, "rate": 0.8},
+                     {"i": 1, "start": "06:30:00", "minutes": 390, "rate": 1.1}]

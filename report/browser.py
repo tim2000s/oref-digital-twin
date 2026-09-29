@@ -105,7 +105,7 @@ def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[
         if c.bg_mgdl is None:
             stats["no_bg"] += 1
             continue
-        req, _w = from_cycle(c, profile, merged_entries, settings)
+        req, _w = from_cycle(c, profile, merged_entries, settings, pull.treatments)
         if req is None:
             stats["no_request"] += 1
             continue
@@ -118,6 +118,16 @@ def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[
     # probe baseline AND altered (first lever) to see which side errors, and capture the message
     base_probe = oracle.evaluate(requests)
     stats["oref_ok"] = sum(1 for r in base_probe if isinstance(r, dict) and r.get("ok"))
+    # How far oref's insulin on board, rebuilt from the uploaded treatments, sits from what the
+    # loop logged. A large gap means treatments are missing from Nightscout and the replayed
+    # decisions rest on too little insulin.
+    gaps = [abs(r["iob_rebuilt"] - q["iob_logged"]) for r, q in zip(base_probe, requests)
+            if isinstance(r, dict) and r.get("ok") and r.get("iob_rebuilt") is not None
+            and q.get("iob_logged") is not None]
+    if gaps:
+        gaps.sort()
+        stats["iob_rebuilt_median_abs_diff_u"] = round(gaps[len(gaps) // 2], 2)
+        stats["iob_rebuilt_within_0_5u"] = round(sum(g <= 0.5 for g in gaps) / len(gaps), 3)
     err = next((r.get("error") for r in base_probe if isinstance(r, dict) and not r.get("ok")), None)
     stats["first_error"] = f"baseline: {err}" if err else None
     if deltas:

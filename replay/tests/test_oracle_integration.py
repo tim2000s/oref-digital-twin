@@ -37,7 +37,8 @@ def _high_rising_cycle(base=1_700_000_000_000):
 
 def test_real_oref_produces_a_decision():
     cyc, entries = _high_rising_cycle()
-    req, _ = from_cycle(cyc, _snapshot(), entries, settings={"max_iob": 6.0, "enable_smb": True})
+    req, _ = from_cycle(cyc, _snapshot(), entries, settings={"max_iob": 6.0, "enable_smb": True},
+                        treatments=[])
     assert req is not None
     rt = OrefOracle().enacted([req])[0]
     assert rt is not None
@@ -47,10 +48,52 @@ def test_real_oref_produces_a_decision():
 def test_max_iob_zero_reduces_delivery_vs_baseline():
     cyc, entries = _high_rising_cycle()
     settings = {"max_iob": 6.0, "enable_smb": True, "max_smb_minutes": 60}
-    req, _ = from_cycle(cyc, _snapshot(), entries, settings=settings)
+    req, _ = from_cycle(cyc, _snapshot(), entries, settings=settings, treatments=[])
     assert req is not None
 
     cf = run_counterfactual(OrefOracle(), [req], {"max_iob": 0.0}, ts_of=[cyc.ts_ms])
     # capping IOB at 0 cannot deliver MORE insulin into a high than the baseline
     assert cf.n_evaluated == 1
     assert cf.total_delta_u is not None and cf.total_delta_u <= 0.0
+
+
+def _rising_after_bolus(base=1_758_376_800_000):
+    """180 mg/dL rising 8 per 5 min, 3 U given an hour ago."""
+    from ingestion.models import Treatment
+
+    cyc = DeviceStatusCycle(ts_ms=base, bg_mgdl=180, iob=2.4, sensitivity_ratio=1.0)
+    entries = [GlucoseReading(ts_ms=base - m * 60_000, sgv_mgdl=180 - 8 * m / 5)
+               for m in (0, 5, 10, 15, 30, 45)]
+    tr = [Treatment(ts_ms=base - 60 * 60_000, event_type="Correction Bolus", insulin_u=3.0)]
+    return cyc, entries, tr
+
+
+SETTINGS = {"max_iob": 6.0, "enable_smb": True, "max_smb_minutes": 30, "max_uam_minutes": 30,
+            "max_basal": 3.0}
+
+
+def test_rebuilt_projection_keeps_the_low_guard():
+    """Regression for the single-IOB-object defect.
+
+    With oref's own 48-step projection this case runs 0.13 U/h after a 0.3 U SMB, because the
+    insulin still acting from the earlier 3 U is projected forward. Handed the single logged
+    IOB object, determine-basal lost its predictions (minPredBG 999) and ran 2.45 U/h. Across
+    225 scenarios checked on 30 September 2026 the single object changed the decision in 28,
+    and gave more insulin in every one of them.
+    """
+    cyc, entries, tr = _rising_after_bolus()
+    req, _ = from_cycle(cyc, _snapshot(), entries, settings=SETTINGS, treatments=tr)
+    res = OrefOracle().evaluate([req])[0]
+    assert res["ok"] and res["iob_steps"] == 48
+    assert "minPredBG 999" not in res["rt"]["reason"]
+    assert res["rt"]["rate"] < 0.5
+
+
+def test_single_iob_object_is_refused_by_the_oracle():
+    cyc, entries, tr = _rising_after_bolus()
+    req, _ = from_cycle(cyc, _snapshot(), entries, settings=SETTINGS, treatments=tr)
+    legacy = {k: v for k, v in req.items() if k != "iob_inputs"}
+    legacy["iob_data"] = {"iob": 2.4, "activity": 0.02, "basaliob": 0.0, "bolusiob": 2.4,
+                          "time": cyc.ts_ms}
+    res = OrefOracle().evaluate([legacy])[0]
+    assert not res["ok"] and "low-glucose guard" in res["error"]
