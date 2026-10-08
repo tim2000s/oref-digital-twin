@@ -46,7 +46,9 @@ const STREAMS = [
 const PER_WINDOW_COUNT = 50000;
 const MAX_ATTEMPTS = 3;                  // per window, before it is split
 const MIN_WINDOW_MS = 3 * 3600_000;      // stop splitting below three hours
-const REQUEST_TIMEOUT_MS = 120_000;      // longer than any proxy timeout we expect to meet
+// Only a guard against a hung connection. One site took 199 s to answer a one-day
+// devicestatus query and still returned 200, so a tighter limit discards real answers.
+const REQUEST_TIMEOUT_MS = 300_000;
 const CONCURRENCY = 2;                   // concurrent queries slow a small server further
 
 class NightscoutError extends Error {
