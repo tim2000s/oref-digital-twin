@@ -1,4 +1,6 @@
-name = "oref-twin-narrator"
+# Must match the deployed Worker (oref-digital-twin.diabettech.workers.dev, the URL in
+# web/config.js), or `wrangler deploy` creates a second Worker the page never calls.
+name = "oref-digital-twin"
 main = "worker.js"
 compatibility_date = "2024-11-01"
 
