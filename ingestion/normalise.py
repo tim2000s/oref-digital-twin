@@ -79,7 +79,9 @@ def normalise_treatment(doc: dict[str, Any]) -> Treatment | None:
         return None
     entered_by = doc.get("enteredBy") or ""
     event_type = doc.get("eventType")
-    is_smb = bool(doc.get("isSMB")) or any(
+    # AAPS 3 marks an SMB only with "type": "SMB" on a "Correction Bolus"; older uploaders
+    # set isSMB or name it in enteredBy.
+    is_smb = bool(doc.get("isSMB")) or str(doc.get("type") or "").upper() == "SMB" or any(
         h in f"{entered_by} {event_type}".lower() for h in _SMB_HINTS
     )
     return Treatment(

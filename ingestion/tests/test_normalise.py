@@ -40,6 +40,15 @@ def test_smb_detection_from_entered_by():
     assert t2.is_smb is False and t2.carbs_g == 45
 
 
+def test_smb_detection_from_aaps3_type():
+    # AAPS 3 uploads an SMB as a Correction Bolus whose only marker is "type": "SMB".
+    doc = {"eventType": "Correction Bolus", "insulin": 0.2, "type": "SMB",
+           "created_at": "2026-10-08T22:57:29.000Z", "date": 1791500249000}
+    assert normalise_treatment(doc).is_smb is True
+    manual = {**doc, "type": "NORMAL", "insulin": 2.0}
+    assert normalise_treatment(manual).is_smb is False
+
+
 def test_temp_target_targets_captured():
     t = normalise_treatment(fx.TREATMENT_TT)
     assert t.duration_min == 225
