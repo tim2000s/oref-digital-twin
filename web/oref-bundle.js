@@ -12698,7 +12698,194 @@
           }
         });
       }
-      module.exports = { runOne, runAll };
+      function insulinDefaults(iobProfile) {
+        let curve = String(iobProfile.curve || "bilinear").toLowerCase();
+        const defaults = { bilinear: [false, 75], "rapid-acting": [true, 75], "ultra-rapid": [true, 55] };
+        if (!(curve in defaults)) curve = "rapid-acting";
+        let dia = Math.max(iobProfile.dia || 3, 3);
+        if (defaults[curve][0] && dia < 5) dia = 5;
+        return { curve, dia, peak: defaults[curve][1] };
+      }
+      function curveTables(iobProfile) {
+        const iobCalc = require_calculate();
+        const { curve, dia, peak } = insulinDefaults(iobProfile);
+        const n = Math.round(dia * 60);
+        const left = new Float64Array(n + 1);
+        const act = new Float64Array(n + 1);
+        for (let m = 0; m <= n; m++) {
+          const r = iobCalc({ insulin: 1, date: 0 }, new Date(m * 6e4), curve, dia, peak, iobProfile);
+          left[m] = r.iobContrib || 0;
+          act[m] = r.activityContrib || 0;
+        }
+        return { left, act, n };
+      }
+      function zeroHistory(history) {
+        return (history || []).filter((h) => h._type !== "Bolus").map((h) => h._type === "TempBasal" ? { ...h, rate: 0 } : h);
+      }
+      function iobFor(inputs, history) {
+        if (inputs.tz && typeof process !== "undefined" && process.env && process.versions && process.versions.node) {
+          process.env.TZ = inputs.tz;
+        }
+        return iobGenerate({ history, profile: inputs.profile, clock: inputs.clock });
+      }
+      function delivered(rt, scheduled, gapMin) {
+        const smb = rt && typeof rt.units === "number" ? rt.units : 0;
+        if (rt && typeof rt.rate === "number" && rt.duration > 0) {
+          const d = Math.min(rt.duration, gapMin);
+          return { smb, basal: (rt.rate * d + scheduled * Math.max(gapMin - d, 0)) / 60 };
+        }
+        return { smb, basal: scheduled * gapMin / 60 };
+      }
+      function applyScenario(profile, sc) {
+        const p = { ...profile };
+        const k = sc.basal_scale || 1;
+        if (k !== 1) {
+          p.current_basal = profile.current_basal * k;
+          p.max_daily_basal = profile.max_daily_basal * k;
+        }
+        if (sc.isf_scale && sc.isf_scale !== 1) p.sens = profile.sens * sc.isf_scale;
+        if (sc.cr_scale && sc.cr_scale !== 1) p.carb_ratio = profile.carb_ratio * sc.cr_scale;
+        if (sc.target_offset) {
+          for (const f of ["min_bg", "max_bg", "target_bg"]) p[f] = profile[f] + sc.target_offset;
+        }
+        Object.assign(p, sc.profile_set || {});
+        return p;
+      }
+      var simCache = null;
+      function simulate(payload) {
+        const key = payload.cache_key || null;
+        if (!key || !simCache || simCache.key !== key) {
+          simCache = { key, cycles: payload.cycles || [], iob1: null, iob0: null };
+        }
+        const cycles = payload.cycles || simCache.cycles;
+        const scenarios = payload.scenarios || [];
+        const maxGap = payload.max_gap_min || 30;
+        if (!cycles.length) return { baseline: [], scenarios: [] };
+        const tab = curveTables(cycles[0].iob_inputs.profile);
+        const t = cycles.map((c) => c.currentTime);
+        const gap = t.map((ti, i) => i + 1 < t.length ? Math.min((t[i + 1] - ti) / 6e4, maxGap) : 5);
+        const isf = cycles.map((c) => c.profile.sens / (c.autosens_data && c.autosens_data.ratio || 1));
+        if (!simCache.iob1) simCache.iob1 = cycles.map((c) => iobFor(c.iob_inputs, c.iob_inputs.history));
+        const iob1 = simCache.iob1;
+        const needZero = scenarios.some((s) => (s.basal_scale || 1) !== 1);
+        if (needZero && !simCache.iob0) {
+          simCache.iob0 = cycles.map((c) => iobFor(c.iob_inputs, zeroHistory(c.iob_inputs.history)));
+        }
+        const iob0 = needZero ? simCache.iob0 : null;
+        function decide(i, gs, iobArr, profile) {
+          try {
+            return determine_basal(
+              gs,
+              cycles[i].currenttemp,
+              iobArr,
+              profile,
+              cycles[i].autosens_data || { ratio: 1 },
+              cycles[i].meal_data || {},
+              tempBasalFunctions,
+              cycles[i].microBolusAllowed === true,
+              cycles[i].reservoir_data,
+              new Date(cycles[i].currentTime)
+            );
+          } catch (e) {
+            return null;
+          }
+        }
+        const base = cycles.map((c, i) => {
+          const rt = decide(i, c.glucose_status, iob1[i], c.profile);
+          return rt ? delivered(rt, c.profile.current_basal, gap[i]) : null;
+        });
+        const out = scenarios.map((sc) => {
+          const k = sc.basal_scale || 1;
+          const doses = (sc.extra_doses || []).map((d) => ({ t: d.t, u: d.u, bolus: true, isf: null }));
+          let settled = 0;
+          let live = [];
+          let next = 0;
+          doses.sort((a, b) => a.t - b.t);
+          const isfAt = (time) => {
+            let j = 0;
+            while (j + 1 < t.length && t[j + 1] <= time) j++;
+            return isf[j];
+          };
+          for (const d of doses) d.isf = isfAt(d.t);
+          function effectAt(time) {
+            let e = 0;
+            for (const d of live) {
+              if (d.t > time) continue;
+              const m = Math.round((time - d.t) / 6e4);
+              e -= d.u * d.isf * (1 - (m <= tab.n ? tab.left[m] : 0));
+            }
+            return e;
+          }
+          const du = new Array(cycles.length).fill(null);
+          const dbg = new Array(cycles.length).fill(null);
+          let failed = 0;
+          for (let i = 0; i < cycles.length; i++) {
+            const c = cycles[i];
+            const now = t[i];
+            while (next < doses.length && doses[next].t <= now) live.push(doses[next++]);
+            const keep = [];
+            for (const d of live) {
+              if ((now - d.t) / 6e4 > tab.n + 60) settled -= d.u * d.isf;
+              else keep.push(d);
+            }
+            live = keep;
+            const shift = settled + effectAt(now);
+            const gs0 = c.glucose_status;
+            const gs = shift === 0 ? gs0 : {
+              ...gs0,
+              glucose: Math.max(39, gs0.glucose + shift),
+              delta: gs0.delta + shift - (settled + effectAt(now - 5 * 6e4)),
+              short_avgdelta: gs0.short_avgdelta + (shift - (settled + effectAt(now - 15 * 6e4))) / 3,
+              long_avgdelta: gs0.long_avgdelta + (shift - (settled + effectAt(now - 45 * 6e4))) / 9
+            };
+            const arr = iob1[i].map((tick, s) => {
+              const z = iob0 ? iob0[i][s] : null;
+              const at = now + s * 5 * 6e4;
+              let di = 0, da = 0, dBolus = 0;
+              for (const d of live) {
+                if (d.t > at) continue;
+                const m = Math.round((at - d.t) / 6e4);
+                if (m > tab.n) continue;
+                di += d.u * tab.left[m];
+                da += d.u * tab.act[m];
+                if (d.bolus) dBolus += d.u * tab.left[m];
+              }
+              const lin = (field, src, zsrc) => (src[field] || 0) + (k - 1) * (zsrc ? zsrc[field] || 0 : 0);
+              const zt = tick.iobWithZeroTemp || {};
+              const zz = z ? z.iobWithZeroTemp || {} : null;
+              const res = {
+                ...tick,
+                iob: lin("iob", tick, z) + di,
+                activity: lin("activity", tick, z) + da,
+                basaliob: lin("basaliob", tick, z) + (di - dBolus),
+                bolusiob: lin("bolusiob", tick, z) + dBolus,
+                iobWithZeroTemp: { ...zt, iob: lin("iob", zt, zz) + di, activity: lin("activity", zt, zz) + da }
+              };
+              return res;
+            });
+            const profile = applyScenario(c.profile, sc);
+            const rt = decide(i, gs, arr, profile);
+            dbg[i] = Math.round(shift * 10) / 10;
+            if (!rt || !base[i]) {
+              failed++;
+              continue;
+            }
+            const alt = delivered(rt, profile.current_basal, gap[i]);
+            const dSmb = alt.smb - base[i].smb;
+            const dBasal = alt.basal - base[i].basal;
+            du[i] = Math.round((dSmb + dBasal) * 1e3) / 1e3;
+            if (Math.abs(dSmb) > 1e-4) live.push({ t: now, u: dSmb, bolus: true, isf: isf[i] });
+            if (Math.abs(dBasal) > 1e-4) live.push({ t: now + gap[i] * 3e4, u: dBasal, bolus: false, isf: isf[i] });
+          }
+          return { label: sc.label, du, dbg, failed };
+        });
+        return {
+          t,
+          baseline: base.map((b) => b ? Math.round((b.smb + b.basal) * 1e3) / 1e3 : null),
+          scenarios: out
+        };
+      }
+      module.exports = { runOne, runAll, simulate };
     }
   });
 
@@ -12707,6 +12894,9 @@
   var import_request = __toESM(require_request(), 1);
   globalThis.orefDetermine = function orefDetermine(requests) {
     return import_request.default.runAll(requests);
+  };
+  globalThis.orefSimulate = function orefSimulate(payload) {
+    return import_request.default.simulate(payload);
   };
 })();
 /*! Bundled license information:

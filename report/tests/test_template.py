@@ -44,3 +44,36 @@ def test_render_is_deterministic():
 def test_handles_no_cgm():
     md = render_report({"counts": {}, "glycemia": {"n_readings": 0}, "findings": []})
     assert "No CGM data" in md
+
+
+def test_settings_tests_section_lists_only_real_changes():
+    from replay.tests.test_scenarios import _readings
+    from replay.scenarios import run_settings_tests
+    from report.template import render_settings_tests
+
+    entries = _readings(([110] * 30 + [62] * 6) * 8)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    kept = {}
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        return {"t": t, "scenarios": [
+            {"du": [0.0] * len(t), "failed": 0,
+             "dbg": [(1 - sc["basal_scale"]) * 50 + sc["target_offset"] * 0.5] * len(t)}
+            for sc in payload["scenarios"]]}
+
+    md = render_settings_tests(run_settings_tests(fake_sim, requests, entries, [], {}))
+    assert "Trial to consider: basal rates -20%" in md
+    assert "Run with basal rates -20%." in md          # later stages say what they carry
+    assert "target 100 mg/dL" not in md.split("### Together")[1]   # unchanged target not listed
+    assert "No change suggested" in md
+    assert "That meets both goals." in md
+
+
+def test_settings_tests_section_when_skipped():
+    from report.template import render_settings_tests
+
+    md = render_settings_tests(None, note="Settings tests skipped: no profile.")
+    assert md.startswith("## Settings tests") and "no profile" in md

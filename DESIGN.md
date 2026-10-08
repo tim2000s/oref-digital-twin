@@ -9,7 +9,9 @@ apply blind.
 The name is aspirational, not literal: there is no glucodynamic "twin" that predicts
 blood glucose. What *can* be twinned is the **controller** — oref `determine-basal` is
 open, deterministic and re-runnable — so the honest core of the tool is replaying the
-controller, not simulating the body. See §2.
+controller, not simulating the body. See §2. Since October 2026 the settings tests (§2.1)
+add a deliberately simple glucose estimate on top of that replay, labelled as a model
+everywhere it appears.
 
 ---
 
@@ -26,8 +28,9 @@ controller, not simulating the body. See §2.
 
 **Explicitly not in scope**
 - No writes to Nightscout, the pump, or the loop. Ever. Read-only, advisory-only.
-- No counterfactual **blood-glucose** trajectory (no glucodynamic simulator exists;
-  this is the identification constraint, §3).
+- No claim that a counterfactual **blood-glucose** trajectory is an outcome (no
+  glucodynamic simulator exists; this is the identification constraint, §3). The settings
+  tests in §2.1 estimate glucose with a stated model and report it as an estimate.
 - No autonomous "set X to Y" application. Every prescriptive output is a hypothesis to
   trial, gated as in §7.
 - No handling of algorithm variants the tool does not model — it downgrades to
@@ -57,6 +60,35 @@ caveat every time.
 `determine-basal`. Vendor/pin the exact oref version the user runs, feed it the logged
 inputs, diff the output. Reimplementation would drift from the reference and quietly
 invalidate every counterfactual.
+
+### 2.1 Settings tests: a modelled glucose estimate on the replay
+
+Added October 2026, at the user's request, to aim settings at time in range above 70% and
+time below range under 2%. This departs from the decision-only stance above, and the
+departure is confined to `replay/scenarios.py` and the `simulate` function in
+`replay/oracle/request.js`.
+
+The tests run in the order of a manual basal test, then an ISF test, then a carb-ratio test,
+then target and SMB limit. Each steps one setting from −30% to +30% and re-runs the real
+determine-basal through every 5-minute cycle of the period, closed-loop: the insulin
+difference from each earlier cycle is added to the insulin-on-board projection with oref0's
+own insulin curve, and shifts glucose by units × profile ISF (adjusted by autosens) × the
+fraction of that insulin's action completed, so the loop sees and reacts to the shifted
+glucose at the next cycle. Basal is judged on fasting stretches, ISF on correction
+stretches, carb ratio on meal stretches and the last two on the whole period, each stage
+keeping the earlier choices.
+
+What the estimate assumes, each a modelling choice rather than a finding: the profile ISF
+is the body's real sensitivity; meals, activity and the person's own treatments, hypo
+treatments included, would have been the same; logged meal boluses scale with 1 / carb
+ratio. It is a model of the loop's response, not of the body's. On one week of an
+AndroidAPS user's data a −30% basal left daily insulin almost unchanged (−0.07 U over seven
+days) because the loop made up the difference with temps and SMBs, and the estimate's
+effect was where glucose settled (+15 mg/dL on average). That pattern is the expected
+behaviour of a proportional controller.
+
+Not yet done: a backtest of the estimate against periods where a person actually changed a
+setting. Until that exists the estimates rank settings; they do not predict outcomes.
 
 ---
 

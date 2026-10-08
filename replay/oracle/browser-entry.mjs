@@ -9,3 +9,8 @@ import request from './request.js';
 globalThis.orefDetermine = function orefDetermine(requests) {
   return request.runAll(requests);
 };
+
+// payload: {cycles, scenarios, max_gap_min}. Closed-loop scenario simulation (request.js).
+globalThis.orefSimulate = function orefSimulate(payload) {
+  return request.simulate(payload);
+};

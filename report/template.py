@@ -121,3 +121,98 @@ def render_report(
         parts += ["", "## Settings experiments (decision-level)", "", f"_{counterfactual_note}_"]
     parts += ["", "---", "", DISCLAIMER]
     return "\n".join(parts)
+
+
+def _signed_mgdl(v: float | None) -> str:
+    if v is None:
+        return "—"
+    return f"{v:+.0f} mg/dL ({v / 18.0:+.1f} mmol/L)"
+
+
+_SEGMENT_TEXT = {
+    "fasting": "fasting stretches (no carbs or meal-sized rise in the last 4 h, nothing above "
+               "180 mg/dL in the last 3 h)",
+    "correction": "correction stretches (above 180 mg/dL in the last 3 h, outside meals)",
+    "meal": "meal stretches (the 4 h after logged carbs or a meal-sized rise)",
+    "all": "the whole period",
+}
+
+
+def render_settings_tests(result: dict | None, note: str | None = None) -> str:
+    """The staged basal, ISF, carb-ratio, target and SMB tests (replay.scenarios)."""
+    lines = ["## Settings tests (estimated)", ""]
+    if result is None:
+        lines.append(f"_{note}_")
+        return "\n".join(lines)
+    goals = result["goals"]
+    obs = result["observed"]["all"]
+    lines += [
+        f"Goal: time in range above {goals['tir_gt_pct']:.0f}% and time below range under "
+        f"{goals['tbr_lt_pct']:.0f}%. Observed over {result['days']} days: "
+        f"{_fmt(obs['tir'], '%')} in range, {_fmt(obs['tbr'], '%')} below, "
+        f"{obs['lows']} low episodes.",
+        "",
+        "Each setting is stepped from −30% to +30% and the loop is re-run through every "
+        f"5-minute cycle ({result['cycles']}) under each value. Basal is tested first, on "
+        "fasting stretches; ISF next, on correction stretches; then carb ratio on meals; then "
+        "target and the SMB limit over the whole period. Each stage keeps the choices before it.",
+        "",
+        f"_{result['caveat']}_",
+    ]
+    if result.get("variant_note"):
+        lines += ["", f"_{result['variant_note']}_"]
+    applied: list[str] = []
+    for i, st in enumerate(result["stages"], 1):
+        lines += ["", f"### {i}. {st['name']}", ""]
+        where = _SEGMENT_TEXT.get(st["measured_on"], st["measured_on"])
+        if not st.get("rows"):
+            lines.append(f"Not run: {st['why']}.")
+            continue
+        seg = st["observed"]
+        lines.append(f"Judged on {where}: {st['segment_hours']} h of readings, observed "
+                     f"{_fmt(seg['tir'], '%')} in range and {_fmt(seg['tbr'], '%')} below.")
+        if applied:
+            lines.append(f"Run with {', '.join(applied)}.")
+        if st.get("note"):
+            lines.append(st["note"])
+        whole = st["measured_on"] == "all"
+        scope = "" if whole else f" ({st['measured_on']})"
+        lever = st["lever"][0].upper() + st["lever"][1:]
+        head = (f"| {lever} | Average glucose change | In range{scope} | Below range{scope} "
+                "| Low episodes |")
+        rule = "|---|---|---|---|---|"
+        if not whole:
+            head += " In range (all) | Below range (all) |"
+            rule += "---|---|"
+        lines += ["", head, rule]
+        for r in st["rows"]:
+            mark = " ←" if r["value"] == st["chosen"] else ""
+            row = (f"| {r['label']}{mark} | {_signed_mgdl(r['mean_shift'])} "
+                   f"| {_fmt(r['est']['tir'], '%')} | {_fmt(r['est']['tbr'], '%')} "
+                   f"| {r['est']['lows']} |")
+            if not whole:
+                row += f" {_fmt(r['est_all']['tir'], '%')} | {_fmt(r['est_all']['tbr'], '%')} |"
+            lines.append(row)
+        if st["chosen"] == st.get("neutral"):
+            lines += ["", f"No change suggested: {st['why']}."]
+        else:
+            lines += ["", f"Trial to consider: {st['lever']} {st['chosen_label']}, because "
+                          f"{st['why']}."]
+            applied.append(f"{st['lever']} {st['chosen_label']}")
+    fin = result["final"]["est_all"]
+    meets = (fin["tir"] is not None and fin["tir"] > goals["tir_gt_pct"]
+             and fin["tbr"] < goals["tbr_lt_pct"])
+    lines += [
+        "",
+        "### Together",
+        "",
+        (f"With {', '.join(applied)}: " if applied else "With no change: ")
+        + f"estimated {_fmt(fin['tir'], '%')} in range and {_fmt(fin['tbr'], '%')} below "
+        f"(observed {_fmt(obs['tir'], '%')} and {_fmt(obs['tbr'], '%')}), average glucose "
+        f"{_signed_mgdl(result['final']['mean_shift'])}. "
+        + ("That meets both goals." if meets else "That does not meet both goals."),
+        "",
+        "Change one setting at a time and give each a few days before the next, so its effect "
+        "can be seen on its own.",
+    ]
+    return "\n".join(lines)

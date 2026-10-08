@@ -17,7 +17,7 @@
  * `currentTime` may be epoch-ms (number) or an ISO string; it is coerced to a Date.
  */
 
-const { runAll } = require('./request');
+const { runAll, simulate } = require('./request');
 
 function readStdin() {
   return new Promise((resolve, reject) => {
@@ -29,10 +29,35 @@ function readStdin() {
   });
 }
 
+// --serve: one JSON request per stdin line, one JSON reply per stdout line, for as long as
+// stdin stays open. The simulator's insulin-on-board cache lives in this process, so a report
+// that runs its stages in sequence pays for it once.
+if (process.argv.includes('--serve')) {
+  const rl = require('readline').createInterface({ input: process.stdin });
+  const out = process.stdout;
+  rl.on('line', (line) => {
+    if (!line.trim()) return;
+    let reply;
+    try {
+      const payload = JSON.parse(line);
+      reply = payload.simulate ? { simulation: simulate(payload.simulate) }
+                               : { results: runAll(payload.requests || []) };
+    } catch (e) {
+      reply = { error: String(e && e.message ? e.message : e) };
+    }
+    out.write(JSON.stringify(reply) + '\n');
+  });
+  return;
+}
+
 (async () => {
   try {
     const raw = await readStdin();
     const payload = JSON.parse(raw);
+    if (payload && payload.simulate) {
+      process.stdout.write(JSON.stringify({ simulation: simulate(payload.simulate) }));
+      return;
+    }
     const requests = Array.isArray(payload) ? payload : (payload.requests || []);
     const results = runAll(requests);
     process.stdout.write(JSON.stringify({ results }));

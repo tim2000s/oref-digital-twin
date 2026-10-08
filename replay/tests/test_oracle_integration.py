@@ -119,3 +119,40 @@ def test_every_dose_in_the_history_is_counted():
     together = OrefOracle().evaluate([req])[0]["iob_rebuilt"]
     assert all(v > 0.1 for v in one)
     assert abs(together - sum(one)) < 0.01
+
+
+def _flat_day(hours=8, base=1_758_376_800_000):
+    """Cycles every 5 minutes, glucose waving gently around 130, scheduled-rate temps.
+
+    Perfectly flat CGM will not do: oref0 reads it as a stuck sensor and does nothing.
+    """
+    import math
+
+    from ingestion.models import Treatment
+
+    bg = lambda t: round(130 + 12 * math.sin(2 * math.pi * (t - base) / (100 * 60_000)), 1)
+    n = hours * 12
+    times = [base + i * 5 * 60_000 for i in range(n)]
+    entries = [GlucoseReading(ts_ms=t, sgv_mgdl=bg(t)) for t in
+               [base - m * 60_000 for m in range(60, 0, -5)] + times]
+    temps = [Treatment(ts_ms=base - 6 * 3_600_000 + i * 30 * 60_000, event_type="Temp Basal",
+                       absolute=1.0, duration_min=30) for i in range(12 + hours * 2)]
+    cycles = [DeviceStatusCycle(ts_ms=t, bg_mgdl=bg(t), iob=0.0, sensitivity_ratio=1.0)
+              for t in times]
+    reqs = [from_cycle(c, _snapshot(), entries, SETTINGS, temps)[0] for c in cycles]
+    assert all(r is not None for r in reqs)
+    return reqs
+
+
+def test_simulation_that_changes_nothing_matches_the_baseline_exactly():
+    sim = OrefOracle().simulate({"cycles": _flat_day(), "scenarios": [{"label": "same"}]})
+    s = sim["scenarios"][0]
+    assert s["failed"] == 0
+    assert all(d == 0 for d in s["du"]) and all(g == 0 for g in s["dbg"])
+
+
+def test_simulated_basal_cut_raises_glucose_and_increase_lowers_it():
+    sim = OrefOracle().simulate({"cycles": _flat_day(), "scenarios": [
+        {"label": "less", "basal_scale": 0.7}, {"label": "more", "basal_scale": 1.3}]})
+    less, more = (sum(s["dbg"]) / len(s["dbg"]) for s in sim["scenarios"])
+    assert less > 1.0 and more < -1.0

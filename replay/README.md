@@ -2,8 +2,11 @@
 
 The oref `determine-basal` replay oracle. Runs the **real** oref0 controller (pinned in
 `oracle/package.json`) over reconstructed inputs to price how a settings change flips a
-decision. Decision-level counterfactual only — never a BG counterfactual. We do not
-reimplement determine-basal. See [../DESIGN.md](../DESIGN.md) §2.
+decision. We do not reimplement determine-basal. See [../DESIGN.md](../DESIGN.md) §2.
+
+The settings tests (`scenarios.py`, and `simulate` in `oracle/request.js`) go one step
+further and estimate glucose under each setting with a stated model; see DESIGN §2.1 and the
+section below. Everything else here is decision-level only.
 
 ## Pieces
 
@@ -13,6 +16,7 @@ reimplement determine-basal. See [../DESIGN.md](../DESIGN.md) §2.
 | `oracle_bridge.py` | Spawns the Node oracle (runner injectable for offline tests). |
 | `settings_delta.py` | Applies a friendly settings change to a request's oref profile (max_iob, targets, ISF, SMB flags, SMB minutes…). Unknown keys raise. |
 | `counterfactual.py` | Runs baseline vs altered through the oracle and diffs the enacted decision per cycle. |
+| `scenarios.py` | Staged settings tests: basal, ISF, carb ratio, target, SMB limit, each stepped ±30% through the closed-loop simulator and judged against time in range > 70% and time below range < 2%. |
 | `inputs.py` | Reconstructs a determine-basal request from a devicestatus cycle + Nightscout profile + settings, with explicit fidelity flags. |
 
 ## Setup
@@ -57,6 +61,31 @@ it was 0.14 U, with 88% of cycles within 0.5 U (correlation 0.984).
 Still approximated: the temp basal running at decision time (`currenttemp`, assumed none).
 `lib/iob` splits temp basals on the basal schedule by local clock hour: the Node oracle sets the
 profile's time zone, and the browser runs in the viewer's own.
+
+## Settings tests: the simulator
+
+`simulate` in `oracle/request.js` walks the cycles in time order under each scenario. At
+each cycle it shifts the glucose determine-basal sees by the effect of every earlier
+insulin difference (units × ISF × the fraction of that insulin's action completed, from
+oref0's own `lib/iob/calculate`), adds those differences to the insulin-on-board projection,
+runs determine-basal, and records the new difference. A scenario that changes nothing
+reproduces the baseline exactly (tested).
+
+Rebuilding insulin on board costs about 5.6 ms a cycle against 0.03 ms for determine-basal,
+so it is done twice per cycle per report and reused: once on the logged history and once
+with every bolus removed and every temp rate set to zero. A basal schedule scaled by k is
+then X(1) + (k − 1) × X0. This is an approximation, because `lib/iob/history.js` turns each
+temp into 0.05 U pulses and rounds the pulse count. On 300 cycles of one user, scaling basal
+±30% moved insulin on board by a median of 0.54 to 0.58 U, and the linear form missed the
+direct rebuild by a median of 0.04 to 0.08 U (95th percentile 0.16 U). `oracle/check_linearity.js`
+reproduces the comparison on any requests file.
+
+On one week of 1-minute AndroidAPS data (2,012 cycles at 5 minutes) the five stages took
+40 s in Node with the cache and 176 s without; in headless Chrome the whole report, tests
+included, finished in about 75 s. The browser runs them after the main report is on screen.
+
+The glucose arithmetic assumes the profile ISF is real and that meals and the person's own
+treatments are unchanged; see DESIGN §2.1.
 
 ## Tests
 

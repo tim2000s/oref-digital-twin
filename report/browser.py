@@ -198,6 +198,11 @@ def _openaps_shape(pull) -> str:
             f"suggested={sug[:20]}; enacted={ena[:20]}")
 
 
+# What the settings tests need from the last build_report: they run as a second step so the
+# main report is on screen while they work.
+_LAST: dict[str, Any] = {}
+
+
 def build_report(
     raw: dict[str, Any],
     *,
@@ -222,6 +227,8 @@ def build_report(
     counterfactuals: list[dict] = []
     cf_note: str | None = None
     n_loop = len(pull.devicestatus)
+    _LAST.clear()
+    _LAST.update({"pull": pull, "variant": verdict.to_dict(), "runner": oref_runner})
     if oref_runner is None:
         cf_note = "Settings experiments skipped: the in-browser oref engine did not load."
     else:
@@ -230,6 +237,7 @@ def build_report(
             settings, _notes = infer_settings(pull)
         if max_iob_override is not None:
             settings = {**settings, "max_iob": float(max_iob_override)}
+        _LAST.update({"profile": profile, "settings": settings})
         if profile is None:
             cf_note = "Settings experiments skipped: no Nightscout profile found."
         elif settings.get("max_iob") is None:
@@ -280,6 +288,49 @@ def build_report(
     }
 
 
+def settings_tests(sim_runner: Callable | None = None) -> dict[str, Any]:
+    """Basal, ISF, carb-ratio, target and SMB tests on the last report's data.
+
+    Returns {"report_md": section, "result": tables} or {"report_md": note, "skipped": why}.
+    In the browser `sim_runner` is omitted and oref0-in-WASM is used.
+    """
+    from ingestion.models import GlucoseReading
+    from replay.scenarios import run_settings_tests, sample_cycles
+
+    from .template import render_settings_tests
+
+    def skipped(why: str) -> dict[str, Any]:
+        return {"report_md": render_settings_tests(None, note=why), "skipped": why}
+
+    pull, profile, settings = _LAST.get("pull"), _LAST.get("profile"), _LAST.get("settings")
+    runner = _LAST.get("runner")
+    if pull is None or runner is None:
+        return skipped("Settings tests skipped: the in-browser oref engine did not load.")
+    if profile is None:
+        return skipped("Settings tests skipped: no Nightscout profile found.")
+    if not settings or settings.get("max_iob") is None:
+        return skipped("Settings tests skipped: max IOB isn't known. Enter it above to run them.")
+    if sim_runner is None:
+        sim_runner = make_js_oref_simulator()
+
+    merged = list(pull.entries) + [GlucoseReading(ts_ms=c.ts_ms, sgv_mgdl=c.bg_mgdl)
+                                   for c in pull.devicestatus if c.bg_mgdl is not None]
+    settings, _curve = _choose_insulin_curve(pull, settings, profile, merged, runner)
+    cycles = [c for c in sample_cycles(pull.devicestatus) if c.bg_mgdl is not None]
+    requests = [r for r in (from_cycle(c, profile, merged, settings, pull.treatments)[0]
+                            for c in cycles) if r is not None]
+    if len(requests) < 288:
+        return skipped(f"Settings tests skipped: only {len(requests)} usable loop cycles, under "
+                       "one day's worth.")
+    result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings)
+    variant = _LAST.get("variant") or {}
+    if variant.get("advisability") != "full":
+        result["variant_note"] = (
+            f"Your loop was detected as {variant.get('variant')}. These tests run stock oref0, "
+            "so anything your variant adds on top of it is not modelled.")
+    return {"report_md": render_settings_tests(result), "result": result}
+
+
 def settings_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     """Validate uploaded raw key/values (AAPS prefs / Trio JSON) into replay settings.
 
@@ -311,6 +362,17 @@ def make_js_oref_runner():
         return js.orefDetermine(js_req).to_py()
 
     return runner
+
+
+def make_js_oref_simulator():
+    """The closed-loop simulator in oref0-in-WASM (globalThis.orefSimulate). Pyodide-only."""
+    import js
+    from pyodide.ffi import to_js
+
+    def simulate(payload: dict) -> dict:
+        return js.orefSimulate(to_js(payload, dict_converter=js.Object.fromEntries)).to_py()
+
+    return simulate
 
 
 def _strip_timestamps(cfs: list[dict]) -> list[dict]:

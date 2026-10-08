@@ -247,17 +247,35 @@ const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-// --- minimal, safe Markdown -> HTML (headings, bold, list items) ---
+// --- minimal, safe Markdown -> HTML (headings, bold, list items, pipe tables) ---
 function mdToHtml(md) {
-  return esc(md).split('\n').map((line) => {
-    if (line.startsWith('### ')) return `<h3>${line.slice(4)}</h3>`;
-    if (line.startsWith('## ')) return `<h2>${line.slice(3)}</h2>`;
-    if (line.startsWith('# ')) return `<h1>${line.slice(2)}</h1>`;
-    if (line.startsWith('- ')) return `<li>${inline(line.slice(2))}</li>`;
-    if (line.trim() === '---') return '<hr>';
-    if (line.trim() === '') return '';
-    return `<p>${inline(line)}</p>`;
-  }).join('\n');
+  const out = [];
+  let table = null;                       // rows of cells while inside a pipe table
+  const cells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => inline(c.trim()));
+  const flush = () => {
+    if (!table) return;
+    const [head, ...body] = table;
+    out.push('<div class="scroll"><table><thead><tr>' + head.map((c) => `<th>${c}</th>`).join('')
+      + '</tr></thead><tbody>' + body.map((r) => '<tr>' + r.map((c) => `<td>${c}</td>`).join('') + '</tr>').join('')
+      + '</tbody></table></div>');
+    table = null;
+  };
+  for (const line of esc(md).split('\n')) {
+    if (line.trim().startsWith('|')) {
+      if (/^\|?\s*-{3}/.test(line.trim().replace(/^\|/, ''))) continue;   // the |---| rule
+      (table ||= []).push(cells(line));
+      continue;
+    }
+    flush();
+    if (line.startsWith('### ')) out.push(`<h3>${line.slice(4)}</h3>`);
+    else if (line.startsWith('## ')) out.push(`<h2>${line.slice(3)}</h2>`);
+    else if (line.startsWith('# ')) out.push(`<h1>${line.slice(2)}</h1>`);
+    else if (line.startsWith('- ')) out.push(`<li>${inline(line.slice(2))}</li>`);
+    else if (line.trim() === '---') out.push('<hr>');
+    else if (line.trim() !== '') out.push(`<p>${inline(line)}</p>`);
+  }
+  flush();
+  return out.join('\n');
   function inline(s) { return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/_(.+?)_/g, '<em>$1</em>'); }
 }
 
@@ -378,6 +396,23 @@ async function run() {
     }
 
     $('report').innerHTML = html;
+
+    // The settings tests re-run the loop through every 5-minute cycle under about thirty
+    // scenarios. They run after the report is on screen; the pause lets the browser paint it
+    // and the status line before Python takes the main thread.
+    if (runner && typeof globalThis.orefSimulate === 'function') {
+      setStatus('Running settings tests (basal, ISF, carb ratio, target, SMB)… this can take a few minutes.');
+      await new Promise((res) => setTimeout(res, 50));
+      let section;
+      try {
+        const testsProxy = B.settings_tests();
+        section = testsProxy.toJs({ dict_converter: Object.fromEntries }).report_md;
+        testsProxy.destroy();
+      } catch (err) {
+        section = `## Settings tests (estimated)\n\n_Settings tests errored: ${err.message.split('\n').slice(-2).join(' ')}_`;
+      }
+      $('report').insertAdjacentHTML('beforeend', '<hr>' + mdToHtml(section));
+    }
     setStatus('Done.');
   } catch (e) {
     setStatus('');
