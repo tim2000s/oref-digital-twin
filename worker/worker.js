@@ -16,7 +16,8 @@
 
 const ALLOWED_KEYS = new Set(['counts', 'glycemia', 'findings', 'variant', 'counterfactuals']);
 const MAX_BODY_BYTES = 64 * 1024;
-const MODEL = '@cf/meta/llama-3.1-8b-instruct';
+// llama-3.1-8b-instruct was retired by Cloudflare on 30 May 2026 (every call returned 502).
+const MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8';
 
 const SYSTEM_PROMPT = [
   'You rewrite structured diabetes-loop findings into a clear, calm report for the person.',
