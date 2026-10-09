@@ -7,7 +7,15 @@ grounding gate before it is shown. See [../DESIGN.md](../DESIGN.md) §7, §10.
 
 ## Flow
 
-1. `boot()` loads Pyodide and unpacks `odt-packages.zip` (the pure-Python packages) into it.
+The page (`app.js`) holds the form, the status line, settings-file decryption, narration and
+rendering. Everything else runs in a Web Worker, `engine.js`, so the page stays responsive and
+shows each step as it starts: the Nightscout fetch (`nightscout.js`), Pyodide with the Python
+packages, and real oref0 (`oref-bundle.js`). On the main thread the settings tests held the page
+for about two minutes on a week of data in Chrome, longer in Safari, with no way to show
+progress. The worker checks `pyodide.js` against a pinned SHA-384 before running it, since a
+worker cannot use a script tag's integrity attribute.
+
+1. The worker loads Pyodide and unpacks `odt-packages.zip` (the pure-Python packages) into it.
 2. On **Analyse**, the browser checks `status.json`, then fetches Nightscout directly
    (`entries` in 2-day windows, `treatments` in 7-day, `devicestatus` in 1-day, plus `profile`;
    two requests at a time), hands the raw JSON to `report.browser.build_report`, and renders the

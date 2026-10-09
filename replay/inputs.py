@@ -18,6 +18,7 @@ The profile comes from the Nightscout profile and the user's settings.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from functools import lru_cache
 
 from typing import Any
 
@@ -56,17 +57,38 @@ def _block_value_at(blocks, sod: int, default: float | None) -> float | None:
     return chosen
 
 
+_sorted_cgm: dict = {}
+
+
+def _cgm_points(entries: list[GlucoseReading]) -> list[tuple]:
+    """(ts_ms, mg/dL) for every reading, sorted, built once per entries list.
+
+    Sorting the whole stream again for every cycle was the largest cost of building a week of
+    replay requests (4.0 s of 6.6 in CPython, several times that in the browser).
+    """
+    key = (id(entries), len(entries))
+    if _sorted_cgm.get("key") != key:
+        _sorted_cgm.clear()
+        _sorted_cgm.update(key=key, pts=sorted((r.ts_ms, r.sgv_mgdl) for r in entries
+                                               if r.sgv_mgdl is not None))
+    return _sorted_cgm["pts"]
+
+
 def build_glucose_status(entries: list[GlucoseReading], at_ms: int) -> dict | None:
     """oref glucose_status from the CGM stream around `at_ms` (oref field names)."""
-    pts = sorted((r.ts_ms, r.sgv_mgdl) for r in entries if r.sgv_mgdl is not None and r.ts_ms <= at_ms)
-    if not pts:
+    import bisect
+
+    pts = _cgm_points(entries)
+    end = bisect.bisect_right(pts, (at_ms, float("inf")))     # readings at or before at_ms
+    if not end:
         return None
-    cur_ts, cur = pts[-1]
+    cur_ts, cur = pts[end - 1]
 
     def at_offset(minutes: int) -> float | None:
         target = cur_ts - minutes * 60_000
         best, best_d = None, 4 * 60_000  # within 4 min
-        for ts, v in reversed(pts):
+        for i in range(end - 1, -1, -1):
+            ts, v = pts[i]
             d = abs(ts - target)
             if d <= best_d:
                 best, best_d = v, d
@@ -189,8 +211,35 @@ def _iob_data_from_cycle(cycle: DeviceStatusCycle) -> tuple[dict, bool]:
              "time": cycle.ts_ms}, False)
 
 
+@lru_cache(maxsize=65536)
 def _iso(ts_ms: int) -> str:
     return datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+
+# A temp basal that started this long before the window can still run into it. AndroidAPS
+# and Trio cap a temp at 12 hours.
+_LONGEST_TEMP_MS = 12 * 3_600_000
+_index: dict = {}
+
+
+def _window(treatments: list[Treatment], lo: int, hi: int) -> list[Treatment]:
+    """The treatments with lo <= ts_ms <= hi, in their original order.
+
+    Every cycle of a replay asks for its own window of the same list, and scanning the whole
+    list each time made building the requests for a week the slowest step of the settings
+    tests in the browser (about 20 s of 120). The list is sorted once and bisected; the cache
+    holds the last list only, keyed by identity and length.
+    """
+    import bisect
+
+    key = (id(treatments), len(treatments))
+    if _index.get("key") != key:
+        order = sorted(range(len(treatments)), key=lambda i: treatments[i].ts_ms)
+        _index.clear()
+        _index.update(key=key, order=order, ts=[treatments[i].ts_ms for i in order])
+    a = bisect.bisect_left(_index["ts"], lo)
+    b = bisect.bisect_right(_index["ts"], hi)
+    return [treatments[i] for i in sorted(_index["order"][a:b])]
 
 
 def pump_history(treatments: list[Treatment], at_ms: int, dia_h: float) -> list[dict]:
@@ -207,7 +256,7 @@ def pump_history(treatments: list[Treatment], at_ms: int, dia_h: float) -> list[
     """
     lo = at_ms - int((dia_h + 1.0) * 3_600_000)
     out: list[dict] = []
-    for t in treatments:
+    for t in _window(treatments, lo - _LONGEST_TEMP_MS, at_ms):
         if t.ts_ms > at_ms:
             continue
         if t.insulin_u is not None and t.insulin_u > 0:

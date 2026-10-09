@@ -170,7 +170,8 @@ def build_report(
     }
 
 
-def settings_tests(sim_runner: Callable | None = None) -> dict[str, Any]:
+def settings_tests(sim_runner: Callable | None = None,
+                   progress: Callable | None = None) -> dict[str, Any]:
     """Basal, ISF, carb-ratio, target and SMB tests on the last report's data.
 
     Returns {"report_md": section, "result": tables} or {"report_md": note, "skipped": why}.
@@ -208,7 +209,8 @@ def settings_tests(sim_runner: Callable | None = None) -> dict[str, Any]:
     if len(requests) < 288:
         return skipped(f"Settings tests skipped: only {len(requests)} usable loop cycles, under "
                        f"one day's worth. Diagnostic: {_openaps_shape(pull)}")
-    result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings)
+    result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings,
+                                progress=progress)
     result["insulin_curve"] = curve
     variant = _LAST.get("variant") or {}
     if variant.get("advisability") != "full":
@@ -245,6 +247,8 @@ def make_js_oref_runner():
     from pyodide.ffi import to_js
 
     def runner(requests: list[dict]) -> list[dict]:
+        if hasattr(js, "orefDetermineJSON"):
+            return json.loads(js.orefDetermineJSON(json.dumps(requests)))
         js_req = to_js(requests, dict_converter=js.Object.fromEntries)
         return js.orefDetermine(js_req).to_py()
 
@@ -257,7 +261,9 @@ def make_js_oref_simulator():
     from pyodide.ffi import to_js
 
     def simulate(payload: dict) -> dict:
-        return js.orefSimulate(to_js(payload, dict_converter=js.Object.fromEntries)).to_py()
+        # one JSON string each way: field-by-field conversion of a week of requests was the
+        # largest single cost of the settings tests in the browser
+        return json.loads(js.orefSimulateJSON(json.dumps(payload)))
 
     return simulate
 

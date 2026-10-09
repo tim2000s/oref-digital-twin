@@ -14,3 +14,13 @@ globalThis.orefDetermine = function orefDetermine(requests) {
 globalThis.orefSimulate = function orefSimulate(payload) {
   return request.simulate(payload);
 };
+
+// JSON-string versions for Pyodide. Converting a week of nested request objects across the
+// Python/JavaScript boundary field by field took longer than the simulation; one string that
+// each side parses natively does not.
+globalThis.orefDetermineJSON = function orefDetermineJSON(text) {
+  return JSON.stringify(request.runAll(JSON.parse(text)));
+};
+globalThis.orefSimulateJSON = function orefSimulateJSON(text) {
+  return JSON.stringify(request.simulate(JSON.parse(text)));
+};

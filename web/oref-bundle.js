@@ -12898,6 +12898,12 @@
   globalThis.orefSimulate = function orefSimulate(payload) {
     return import_request.default.simulate(payload);
   };
+  globalThis.orefDetermineJSON = function orefDetermineJSON(text) {
+    return JSON.stringify(import_request.default.runAll(JSON.parse(text)));
+  };
+  globalThis.orefSimulateJSON = function orefSimulateJSON(text) {
+    return JSON.stringify(import_request.default.simulate(JSON.parse(text)));
+  };
 })();
 /*! Bundled license information:
 

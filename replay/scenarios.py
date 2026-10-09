@@ -224,8 +224,15 @@ def run_settings_tests(
     entries: list[GlucoseReading],
     treatments: list[Treatment],
     settings: dict[str, Any],
+    progress: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
-    """Run the five stages and return the tables and choices for the report."""
+    """Run the stages and return the tables and choices for the report.
+
+    `progress`, if given, is called with a short line as each stage starts, so a page can
+    say what it is doing.
+    """
+    say = progress or (lambda _msg: None)
+    n_stages = 6
     pts = [r for r in entries if r.sgv_mgdl is not None]
     ts = [r.ts_ms for r in pts]
     obs = [float(r.sgv_mgdl) for r in pts]
@@ -280,6 +287,8 @@ def run_settings_tests(
 
     def stage(name: str, lever: str, measured_on: str, values: list, make, neutral,
               fmt, note: str | None = None) -> Any:
+        say(f"Settings tests: {name.lower()} ({len(stages) + 1} of {n_stages}), "
+            f"{len(values)} values")
         scenarios = [make(v) for v in values]
         results = run(scenarios)
         rows = []
