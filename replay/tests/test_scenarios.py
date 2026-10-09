@@ -116,7 +116,7 @@ def test_run_settings_tests_stages_in_order_with_a_fake_simulator():
 
     res = run_settings_tests(fake_sim, requests, entries, [], {"enable_smb": False})
     names = [s["name"] for s in res["stages"]]
-    assert names == ["Basal", "ISF", "Carb ratio", "Target", "SMB limit"]
+    assert names == ["Basal", "ISF", "Carb ratio", "Target", "SMB limit", "Max IOB"]
     basal = res["stages"][0]
     # observed fasting TBR is 6/36 = 16.7%; -20% (+10 mg/dL) is the smallest change that
     # lifts 62 to 70 or above
@@ -127,7 +127,28 @@ def test_run_settings_tests_stages_in_order_with_a_fake_simulator():
     # no carbs logged and no SMB: those stages are explained, not run
     assert res["stages"][2]["rows"] == [] and "no carbs" in res["stages"][2]["why"]
     assert res["stages"][4]["chosen_label"] == "not tested"
+    assert res["stages"][5]["chosen_label"] == "not tested"      # max IOB unknown here
     assert res["final"]["est_all"]["tbr"] == 0.0
     # a scenario already run (each stage's no-change row) is not sent again
     sent = [str(sorted(sc.items())) for batch in calls for sc in batch if sc.pop("label", None) or True]
     assert len(sent) == len(set(sent))
+
+
+def test_max_iob_stage_steps_the_current_value():
+    entries = _readings(([110] * 30 + [62] * 6) * 8)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    kept, seen = {}, []
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        seen.extend(payload["scenarios"])
+        return {"t": t, "scenarios": [{"du": [0.0] * len(t), "dbg": [0.0] * len(t), "failed": 0}
+                                      for _ in payload["scenarios"]]}
+
+    res = run_settings_tests(fake_sim, requests, entries, [], {"max_iob": 6.0})
+    stage = res["stages"][5]
+    assert [r["value"] for r in stage["rows"]] == [4.2, 4.8, 5.4, 6.0, 6.6, 7.2, 7.8]
+    assert any(sc.get("profile_set", {}).get("max_iob") == 4.2 for sc in seen)
+    assert stage["rows"][3]["label"] == "6 U (current)"

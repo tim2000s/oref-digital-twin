@@ -318,7 +318,7 @@ async function run() {
 
     setStatus('Analysing…');
     const B = pyodide.pyimport('report.browser');
-    // Run decision-level counterfactuals via real oref0 (web/oref-bundle.js) when available.
+    // Real oref0 (web/oref-bundle.js), for the settings tests that run after the report.
     const runner = (typeof globalThis.orefDetermine === 'function') ? B.make_js_oref_runner() : null;
     const kwargs = { oref_runner: runner };
 

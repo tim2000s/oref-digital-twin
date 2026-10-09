@@ -69,14 +69,17 @@ departure is confined to `replay/scenarios.py` and the `simulate` function in
 `replay/oracle/request.js`.
 
 The tests run in the order of a manual basal test, then an ISF test, then a carb-ratio test,
-then target and SMB limit. Each steps one setting from −30% to +30% and re-runs the real
+then target, SMB limit and max IOB. Each steps one setting from −30% to +30% and re-runs the real
 determine-basal through every 5-minute cycle of the period, closed-loop: the insulin
 difference from each earlier cycle is added to the insulin-on-board projection with oref0's
 own insulin curve, and shifts glucose by units × profile ISF (adjusted by autosens) × the
 fraction of that insulin's action completed, so the loop sees and reacts to the shifted
 glucose at the next cycle. Basal is judged on fasting stretches, ISF on correction
-stretches, carb ratio on meal stretches and the last two on the whole period, each stage
-keeping the earlier choices.
+stretches, carb ratio on meal stretches and the last three on the whole period, each stage
+keeping the earlier choices. They replaced the report's earlier decision-level section,
+which replayed two fixed changes open-loop over the last 400 cycles and summed each cycle's
+30-minute delivery forecast across every cycle, counting the same insulin many times on a
+loop that runs every minute.
 
 What the estimate assumes, each a modelling choice rather than a finding: the profile ISF
 is the body's real sensitivity; meals, activity and the person's own treatments, hypo

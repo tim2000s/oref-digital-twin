@@ -28,13 +28,9 @@ def test_critical_before_warning():
     assert md.index("### Critical") < md.index("### Worth attention")
 
 
-def test_counterfactual_block_includes_caveat():
-    cfs = [{"label": "max_iob=3", "n_evaluated": 20, "n_changed": 14,
-            "total_delta_u": -2.1, "mean_delta_u": -0.1,
-            "caveat": "Decision-level only: not the resulting blood glucose."}]
-    md = render_report(DIAG, VARIANT, counterfactuals=cfs)
-    assert "Settings experiments" in md and "max_iob=3" in md
-    assert "not the resulting blood glucose" in md
+def test_report_has_no_decision_level_section():
+    # removed in October 2026: it summed each cycle's 30-minute forecast across every cycle
+    assert "Settings experiments" not in render_report(DIAG, VARIANT)
 
 
 def test_render_is_deterministic():

@@ -15,8 +15,8 @@ section below. Everything else here is decision-level only.
 | `oracle/determine.js` | Node wrapper calling real `oref0/lib/determine-basal`. Reads `{requests:[...]}` on stdin, returns `{results:[...]}`. |
 | `oracle_bridge.py` | Spawns the Node oracle (runner injectable for offline tests). |
 | `settings_delta.py` | Applies a friendly settings change to a request's oref profile (max_iob, targets, ISF, SMB flags, SMB minutes…). Unknown keys raise. |
-| `counterfactual.py` | Runs baseline vs altered through the oracle and diffs the enacted decision per cycle. |
-| `scenarios.py` | Staged settings tests: basal, ISF, carb ratio, target, SMB limit, each stepped ±30% through the closed-loop simulator and judged against time in range > 70% and time below range < 2%. |
+| `counterfactual.py` | (Library only since October 2026; the report no longer uses it.) Runs baseline vs altered through the oracle and diffs the enacted decision per cycle. |
+| `scenarios.py` | Staged settings tests: basal, ISF, carb ratio, target, SMB limit, max IOB, each stepped ±30% through the closed-loop simulator and judged against time in range > 70% and time below range < 2%. |
 | `inputs.py` | Reconstructs a determine-basal request from a devicestatus cycle + Nightscout profile + settings, with explicit fidelity flags. |
 
 ## Setup
@@ -80,9 +80,11 @@ temp into 0.05 U pulses and rounds the pulse count. On 300 cycles of one user, s
 direct rebuild by a median of 0.04 to 0.08 U (95th percentile 0.16 U). `oracle/check_linearity.js`
 reproduces the comparison on any requests file.
 
-On one week of 1-minute AndroidAPS data (2,012 cycles at 5 minutes) the five stages took
-40 s in Node with the cache and 176 s without; in headless Chrome the whole report, tests
-included, finished in about 75 s. The browser runs them after the main report is on screen.
+On one week of 1-minute AndroidAPS data (about 2,000 cycles at 5 minutes) the stages took
+40 s in Node with the cache and 176 s without. In headless Chrome on an M-series Mac, timed
+from inside the page, the main report was on screen 14 s after Analyse (Nightscout served
+locally) and the six stages took a further 118 s; the browser runs them after the main
+report is shown, with a status line saying so.
 
 The glucose arithmetic assumes the profile ISF is real and that meals and the person's own
 treatments are unchanged; see DESIGN §2.1.

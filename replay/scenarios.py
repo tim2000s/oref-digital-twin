@@ -12,7 +12,8 @@ time below range under 2%:
   3. carb ratio, on meal stretches (the 4 h after logged carbs or an unannounced rise), with
      the basal and ISF chosen before it; logged meal boluses are scaled by the same factor,
      on the assumption that they came from the bolus wizard;
-  4. target, then 5. SMB limits, on the whole period, with everything chosen before.
+  4. target, 5. SMB limits and 6. max IOB, on the whole period, with everything chosen
+     before.
 
 The order follows a manual basal test, then an ISF test, then a carb-ratio test: each
 setting is tested where the ones after it have least influence, and later stages build on
@@ -314,9 +315,14 @@ def run_settings_tests(
               "basal_scale": s["basal_scale"], "isf_scale": s["isf_scale"],
               "cr_scale": s["cr_scale"], "target_offset": s["target_offset"],
               "extra_doses": doses}
+        profile_set = {}
         if "smb_minutes" in s:
-            sc["profile_set"] = {"maxSMBBasalMinutes": s["smb_minutes"],
-                                 "maxUAMSMBBasalMinutes": s["smb_minutes"]}
+            profile_set.update(maxSMBBasalMinutes=s["smb_minutes"],
+                               maxUAMSMBBasalMinutes=s["smb_minutes"])
+        if "max_iob" in s:
+            profile_set["max_iob"] = s["max_iob"]
+        if profile_set:
+            sc["profile_set"] = profile_set
         return sc
 
     pct = lambda k: f"{round((k - 1) * 100):+d}%" if k != 1 else "current"
@@ -367,6 +373,19 @@ def run_settings_tests(
                        "measured_on": "all", "rows": [], "chosen": None,
                        "chosen_label": "not tested",
                        "why": "SMBs were not delivered in this period"})
+
+    max_iob = settings.get("max_iob")
+    if max_iob is not None and float(max_iob) > 0:
+        current_iob = float(max_iob)
+        values = sorted({round(current_iob * k, 1) for k in SCALES})
+        chosen["max_iob"] = stage(
+            "Max IOB", "max IOB", "all", values,
+            lambda v: scen(max_iob=v), current_iob,
+            lambda v: f"{v:g} U" + (" (current)" if v == current_iob else ""))
+    else:
+        stages.append({"name": "Max IOB", "lever": "max IOB", "measured_on": "all", "rows": [],
+                       "chosen": max_iob, "chosen_label": "not tested",
+                       "why": "max IOB is zero or unknown"})
 
     final = run([scen()])[0]
     return {

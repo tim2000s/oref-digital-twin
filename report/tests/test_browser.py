@@ -2,10 +2,12 @@
 
 from ingestion.tests import fixtures as fx
 from report.browser import (
+    _LAST,
     abstracted_findings,
     build_report,
     gate_narrative,
     settings_from_raw,
+    settings_tests,
 )
 
 RAW = {
@@ -32,7 +34,7 @@ def test_abstracted_findings_excludes_raw_data_and_token():
     result = build_report(RAW)
     payload = abstracted_findings(result)
     # only findings/stats leave the browser
-    assert set(payload).issubset({"counts", "glycemia", "findings", "variant", "counterfactuals"})
+    assert set(payload).issubset({"counts", "glycemia", "findings", "variant"})
     # no raw NS data or connection info anywhere in the payload
     flat = str(payload)
     assert "example.test" not in flat
@@ -86,34 +88,19 @@ def test_infer_settings_reads_max_iob_from_reason():
 
 
 def _fake_oref_runner(requests):
-    # SMB scales with max_iob so a max_iob delta produces a decision change
-    return [{"ok": True, "rt": {"rate": 0.0, "duration": 30,
-                                "units": round(r["profile"].get("max_iob", 0) * 0.1, 3)}}
-            for r in requests]
+    return [{"ok": True, "rt": {"rate": 0.0, "duration": 30, "units": 0.0}} for r in requests]
 
 
-def test_counterfactuals_run_when_oref_runner_supplied():
-    result = build_report(RAW, oref_runner=_fake_oref_runner)
-    cfs = result["counterfactuals"]
-    assert cfs, "expected counterfactuals with a runner supplied"
-    # the max_iob lever should change the decision on the evaluated cycle(s)
-    maxiob_cf = next(c for c in cfs if "max_iob" in c["label"])
-    assert maxiob_cf["n_evaluated"] >= 1
-    assert maxiob_cf["n_changed"] >= 1
-    assert "not the resulting blood glucose" in maxiob_cf["caveat"]
-    # and it renders into the report
-    assert "Settings experiments" in result["report_md"]
-
-
-def test_no_counterfactuals_without_runner():
-    assert build_report(RAW)["counterfactuals"] == []
+def test_settings_tests_skip_without_runner():
+    build_report(RAW)
+    out = settings_tests(sim_runner=lambda p: {})
+    assert "skipped" in out and "engine did not load" in out["skipped"]
 
 
 def test_max_iob_override_is_used():
-    # override wins over any inferred value, so the baseline lever reflects it
-    result = build_report(RAW, oref_runner=_fake_oref_runner, max_iob_override=5.0)
-    cfs = result["counterfactuals"]
-    assert cfs and any("5.0" in c["label"] for c in cfs)   # baseline 5.0 -> 4.0, not the 11.2 reason
+    # override wins over the 11.2 in the reason text
+    build_report(RAW, oref_runner=_fake_oref_runner, max_iob_override=5.0)
+    assert _LAST["settings"]["max_iob"] == 5.0
 
 
 def test_settings_from_raw_aaps_keys():
@@ -150,19 +137,62 @@ def test_settings_from_raw_trio_json():
     assert any(i["kind"] == "unknown_key" for i in out["issues"])   # unknown key reported
 
 
-def test_uploaded_settings_drive_counterfactuals():
+def test_uploaded_settings_are_what_the_tests_replay():
     parsed = settings_from_raw({"max_iob": 4, "enableSMB_always": True})
-    result = build_report(RAW, oref_runner=_fake_oref_runner, settings=parsed["settings"])
-    cfs = result["counterfactuals"]
-    assert cfs and any("4.0" in c["label"] for c in cfs)   # baseline came from the uploaded file
+    build_report(RAW, oref_runner=_fake_oref_runner, settings=parsed["settings"])
+    assert _LAST["settings"]["max_iob"] == 4.0
 
 
 def test_override_unblocks_when_inference_fails():
-    # devicestatus with no maxIOB anywhere -> inference fails, override rescues it
+    # devicestatus with no maxIOB anywhere: without the override the tests say why they
+    # skipped; with it they get past the max IOB check
     raw = dict(RAW)
     raw["devicestatus"] = [{
         "_id": "d9", "created_at": "2023-11-14T22:14:00.000Z", "device": "openaps://phone",
         "openaps": {"iob": [{"iob": 1.0}], "enacted": {"bg": 128, "reason": "temp 0.4"}},
     }]
-    result = build_report(raw, oref_runner=_fake_oref_runner, max_iob_override=6.0)
-    assert result["counterfactuals"], "override should unblock counterfactuals"
+    build_report(raw, oref_runner=_fake_oref_runner)
+    assert "max IOB isn't in your Nightscout data" in settings_tests(sim_runner=lambda p: {})["skipped"]
+    build_report(raw, oref_runner=_fake_oref_runner, max_iob_override=6.0)
+    assert "one day's worth" in settings_tests(sim_runner=lambda p: {})["skipped"]
+
+
+def _day_raw(n=320):
+    """A day and a bit of 5-minute loop cycles, readings and temps."""
+    import math
+
+    t0 = 1_700_000_000_000
+    iso = lambda ms: __import__("datetime").datetime.fromtimestamp(
+        ms / 1000, __import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    bg = lambda i: round(130 + 25 * math.sin(i / 20))
+    entries = [{"_id": f"e{i}", "date": t0 + i * 300_000, "sgv": bg(i), "type": "sgv"}
+               for i in range(n)]
+    ds = [{"_id": f"d{i}", "created_at": iso(t0 + i * 300_000), "device": "openaps://phone",
+           "openaps": {"iob": [{"iob": 1.0}],
+                       "enacted": {"bg": bg(i), "reason": "maxIOB 6.0", "rate": 0.85,
+                                   "duration": 30}}}
+          for i in range(n)]
+    temps = [{"_id": f"t{i}", "created_at": iso(t0 + i * 1_800_000), "eventType": "Temp Basal",
+              "absolute": 0.85, "duration": 30} for i in range(n // 6 + 1)]
+    return {"base_url": "x", "start_ms": t0, "end_ms": t0 + n * 300_000, "entries": entries,
+            "treatments": temps, "devicestatus": ds, "profiles": [fx.PROFILE_MMOL]}
+
+
+def test_settings_tests_render_all_six_stages():
+    build_report(_day_raw(), oref_runner=_fake_oref_runner)
+    kept = {}
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        return {"t": t, "scenarios": [
+            {"du": [0.0] * len(t), "failed": 0,
+             "dbg": [(1 - sc["basal_scale"]) * 20] * len(t)} for sc in payload["scenarios"]]}
+
+    out = settings_tests(sim_runner=fake_sim)
+    assert "skipped" not in out, out.get("skipped")
+    md = out["report_md"]
+    for name in ("Basal", "ISF", "Carb ratio", "Target", "SMB limit", "Max IOB"):
+        assert f". {name}" in md
+    assert "6 U (current)" in md

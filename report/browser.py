@@ -2,8 +2,8 @@
 
 The browser does the Nightscout `fetch` (token + CORS stay on the device) and hands the
 raw arrays here. This runs the whole read-only pipeline — normalise, classify variant,
-diagnose, optionally run decision-level counterfactuals via real oref0 (in the browser),
-and render the deterministic report — in Pyodide.
+diagnose and render the deterministic report, then run the settings tests through real
+oref0 (in the browser) as a second step — in Pyodide.
 
 `abstracted_findings` is the ONLY thing that may be sent to the narration Worker.
 """
@@ -17,7 +17,7 @@ from typing import Any, Callable
 from diagnostics import run_diagnostics
 from ingestion.models import ProfileSnapshot
 from ingestion.pull import pull_from_raw
-from replay import OrefOracle, apply_delta, from_cycle, run_counterfactual
+from replay import OrefOracle, from_cycle
 from variant import detect_variant
 
 from .grounding import check_narrative
@@ -67,23 +67,9 @@ def infer_settings(pull) -> tuple[dict[str, Any], list[str]]:
         if max_iob is not None:
             break
     if max_iob is None:
-        notes.append("Could not infer max_iob from devicestatus — counterfactuals skipped.")
+        notes.append("Could not infer max_iob from devicestatus — settings tests skipped.")
     enable_smb = any(t.is_smb for t in pull.treatments)
     return {"max_iob": max_iob, "enable_smb": enable_smb, "max_smb_minutes": 30}, notes
-
-
-def _default_deltas(settings: dict[str, Any], profile: ProfileSnapshot | None) -> list[tuple[str, dict]]:
-    """Illustrative, conservative 'what if' levers computed from the user's baseline."""
-    out: list[tuple[str, dict]] = []
-    max_iob = settings.get("max_iob")
-    if max_iob and max_iob > 1.5:
-        lowered = round(max_iob - 1.0, 1)
-        out.append((f"max_iob {max_iob} → {lowered}", {"max_iob": lowered}))
-    if profile and profile.target_low_mgdl and profile.target_high_mgdl:
-        base = (profile.target_low_mgdl[0].value + profile.target_high_mgdl[0].value) / 2.0
-        raised = round(base + 18.0, 0)             # ~ +1 mmol/L
-        out.append((f"target {round(base)} → {round(raised)} mg/dL", {"target_bg": raised}))
-    return out
 
 
 # The insulin curves AndroidAPS and Trio ship: rapid-acting (peak 75 min), ultra-rapid (55)
@@ -126,65 +112,6 @@ def _choose_insulin_curve(pull, settings, profile, entries, runner) -> tuple[dic
                    "insulin_curve_fit_u": {k: round(v[0], 2) for k, v in fit.items()}}
 
 
-def _run_counterfactuals(pull, settings, profile, runner, deltas) -> tuple[list[dict], dict]:
-    from ingestion.models import GlucoseReading
-
-    # BG for glucose_status: real CGM plus each cycle's own bg (devicestatus is dense), so a
-    # sparse entries feed doesn't starve request-building.
-    merged_entries = list(pull.entries) + [
-        GlucoseReading(ts_ms=c.ts_ms, sgv_mgdl=c.bg_mgdl)
-        for c in pull.devicestatus if c.bg_mgdl is not None
-    ]
-    cycles = pull.devicestatus[-MAX_CYCLES:]
-    stats = {"considered": len(cycles), "no_iob": 0, "no_bg": 0, "no_request": 0, "built": 0}
-    settings, curve_stats = _choose_insulin_curve(pull, settings, profile, merged_entries, runner)
-    stats.update(curve_stats)
-    requests, ts = [], []
-    for c in cycles:
-        if c.iob is None:
-            stats["no_iob"] += 1
-            continue
-        if c.bg_mgdl is None:
-            stats["no_bg"] += 1
-            continue
-        req, _w = from_cycle(c, profile, merged_entries, settings, pull.treatments)
-        if req is None:
-            stats["no_request"] += 1
-            continue
-        requests.append(req)
-        ts.append(c.ts_ms)
-    stats["built"] = len(requests)
-    if not requests:
-        return [], stats
-    oracle = OrefOracle(runner=runner)
-    # probe baseline AND altered (first lever) to see which side errors, and capture the message
-    base_probe = oracle.evaluate(requests)
-    stats["oref_ok"] = sum(1 for r in base_probe if isinstance(r, dict) and r.get("ok"))
-    # How far oref's insulin on board, rebuilt from the uploaded treatments, sits from what the
-    # loop logged. A large gap means treatments are missing from Nightscout and the replayed
-    # decisions rest on too little insulin.
-    gaps = [abs(r["iob_rebuilt"] - q["iob_logged"]) for r, q in zip(base_probe, requests)
-            if isinstance(r, dict) and r.get("ok") and r.get("iob_rebuilt") is not None
-            and q.get("iob_logged") is not None]
-    if gaps:
-        gaps.sort()
-        stats["iob_rebuilt_median_abs_diff_u"] = round(gaps[len(gaps) // 2], 2)
-        stats["iob_rebuilt_within_0_5u"] = round(sum(g <= 0.5 for g in gaps) / len(gaps), 3)
-    err = next((r.get("error") for r in base_probe if isinstance(r, dict) and not r.get("ok")), None)
-    stats["first_error"] = f"baseline: {err}" if err else None
-    if deltas:
-        alt_probe = oracle.evaluate([apply_delta(r, deltas[0][1]) for r in requests])
-        stats["oref_ok_altered"] = sum(1 for r in alt_probe if isinstance(r, dict) and r.get("ok"))
-        aerr = next((r.get("error") for r in alt_probe if isinstance(r, dict) and not r.get("ok")), None)
-        if aerr and not stats["first_error"]:
-            stats["first_error"] = f"altered({deltas[0][0]}): {aerr}"
-    results = []
-    for label, delta in deltas:
-        cf = run_counterfactual(oracle, requests, delta, label=label, ts_of=ts)
-        results.append(cf.to_dict())
-    return results, stats
-
-
 def _openaps_shape(pull) -> str:
     """Compact description of the most-recent cycle's openaps fields, for diagnosing parse gaps."""
     if not pull.devicestatus:
@@ -208,13 +135,13 @@ def build_report(
     *,
     oref_runner: Callable | None = None,
     settings: dict[str, Any] | None = None,
-    deltas: list[tuple[str, dict]] | None = None,
     max_iob_override: float | None = None,
 ) -> dict[str, Any]:
     """raw: {base_url, start_ms, end_ms, entries, treatments, devicestatus, profiles}.
 
-    If `oref_runner` is provided (the browser injects one backed by oref0-in-WASM), run
-    decision-level counterfactuals; otherwise produce the diagnostic report alone.
+    Produces the diagnostic report. With `oref_runner` (the browser injects one backed by
+    oref0-in-WASM) it also resolves the settings the settings tests will replay with, from the
+    uploaded file, the Max IOB box or the devicestatus, and keeps them for `settings_tests`.
     """
     pull = pull_from_raw(
         raw.get("base_url", ""), int(raw["start_ms"]), int(raw["end_ms"]),
@@ -224,66 +151,21 @@ def build_report(
     verdict = detect_variant(pull.devicestatus, dropped_no_oref=pull.dropped.get("devicestatus", 0))
     diagnostics = run_diagnostics(pull, variant=verdict.to_dict())
 
-    counterfactuals: list[dict] = []
-    cf_note: str | None = None
-    n_loop = len(pull.devicestatus)
     _LAST.clear()
     _LAST.update({"pull": pull, "variant": verdict.to_dict(), "runner": oref_runner})
-    if oref_runner is None:
-        cf_note = "Settings experiments skipped: the in-browser oref engine did not load."
-    else:
-        profile = _active_profile(pull.profiles)
+    if oref_runner is not None:
         if settings is None:
             settings, _notes = infer_settings(pull)
         if max_iob_override is not None:
             settings = {**settings, "max_iob": float(max_iob_override)}
-        _LAST.update({"profile": profile, "settings": settings})
-        if profile is None:
-            cf_note = "Settings experiments skipped: no Nightscout profile found."
-        elif settings.get("max_iob") is None:
-            recent = next((c.reason for c in reversed(pull.devicestatus) if c.reason), None)
-            snippet = (recent[:120] + "…") if recent else "(no reason text present)"
-            cf_note = (f"Settings experiments skipped: max IOB isn't in your Nightscout data "
-                       f"({n_loop} cycles). Enter Max IOB above to run them. "
-                       f"Sample reason: {snippet}")
-        else:
-            deltas = deltas or _default_deltas(settings, profile)
-            if not deltas:
-                cf_note = "Settings experiments skipped: no applicable levers for this profile."
-            else:
-                try:
-                    counterfactuals, stats = _run_counterfactuals(
-                        pull, settings, profile, oref_runner, deltas)
-                    built = stats.get("built", 0)
-                    oref_ok = stats.get("oref_ok", 0)
-                    if built < 20:
-                        cf_note = (f"Only {built} of {stats.get('considered')} recent cycles were "
-                                   f"usable (no-iob {stats.get('no_iob')}, no-bg {stats.get('no_bg')}, "
-                                   f"no-request {stats.get('no_request')}). Diagnostic — "
-                                   f"{_openaps_shape(pull)}")
-                    elif oref_ok == 0 or stats.get("oref_ok_altered") == 0:
-                        counterfactuals = []
-                        cf_note = (f"oref evaluated baseline {oref_ok}/{built}, "
-                                   f"altered {stats.get('oref_ok_altered')}/{built}. "
-                                   f"First error: {stats.get('first_error')}")
-                    elif counterfactuals and all(c.get("n_changed", 0) == 0 for c in counterfactuals):
-                        cf_note = (f"Ran over {built} cycles ({oref_ok} evaluated): none of these "
-                                   "levers changed the controller's decision — they don't bind at "
-                                   "your settings.")
-                except Exception as exc:  # surface, never break the report
-                    counterfactuals = []
-                    cf_note = f"Settings experiments errored: {type(exc).__name__}: {exc}"
+        _LAST.update({"profile": _active_profile(pull.profiles), "settings": settings})
 
     diag_d = diagnostics.to_dict()
     variant_d = verdict.to_dict()
-    report_md = render_report(diag_d, variant_d, counterfactuals, counterfactual_note=cf_note)
-
     return {
-        "report_md": report_md,
+        "report_md": render_report(diag_d, variant_d),
         "diagnostics": diag_d,
         "variant": variant_d,
-        "counterfactuals": counterfactuals,
-        "counterfactual_note": cf_note,
         "coverage": {"cgm": pull.cgm.to_dict(), "loop": pull.loop.to_dict(), "warnings": pull.warnings()},
     }
 
@@ -309,20 +191,25 @@ def settings_tests(sim_runner: Callable | None = None) -> dict[str, Any]:
     if profile is None:
         return skipped("Settings tests skipped: no Nightscout profile found.")
     if not settings or settings.get("max_iob") is None:
-        return skipped("Settings tests skipped: max IOB isn't known. Enter it above to run them.")
+        recent = next((c.reason for c in reversed(pull.devicestatus) if c.reason), None)
+        snippet = (recent[:120] + "…") if recent else "(no reason text present)"
+        return skipped(f"Settings tests skipped: max IOB isn't in your Nightscout data "
+                       f"({len(pull.devicestatus)} cycles). Enter Max IOB above to run them. "
+                       f"Sample reason: {snippet}")
     if sim_runner is None:
         sim_runner = make_js_oref_simulator()
 
     merged = list(pull.entries) + [GlucoseReading(ts_ms=c.ts_ms, sgv_mgdl=c.bg_mgdl)
                                    for c in pull.devicestatus if c.bg_mgdl is not None]
-    settings, _curve = _choose_insulin_curve(pull, settings, profile, merged, runner)
+    settings, curve = _choose_insulin_curve(pull, settings, profile, merged, runner)
     cycles = [c for c in sample_cycles(pull.devicestatus) if c.bg_mgdl is not None]
     requests = [r for r in (from_cycle(c, profile, merged, settings, pull.treatments)[0]
                             for c in cycles) if r is not None]
     if len(requests) < 288:
         return skipped(f"Settings tests skipped: only {len(requests)} usable loop cycles, under "
-                       "one day's worth.")
+                       f"one day's worth. Diagnostic: {_openaps_shape(pull)}")
     result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings)
+    result["insulin_curve"] = curve
     variant = _LAST.get("variant") or {}
     if variant.get("advisability") != "full":
         result["variant_note"] = (
@@ -375,22 +262,6 @@ def make_js_oref_simulator():
     return simulate
 
 
-def _strip_timestamps(cfs: list[dict]) -> list[dict]:
-    """Drop per-cycle wall-clock timestamps from counterfactual examples.
-
-    `ts_ms` pins the exact minute a loop decision was taken. That is personal health data
-    under the standard this project holds itself to (DESIGN §9), and the narrator has no
-    use for it — it needs the magnitudes, not when they happened.
-    """
-    out = []
-    for cf in cfs:
-        c = dict(cf)
-        c["examples"] = [{k: v for k, v in ex.items() if k != "ts_ms"}
-                         for ex in cf.get("examples", [])]
-        out.append(c)
-    return out
-
-
 def abstracted_findings(result: dict[str, Any]) -> dict[str, Any]:
     """The only payload allowed to leave the browser for narration — no raw data/token."""
     diag = result.get("diagnostics", {})
@@ -399,7 +270,6 @@ def abstracted_findings(result: dict[str, Any]) -> dict[str, Any]:
         "glycemia": diag.get("glycemia", {}),
         "findings": diag.get("findings", []),
         "variant": result.get("variant", {}),
-        "counterfactuals": _strip_timestamps(result.get("counterfactuals", [])),
     }
 
 

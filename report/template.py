@@ -63,8 +63,9 @@ def _variant_block(variant: dict | None) -> list[str]:
         return []
     advis = variant.get("advisability")
     note = {
-        "full": "A modelled controller — settings counterfactuals are available.",
-        "diagnosis_only": "Middleware or a fork is in play — findings only; no settings replay.",
+        "full": "A modelled controller: the settings tests replay it directly.",
+        "diagnosis_only": "Middleware or a fork is in play: the settings tests run stock oref0 "
+                          "and do not model what it adds.",
         "out_of_scope": "The controller could not be classified — findings only.",
     }.get(advis, "")
     lines = [
@@ -78,27 +79,7 @@ def _variant_block(variant: dict | None) -> list[str]:
     return lines
 
 
-def _counterfactual_block(cfs: list[dict] | None) -> list[str]:
-    if not cfs:
-        return []
-    lines = ["## Settings experiments (decision-level)", ""]
-    for cf in cfs:
-        lines.append(
-            f"- **{cf.get('label')}**: over {cf.get('n_evaluated')} cycles, the controller's "
-            f"decision changed on {cf.get('n_changed')}; net delivery change "
-            f"{_fmt(cf.get('total_delta_u'), ' U')} (mean {_fmt(cf.get('mean_delta_u'), ' U')}/cycle)."
-        )
-    lines.append("")
-    lines.append(f"_{cfs[0].get('caveat', '')}_")
-    return lines
-
-
-def render_report(
-    diagnostics: dict,
-    variant: dict | None = None,
-    counterfactuals: list[dict] | None = None,
-    counterfactual_note: str | None = None,
-) -> str:
+def render_report(diagnostics: dict, variant: dict | None = None) -> str:
     """Render a full deterministic Markdown report from structured findings."""
     counts = diagnostics.get("counts", {})
     parts: list[str] = [
@@ -113,12 +94,6 @@ def render_report(
     parts += _glycemia_block(diagnostics.get("glycemia", {}))
     parts.append("")
     parts += _findings_block(diagnostics.get("findings", []))
-    if counterfactuals:
-        parts += _counterfactual_block(counterfactuals)
-        if counterfactual_note:
-            parts += ["", f"_{counterfactual_note}_"]
-    elif counterfactual_note:
-        parts += ["", "## Settings experiments (decision-level)", "", f"_{counterfactual_note}_"]
     parts += ["", "---", "", DISCLAIMER]
     return "\n".join(parts)
 
@@ -155,12 +130,20 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
         "Each setting is stepped from −30% to +30% and the loop is re-run through every "
         f"5-minute cycle ({result['cycles']}) under each value. Basal is tested first, on "
         "fasting stretches; ISF next, on correction stretches; then carb ratio on meals; then "
-        "target and the SMB limit over the whole period. Each stage keeps the choices before it.",
+        "target, the SMB limit and max IOB over the whole period. Each stage keeps the choices "
+        "before it.",
         "",
         f"_{result['caveat']}_",
     ]
     if result.get("variant_note"):
         lines += ["", f"_{result['variant_note']}_"]
+    curve = result.get("insulin_curve") or {}
+    fit = curve.get("insulin_curve_fit_u") or {}
+    if curve.get("insulin_curve"):
+        gap = fit.get(curve["insulin_curve"])
+        lines += ["", f"Insulin curve: {curve['insulin_curve']} ({curve.get('insulin_curve_source')}"
+                  + (f"; insulin on board rebuilt from your treatments sits a median {gap} U from "
+                     "what your loop logged" if gap is not None else "") + ")."]
     applied: list[str] = []
     for i, st in enumerate(result["stages"], 1):
         lines += ["", f"### {i}. {st['name']}", ""]
