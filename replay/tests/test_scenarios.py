@@ -172,3 +172,24 @@ def test_target_labels_describe_the_whole_schedule():
     labels = [r["label"] for r in res["stages"][3]["rows"]]
     assert labels[0] == "86–112 mg/dL (4.8–6.2 mmol/L) (current)"   # 86-9 = 77 is under 80
     assert labels[1] == "+0.5 mmol/L (+9 mg/dL) on every target: 95–121 mg/dL (5.3–6.7 mmol/L)"
+
+
+def test_max_iob_no_change_row_is_the_exact_current_value():
+    entries = _readings(([110] * 30 + [62] * 6) * 8)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    kept, seen = {}, []
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        seen.extend(payload["scenarios"])
+        return {"t": t, "scenarios": [{"du": [0.0] * len(t), "dbg": [0.0] * len(t), "failed": 0}
+                                      for _ in payload["scenarios"]]}
+
+    res = run_settings_tests(fake_sim, requests, entries, [], {"max_iob": 7.19})
+    stage = res["stages"][5]
+    assert 7.19 in [r["value"] for r in stage["rows"]]
+    assert "7.19 U (current)" in [r["label"] for r in stage["rows"]]
+    assert stage["chosen"] == 7.19          # nothing to gain from moving it, so it stays exact
+    assert res["chosen"]["max_iob"] == 7.19

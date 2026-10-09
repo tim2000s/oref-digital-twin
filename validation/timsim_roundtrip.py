@@ -43,6 +43,19 @@ RESULTS = os.path.join(HERE, "results")
 
 LEARN_DAYS = 14
 EVAL_DAYS = 28
+
+# Mis-set starting profiles for BAD_PROFILES_PLAN.md: multipliers on the titrated arrays.
+CONDITIONS = {
+    "titrated": {},
+    "isf_strong": {"isf": 0.7},
+    "isf_weak": {"isf": 1.4},
+    "basal_high": {"basal": 1.3},
+    "basal_low": {"basal": 0.7},
+    "cr_strong": {"cr": 0.7},
+    "cr_weak": {"cr": 1.4},
+    "all_strong": {"isf": 0.7, "basal": 1.3, "cr": 0.7},
+    "all_weak": {"isf": 1.4, "basal": 0.7, "cr": 1.4},
+}
 LEARN_SEED = 202          # distinct from TimSim's titration (11) and benchmark (101) seeds
 SAMPLE_MIN = 5
 
@@ -190,6 +203,14 @@ def apply_choices(profile, chosen):
                    limits=lim)
 
 
+def mis_set(profile, condition):
+    m = CONDITIONS[condition]
+    return replace(profile,
+                   isf=profile.isf * m.get("isf", 1.0),
+                   basal_u_per_hour=profile.basal_u_per_hour * m.get("basal", 1.0),
+                   cr=profile.cr * m.get("cr", 1.0))
+
+
 def outcomes(result) -> dict:
     """One function for both arms: sensor (cgm) and true glucose (bg) bands, in percent."""
     import numpy as np
@@ -220,15 +241,20 @@ def titrate_one(job):
 
 
 def roundtrip_one(job):
-    name, store, eval_seed = job
+    name, store, eval_seed, condition, learn_days, eval_days = job
     _paths()
     from replay import OrefOracle
     from report.browser import build_report, settings_tests
     from timsim.therapy import titrate
 
     t0 = time.time()
-    p0 = titrate.profile_for(name, path=store)
-    learn, sugg = run_timsim(name, p0, LEARN_DAYS, LEARN_SEED)
+    # profile_for checks the store against the code that wrote it; the issue 54 fix changed
+    # only the AndroidAPS adapters, so the titration is rebuilt the same way from its scales
+    rec = json.load(open(store))["subjects"][name]
+    titrated = titrate._profile(name, rec["scale"],
+                                1.0 if rec.get("basal_scale") is None else rec["basal_scale"])
+    p0 = mis_set(titrated, condition)
+    learn, sugg = run_timsim(name, p0, learn_days, LEARN_SEED)
     raw = to_nightscout(learn, sugg, p0)
     oracle = OrefOracle()
     rep = build_report(raw, oref_runner=oracle._runner, settings=twin_settings(p0))
@@ -239,11 +265,20 @@ def roundtrip_one(job):
     chosen = tests["result"]["chosen"]
     p1 = apply_choices(p0, chosen)
     smb1 = chosen.get("smb_minutes")
-    e0, _ = run_timsim(name, p0, EVAL_DAYS, eval_seed)
-    e1, _ = run_timsim(name, p1, EVAL_DAYS, eval_seed,
+    e0, _ = run_timsim(name, p0, eval_days, eval_seed)
+    e1, _ = run_timsim(name, p1, eval_days, eval_seed,
                        smb_minutes=None if smb1 in (None, 75) else smb1)
     return {
-        "name": name, "seconds": round(time.time() - t0, 1),
+        "name": name, "condition": condition, "seconds": round(time.time() - t0, 1),
+        "mis_set": CONDITIONS[condition],
+        "titrated_vs_start": {
+            "isf": float(p0.isf.mean() / titrated.isf.mean()),
+            "basal": float(p0.basal_u_per_hour.sum() / titrated.basal_u_per_hour.sum()),
+            "cr": float(p0.cr.mean() / titrated.cr.mean())},
+        "titrated_vs_twin": {
+            "isf": float(p1.isf.mean() / titrated.isf.mean()),
+            "basal": float(p1.basal_u_per_hour.sum() / titrated.basal_u_per_hour.sum()),
+            "cr": float(p1.cr.mean() / titrated.cr.mean())},
         "profile0": {"basal_u_per_day": float(p0.basal_u_per_hour.sum()),
                      "isf_mean": float(p0.isf.mean()), "cr_mean": float(p0.cr.mean()),
                      "target": [p0.target_lo, p0.target_hi], "max_iob": p0.limits.max_iob_u},
@@ -286,14 +321,24 @@ def main():
     ap.add_argument("--workers", type=int, default=7)
     ap.add_argument("--titration-days", type=int, default=28)
     ap.add_argument("--tag", default=datetime.now().strftime("%Y-%m-%d"))
+    ap.add_argument("--conditions", default="titrated",
+                    help="comma-separated names from CONDITIONS; anything but 'titrated' alone "
+                         "writes bad_profiles_<tag>.json instead of the round-trip summary")
+    ap.add_argument("--store", help="an existing titration store to use instead of titrating")
+    ap.add_argument("--learn-days", type=int, default=LEARN_DAYS)
+    ap.add_argument("--eval-days", type=int, default=EVAL_DAYS)
     a = ap.parse_args()
+    conditions = [c.strip() for c in a.conditions.split(",") if c.strip()]
+    unknown = [c for c in conditions if c not in CONDITIONS]
+    if unknown:
+        raise SystemExit(f"unknown conditions {unknown}; known: {list(CONDITIONS)}")
 
     from timsim import seeds
     from timsim.population import names
     from timsim.therapy import titrate
 
     os.makedirs(RESULTS, exist_ok=True)
-    store = os.path.join(RESULTS, f"titrated_{a.tag}.json")
+    store = a.store or os.path.join(RESULTS, f"titrated_{a.tag}.json")
     subjects = list(names("adult"))[: a.subjects]
     t0 = time.time()
     if not os.path.exists(store):
@@ -302,10 +347,25 @@ def main():
         titrate.save(tit, path=store, meta={"by": "oref-digital-twin validation/timsim_roundtrip.py"})
         print(f"titrated {sum(r.get('found', False) for r in tit)}/{len(tit)} in {time.time()-t0:.0f}s", flush=True)
     ok = [n for n, r in json.load(open(store))["subjects"].items() if r.get("found")]
+    ok = [n for n in ok if n in subjects]
 
+    jobs = [(n, store, seeds.BENCH, c, a.learn_days, a.eval_days) for c in conditions for n in ok]
     with ProcessPoolExecutor(a.workers) as ex:
-        rows = list(ex.map(roundtrip_one, [(n, store, seeds.BENCH) for n in ok]))
+        rows = list(ex.map(roundtrip_one, jobs))
     good = [r for r in rows if "error" not in r]
+    if conditions != ["titrated"]:
+        out = os.path.join(RESULTS, f"bad_profiles_{a.tag}.json")
+        for r in good:
+            r.pop("report_md", None)
+        with open(out, "w") as fh:
+            json.dump({"design": {"conditions": {c: CONDITIONS[c] for c in conditions},
+                                  "store": os.path.relpath(store, TWIN), "subjects": ok,
+                                  "learn_days": a.learn_days, "learn_seed": LEARN_SEED,
+                                  "eval_days": a.eval_days, "eval_seed": seeds.BENCH},
+                       "failed": [r for r in rows if "error" in r], "rows": good,
+                       "seconds": round(time.time() - t0, 1)}, fh, indent=1, default=float)
+        print(f"wrote {out} ({len(good)} rows, {time.time()-t0:.0f}s)", flush=True)
+        return
 
     os.makedirs(os.path.join(RESULTS, f"reports_{a.tag}"), exist_ok=True)
     for r in good:

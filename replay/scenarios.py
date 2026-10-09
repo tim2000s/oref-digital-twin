@@ -393,7 +393,10 @@ def run_settings_tests(
     max_iob = settings.get("max_iob")
     if max_iob is not None and float(max_iob) > 0:
         current_iob = float(max_iob)
-        values = sorted({round(current_iob * k, 1) for k in SCALES})
+        # The other values are rounded to 0.1 U; the current one is not, or "no change" would
+        # quietly move max IOB by up to 0.05 U. On 9 October that rounding alone moved one
+        # simulated subject's month by 0.3 points of time below 54.
+        values = sorted({round(current_iob * k, 1) for k in SCALES if k != 1.0} | {current_iob})
         chosen["max_iob"] = stage(
             "Max IOB", "max IOB", "all", values,
             lambda v: scen(max_iob=v), current_iob,
