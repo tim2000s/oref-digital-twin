@@ -30,8 +30,9 @@ mean and range across subjects. The paired difference (twin minus start) carries
 ### Two corrections to TimSim's oref controller made first
 
 Checking the exported data turned up two defects in TimSim's oref0 adapter, now TimSim issue 54.
-The run used the corrected behaviour through a subclass in the script, and TimSim has since been
-fixed the same way.
+The run applied both corrections through a subclass in the script. TimSim was then fixed the
+same way in f0e5e45, and the script now requires that commit; against it, the export check
+reproduces the figures below to the third decimal.
 
 - It pruned its insulin ledger with a 240-minute margin added to the cutoff, so every dose more
   than an hour old was dropped. On one subject over two days oref was handed a mean of 1.31 U of

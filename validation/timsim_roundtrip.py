@@ -56,8 +56,7 @@ def _paths():
 # ----------------------------------------------------------------------------- TimSim side
 
 class SettableOref:
-    """TimSim's OrefController with the SMB limits taken from the profile under test, and
-    with its insulin-on-board ledger no longer pruned an hour early (see `prune` below).
+    """TimSim's OrefController with the SMB limits taken from the profile under test.
 
     TimSim fixes maxSMBBasalMinutes at 75 and maxUAMSMBBasalMinutes at 45. The twin can
     suggest a different SMB limit, so the evaluation arm has to be able to run it.
@@ -68,23 +67,15 @@ class SettableOref:
         _paths()
         from timsim.controller import inputs as INP
         from timsim.controller import oref as O
+        from timsim.therapy import insulin as INS
 
-        # The loop's insulin curve as AndroidAPS has it. TimSim's adapter uses a
-        # piecewise-quadratic curve that leaves 0.04 to 0.07 more of each unit on board between
-        # one and four hours than oref0's exponential one; a real AAPS user's loop, and the
-        # twin replaying it, use the exponential. The simulated body is not affected: this is
-        # only what the loop believes is on board.
-        INP.iob_fraction = oref_iob_fraction
+        # TimSim's oref adapter pruned its insulin ledger an hour early and used a curve
+        # AndroidAPS does not (TimSim issue 54, fixed in f0e5e45). The 9 October run applied
+        # both corrections here; with the fix in TimSim they are refused rather than repeated.
+        if INP.iob_fraction is not getattr(INS, "oref_iob_fraction", None):
+            raise RuntimeError("TimSim predates its issue 54 fix (f0e5e45); update it first")
 
         class _C(O.OrefController):
-            def prune(self, minute, margin=0.0):
-                # TimSim's oref adapter calls prune with margin = 48 ticks x 5 min, giving a
-                # cutoff of minute - 300 + 240: every dose over an hour old was dropped and oref
-                # saw about half the insulin on board (mean 1.31 U against 2.60 U on one
-                # subject over two days). Entries older than the duration of action are the
-                # only ones that can never contribute, so that is the cutoff used here.
-                return super().prune(minute, margin=0.0)
-
             def _static_profile(self):
                 p = super()._static_profile()
                 if smb_minutes is not None:
@@ -93,22 +84,6 @@ class SettableOref:
                 return p
 
         return _C(name, profile=profile)
-
-
-def oref_iob_fraction(age_min, dia_min=300.0, peak_min=75.0):
-    """oref0 lib/iob/calculate.js, exponential curve: the fraction of a unit still on board."""
-    import math
-
-    if age_min <= 0:
-        return 1.0
-    end, peak = float(dia_min), float(peak_min)
-    if age_min >= end:
-        return 0.0
-    tau = peak * (1 - peak / end) / (1 - 2 * peak / end)
-    a = 2 * tau / end
-    s = 1 / (1 - a + (1 + a) * math.exp(-end / tau))
-    return 1 - s * (1 - a) * ((age_min ** 2 / (tau * end * (1 - a)) - age_min / tau - 1)
-                              * math.exp(-age_min / tau) + 1)
 
 
 def run_timsim(name, profile, days, seed, smb_minutes=None):
