@@ -213,18 +213,24 @@ def mis_set(profile, condition):
 
 def outcomes(result) -> dict:
     """One function for both arms: sensor (cgm) and true glucose (bg) bands, in percent."""
+    return outcomes_pooled([result])
+
+
+def outcomes_pooled(results) -> dict:
+    """The same bands over several runs of one profile, their readings pooled."""
     import numpy as np
 
     out = {}
     for sig in ("cgm", "bg"):
-        v = np.asarray(getattr(result, sig), float)
+        v = np.concatenate([np.asarray(getattr(r, sig), float) for r in results])
         out[sig] = {"tir": float(100 * np.mean((v >= 70) & (v <= 180))),
                     "tbr70": float(100 * np.mean(v < 70)), "tbr54": float(100 * np.mean(v < 54)),
                     "tar180": float(100 * np.mean(v > 180)), "tar250": float(100 * np.mean(v > 250)),
                     "mean": float(v.mean())}
-    out["insulin_u_per_day"] = float(result.insulin_units) / max(result.days_requested, 1)
-    out["rescue_events"] = int(result.rescue_events)
-    out["completed"] = bool(result.completed)
+    out["insulin_u_per_day"] = (float(sum(r.insulin_units for r in results))
+                                / max(sum(r.days_requested for r in results), 1))
+    out["rescue_events"] = int(sum(r.rescue_events for r in results))
+    out["completed"] = all(bool(r.completed) for r in results)
     return out
 
 
@@ -241,7 +247,9 @@ def titrate_one(job):
 
 
 def roundtrip_one(job):
-    name, store, eval_seed, condition, learn_days, eval_days = job
+    name, store, eval_seeds, condition, learn_days, eval_days, null_arm = job
+    if isinstance(eval_seeds, int):
+        eval_seeds = [eval_seeds]
     _paths()
     from replay import OrefOracle
     from report.browser import build_report, settings_tests
@@ -265,9 +273,23 @@ def roundtrip_one(job):
     chosen = tests["result"]["chosen"]
     p1 = apply_choices(p0, chosen)
     smb1 = chosen.get("smb_minutes")
-    e0, _ = run_timsim(name, p0, eval_days, eval_seed)
-    e1, _ = run_timsim(name, p1, eval_days, eval_seed,
-                       smb_minutes=None if smb1 in (None, 75) else smb1)
+    # Each arm on every evaluation seed, pooled per subject. The null arm is the starting
+    # profile with max IOB 0.03 U higher: a change with no clinical meaning, whose effect on a
+    # month measures the noise a per-subject harm threshold has to sit above.
+    smb_run = None if smb1 in (None, 75) else smb1
+    p_null = replace(p0, limits=replace(p0.limits, max_iob_u=p0.limits.max_iob_u + 0.03))
+    per_seed, runs0, runs1, runs_null = {}, [], [], []
+    for s in eval_seeds:
+        r0, _ = run_timsim(name, p0, eval_days, s)
+        r1, _ = run_timsim(name, p1, eval_days, s, smb_minutes=smb_run)
+        runs0.append(r0)
+        runs1.append(r1)
+        per_seed[str(s)] = {"start": outcomes(r0), "twin": outcomes(r1)}
+        if null_arm:
+            rn, _ = run_timsim(name, p_null, eval_days, s)
+            runs_null.append(rn)
+            per_seed[str(s)]["null"] = outcomes(rn)
+    e0, e1 = runs0, runs1
     return {
         "name": name, "condition": condition, "seconds": round(time.time() - t0, 1),
         "mis_set": CONDITIONS[condition],
@@ -286,8 +308,11 @@ def roundtrip_one(job):
         "twin_estimate": tests["result"]["final"],
         "twin_observed": tests["result"]["observed"]["all"],
         "learn": outcomes(learn),
-        "eval_start": outcomes(e0),
-        "eval_twin": outcomes(e1),
+        "eval_seeds": list(eval_seeds),
+        "eval_start": outcomes_pooled(e0),
+        "eval_twin": outcomes_pooled(e1),
+        **({"eval_null": outcomes_pooled(runs_null)} if null_arm else {}),
+        "per_seed": per_seed,
         "report_md": rep["report_md"] + "\n\n" + tests["report_md"],
     }
 
@@ -327,6 +352,11 @@ def main():
     ap.add_argument("--store", help="an existing titration store to use instead of titrating")
     ap.add_argument("--learn-days", type=int, default=LEARN_DAYS)
     ap.add_argument("--eval-days", type=int, default=EVAL_DAYS)
+    ap.add_argument("--eval-seeds", default=None,
+                    help="comma-separated evaluation seeds, pooled per subject; default the "
+                         "benchmark seed alone")
+    ap.add_argument("--null", action="store_true",
+                    help="add the null arm: the starting profile with max IOB 0.03 U higher")
     a = ap.parse_args()
     conditions = [c.strip() for c in a.conditions.split(",") if c.strip()]
     unknown = [c for c in conditions if c not in CONDITIONS]
@@ -349,7 +379,9 @@ def main():
     ok = [n for n, r in json.load(open(store))["subjects"].items() if r.get("found")]
     ok = [n for n in ok if n in subjects]
 
-    jobs = [(n, store, seeds.BENCH, c, a.learn_days, a.eval_days) for c in conditions for n in ok]
+    eval_seeds = ([int(s) for s in a.eval_seeds.split(",")] if a.eval_seeds else [seeds.BENCH])
+    jobs = [(n, store, eval_seeds, c, a.learn_days, a.eval_days, a.null)
+            for c in conditions for n in ok]
     with ProcessPoolExecutor(a.workers) as ex:
         rows = list(ex.map(roundtrip_one, jobs))
     good = [r for r in rows if "error" not in r]
@@ -361,7 +393,8 @@ def main():
             json.dump({"design": {"conditions": {c: CONDITIONS[c] for c in conditions},
                                   "store": os.path.relpath(store, TWIN), "subjects": ok,
                                   "learn_days": a.learn_days, "learn_seed": LEARN_SEED,
-                                  "eval_days": a.eval_days, "eval_seed": seeds.BENCH},
+                                  "eval_days": a.eval_days, "eval_seeds": eval_seeds,
+                                  "eval_seed": eval_seeds[0], "null_arm": a.null},
                        "failed": [r for r in rows if "error" in r], "rows": good,
                        "seconds": round(time.time() - t0, 1)}, fh, indent=1, default=float)
         print(f"wrote {out} ({len(good)} rows, {time.time()-t0:.0f}s)", flush=True)
