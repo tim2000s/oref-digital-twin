@@ -193,3 +193,47 @@ def test_max_iob_no_change_row_is_the_exact_current_value():
     assert "7.19 U (current)" in [r["label"] for r in stage["rows"]]
     assert stage["chosen"] == 7.19          # nothing to gain from moving it, so it stays exact
     assert res["chosen"]["max_iob"] == 7.19
+
+
+def _shift_sim(shift_of):
+    kept = {}
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        return {"t": t, "scenarios": [{"du": [0.0] * len(t), "dbg": [shift_of(sc)] * len(t),
+                                       "failed": 0} for sc in payload["scenarios"]]}
+    return fake_sim
+
+
+def test_more_insulin_is_excluded_when_it_would_raise_lows_past_the_limits():
+    # A flat 68-75 day: below 70 now and then. More basal lowers glucose and raises time in
+    # range only on paper; any value giving more insulin that takes the whole period's time below
+    # 54 to 0.6% or more must be excluded, however much range it adds.
+    vals = ([72] * 20 + [100] * 20 + [56] * 1) * 10
+    entries = _readings(vals)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    res = run_settings_tests(_shift_sim(lambda sc: (1 - sc["basal_scale"]) * 30),
+                             requests, entries, [], {})
+    basal = res["stages"][0]
+    stronger = [r for r in basal["rows"] if r["more_insulin"]]
+    assert stronger and all(r["excluded"] == (r["est_all"]["tbr"] >= 2.0 or r["est_all"]["tbr54"] >= 0.6)
+                            for r in stronger)
+    assert basal["chosen"] <= 1.0
+    assert not any(r["excluded"] for r in basal["rows"] if not r["more_insulin"])
+
+
+def test_isf_is_judged_on_the_whole_period_not_on_the_high_slice():
+    # Correction stretches (3 h after a reading over 180) are high by selection, 0% in range
+    # here, but the whole period meets both goals; ISF must be left alone.
+    # a slow rise (30 mg/dL an hour) so the high is not taken for an unannounced meal
+    ramp = [round(110 + 90 * i / 36) for i in range(36)]
+    day = [110] * 100 + ramp + [200] * 12 + [150] * 36 + [110] * 64
+    entries = _readings(day * 4)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    res = run_settings_tests(_shift_sim(lambda sc: (1 - sc["isf_scale"]) * -40), requests,
+                             entries, [], {})
+    isf = res["stages"][1]
+    assert isf["enough_hours"] >= 6 and isf["measured_on"] == "all"
+    assert isf["chosen"] == 1.0 and isf["why"] == "already meets both goals"

@@ -52,7 +52,7 @@ keeping the values chosen before it:
 | Order | Setting | Stepped across | Judged on |
 |---|---|---|---|
 | 1 | Basal rates | −30% to +30% | Fasting stretches: no carbs or meal-sized rise in 4 h, nothing above 180 mg/dL in 3 h |
-| 2 | ISF | −30% to +30% | Correction stretches: above 180 mg/dL in the last 3 h, outside meals |
+| 2 | ISF | −30% to +30% | The whole period, once there are at least 6 h of correction stretches (above 180 mg/dL in the last 3 h, outside meals) |
 | 3 | Carb ratio | −30% to +30%, with logged meal boluses scaled to match | The 4 h after logged carbs or a meal-sized rise |
 | 4 | Target | −1 to +1 mmol/L in 0.5 steps | The whole period |
 | 5 | SMB limit (maximum SMB basal minutes) | 15 to 90 minutes | The whole period |
@@ -61,7 +61,9 @@ keeping the values chosen before it:
 The goal is time in range above 70% and time below range under 2%. At each stage the page
 picks the smallest change that meets both. When no value does, it keeps time below range
 under 2% with the most time in range, and failing that it picks the value with the least
-time below range, because a low is the more immediate harm. A stage is reported but not
+time below range, because a low is the more immediate harm. A value that gives more insulin than the current
+setting is only considered when the whole period's estimate keeps time below 70 under 2% and
+time below 54 under 0.6%. A stage is reported but not
 judged when its stretches add up to less than 6 hours, which is common for ISF in someone
 who rarely runs high, and the carb-ratio stage is skipped when no carbs were logged.
 

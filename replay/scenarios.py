@@ -7,8 +7,8 @@ time below range under 2%:
 
   1. basal, on fasting stretches (no carbs or unannounced rise in the last 4 h, and no
      reading above 180 mg/dL in the last 3 h);
-  2. ISF, on correction stretches (a reading above 180 mg/dL in the last 3 h, outside meals),
-     with the basal chosen in stage 1;
+  2. ISF, on the whole period, judged only when there are at least 6 h of correction stretches
+     (a reading above 180 mg/dL in the last 3 h, outside meals), with the basal from stage 1;
   3. carb ratio, on meal stretches (the 4 h after logged carbs or an unannounced rise), with
      the basal and ISF chosen before it; logged meal boluses are scaled by the same factor,
      on the assumption that they came from the bolus wizard;
@@ -38,6 +38,12 @@ from ingestion.models import GlucoseReading, Treatment
 
 GOAL_TIR_PCT = 70.0       # time in range, 70-180 mg/dL: more than this
 GOAL_TBR_PCT = 2.0        # time below 70 mg/dL: less than this
+# A value giving more insulin than the current setting is only considered when the whole
+# period's estimate stays under both of these (Tim Street, 9 October 2026). Without it the rule
+# could trade a person with almost no lows up towards 2% for time in range, which on TimSim took
+# one subject's time below 54 from 0.01% to 0.81% (validation/BAD_PROFILES.md).
+STRENGTHEN_TBR70_MAX = 2.0
+STRENGTHEN_TBR54_MAX = 0.6
 
 SCALES = (0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3)
 TARGET_OFFSETS_MGDL = (-18, -9, 0, 9, 18)      # about -1, -0.5, 0, +0.5, +1 mmol/L
@@ -169,9 +175,10 @@ def _metrics(ts: list[int], bg: list[float], mask: list[bool], step_min: float) 
     sel = [(t, g) for t, g, m in zip(ts, bg, mask) if m]
     n = len(sel)
     if not n:
-        return {"n": 0, "hours": 0.0, "tir": None, "tbr": None, "lows": 0}
+        return {"n": 0, "hours": 0.0, "tir": None, "tbr": None, "tbr54": None, "lows": 0}
     tir = sum(LOW_MGDL <= g <= HIGH_MGDL for _, g in sel) / n * 100
     tbr = sum(g < LOW_MGDL for _, g in sel) / n * 100
+    tbr54 = sum(g < 54 for _, g in sel) / n * 100
     # a low episode is a run of readings below 70 lasting at least 15 minutes; a gap of more
     # than 15 minutes between readings ends a run
     lows, run_start, run_last = 0, None, None
@@ -186,7 +193,7 @@ def _metrics(ts: list[int], bg: list[float], mask: list[bool], step_min: float) 
     if run_last is not None and run_last - run_start >= LOW_EPISODE_MIN * 60_000:
         lows += 1
     return {"n": n, "hours": round(n * step_min / 60, 1), "tir": round(tir, 1),
-            "tbr": round(tbr, 1), "lows": lows}
+            "tbr": round(tbr, 1), "tbr54": round(tbr54, 2), "lows": lows}
 
 
 def _meets(m: dict) -> bool:
@@ -203,6 +210,8 @@ def choose(rows: list[dict]) -> tuple[dict, str]:
     def change(r: dict) -> float:
         return abs(r["distance"])
 
+    # More insulin than now is only on the table while the whole period's lows stay low.
+    rows = [r for r in rows if not r.get("excluded")]
     ok = [r for r in rows if _meets(r["est"])]
     if ok:
         best = min(ok, key=lambda r: (change(r), -r["est"]["tir"]))
@@ -286,29 +295,36 @@ def run_settings_tests(
     has_carbs = any((t.carbs_g or 0) > 0 for t in treatments)
 
     def stage(name: str, lever: str, measured_on: str, values: list, make, neutral,
-              fmt, note: str | None = None) -> Any:
+              fmt, more_insulin, note: str | None = None, enough_on: str | None = None) -> Any:
         say(f"Settings tests: {name.lower()} ({len(stages) + 1} of {n_stages}), "
             f"{len(values)} values")
         scenarios = [make(v) for v in values]
         results = run(scenarios)
         rows = []
         for v, sc, res in zip(values, scenarios, results):
+            est_all = _metrics(ts, res["shifted"], masks["all"], step_min)
+            stronger = bool(more_insulin(v))
             rows.append({
                 "value": v, "label": fmt(v), "distance": (v - neutral),
                 "du_per_day": res["du_per_day"], "mean_shift": res["mean_shift"],
                 "failed": res["failed"],
                 "est": _metrics(ts, res["shifted"], masks[measured_on], step_min),
-                "est_all": _metrics(ts, res["shifted"], masks["all"], step_min),
+                "est_all": est_all,
+                "more_insulin": stronger,
+                "excluded": stronger and not (est_all["tbr"] < STRENGTHEN_TBR70_MAX
+                                              and est_all["tbr54"] < STRENGTHEN_TBR54_MAX),
             })
         seg = observed[measured_on]
+        gate = observed[enough_on or measured_on]
         entry = {"name": name, "lever": lever, "measured_on": measured_on,
+                 "enough_on": enough_on, "enough_hours": gate["hours"],
                  "segment_hours": seg["hours"], "observed": seg, "rows": rows, "note": note}
         entry["neutral"] = neutral
-        if seg["hours"] < MIN_SEGMENT_HOURS:
+        if gate["hours"] < MIN_SEGMENT_HOURS:
             entry["chosen"] = neutral
             entry["chosen_label"] = fmt(neutral)
-            entry["why"] = (f"only {seg['hours']} h of {measured_on} readings, under the "
-                            f"{MIN_SEGMENT_HOURS} h needed to judge it; left unchanged")
+            entry["why"] = (f"only {gate['hours']} h of {enough_on or measured_on} readings, "
+                            f"under the {MIN_SEGMENT_HOURS} h needed to judge it; left unchanged")
         else:
             best, why = choose(rows)
             entry["chosen"] = best["value"]
@@ -338,14 +354,18 @@ def run_settings_tests(
 
     chosen["basal_scale"] = stage(
         "Basal", "basal rates", "fasting", list(SCALES),
-        lambda k: scen(basal_scale=k), 1.0, pct)
+        lambda k: scen(basal_scale=k), 1.0, pct, more_insulin=lambda k: k > 1)
+    # ISF is judged on the whole period. Correction stretches, the readings within 3 h of one
+    # above 180, only decide whether there is enough to judge: they are selected for being high,
+    # so a time-in-range goal applied to them pushed ISF stronger for nearly everyone.
     chosen["isf_scale"] = stage(
-        "ISF", "ISF", "correction", list(SCALES),
-        lambda k: scen(isf_scale=k), 1.0, pct)
+        "ISF", "ISF", "all", list(SCALES),
+        lambda k: scen(isf_scale=k), 1.0, pct, more_insulin=lambda k: k < 1,
+        enough_on="correction")
     if has_carbs:
         chosen["cr_scale"] = stage(
             "Carb ratio", "carb ratio", "meal", list(SCALES),
-            lambda k: scen(cr_scale=k), 1.0, pct,
+            lambda k: scen(cr_scale=k), 1.0, pct, more_insulin=lambda k: k < 1,
             note="Logged meal boluses are scaled with the ratio, as the bolus wizard would.")
     else:
         stages.append({"name": "Carb ratio", "lever": "carb ratio", "measured_on": "meal",
@@ -372,7 +392,8 @@ def run_settings_tests(
         return f"{o / 18.0:+.1f} mmol/L ({o:+d} mg/dL) on every target: {span}"
 
     chosen["target_offset"] = stage(
-        "Target", "target", "all", offsets, lambda o: scen(target_offset=o), 0, fmt_target)
+        "Target", "target", "all", offsets, lambda o: scen(target_offset=o), 0, fmt_target,
+        more_insulin=lambda o: o < 0)
 
     smb_on = bool(settings.get("enable_smb"))
     current_smb = settings.get("max_smb_minutes", 30)
@@ -382,6 +403,7 @@ def run_settings_tests(
             "SMB limit", "maximum SMB basal minutes", "all", values,
             lambda m: scen(smb_minutes=m), current_smb,
             lambda m: f"{m} min" + (" (current)" if m == current_smb else ""),
+            more_insulin=lambda m: m > current_smb,
             note=None if settings.get("max_smb_minutes") is not None else
             "Your current SMB limit was not in the data; 30 minutes was assumed.")
     else:
@@ -400,7 +422,8 @@ def run_settings_tests(
         chosen["max_iob"] = stage(
             "Max IOB", "max IOB", "all", values,
             lambda v: scen(max_iob=v), current_iob,
-            lambda v: f"{v:g} U" + (" (current)" if v == current_iob else ""))
+            lambda v: f"{v:g} U" + (" (current)" if v == current_iob else ""),
+            more_insulin=lambda v: v > current_iob)
     else:
         stages.append({"name": "Max IOB", "lever": "max IOB", "measured_on": "all", "rows": [],
                        "chosen": max_iob, "chosen_label": "not tested",
@@ -408,7 +431,9 @@ def run_settings_tests(
 
     final = run([scen()])[0]
     return {
-        "goals": {"tir_gt_pct": GOAL_TIR_PCT, "tbr_lt_pct": GOAL_TBR_PCT},
+        "goals": {"tir_gt_pct": GOAL_TIR_PCT, "tbr_lt_pct": GOAL_TBR_PCT,
+                  "strengthen_tbr70_lt_pct": STRENGTHEN_TBR70_MAX,
+                  "strengthen_tbr54_lt_pct": STRENGTHEN_TBR54_MAX},
         "cycles": len(requests),
         "days": round(days, 1),
         "segment_hours": {k: observed[k]["hours"] for k in ("fasting", "correction", "meal")},

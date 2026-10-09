@@ -129,11 +129,16 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
         "",
         "Each setting is stepped from −30% to +30% and the loop is re-run through every "
         f"5-minute cycle ({result['cycles']}) under each value. Basal is tested first, on "
-        "fasting stretches; ISF next, on correction stretches; then carb ratio on meals; then "
-        "target, the SMB limit and max IOB over the whole period. Each stage keeps the choices "
-        "before it.",
+        "fasting stretches; ISF next, on the whole period once there are enough correction "
+        "stretches to judge it; then carb ratio on meals; then target, the SMB limit and max IOB "
+        "over the whole period. Each stage keeps the choices before it.",
         "",
         f"_{result['caveat']}_",
+        "",
+        f"A value that gives more insulin than your current setting is only considered when the "
+        f"estimate for the whole period keeps time below 70 under "
+        f"{goals.get('strengthen_tbr70_lt_pct', 2):g}% and time below 54 under "
+        f"{goals.get('strengthen_tbr54_lt_pct', 0.6):g}%; rows that fail it are marked.",
     ]
     if result.get("variant_note"):
         lines += ["", f"_{result['variant_note']}_"]
@@ -154,6 +159,10 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
         seg = st["observed"]
         lines.append(f"Judged on {where}: {st['segment_hours']} h of readings, observed "
                      f"{_fmt(seg['tir'], '%')} in range and {_fmt(seg['tbr'], '%')} below.")
+        if st.get("enough_on"):
+            lines.append(f"Judged only with at least 6 h of "
+                         f"{_SEGMENT_TEXT.get(st['enough_on'], st['enough_on'])}: there were "
+                         f"{st['enough_hours']} h.")
         if applied:
             lines.append(f"Run with {', '.join(applied)}.")
         if st.get("note"):
@@ -167,14 +176,19 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
         if not whole:
             head += " In range (all) | Below range (all) |"
             rule += "---|---|"
+        head += " Below 54 (all) |"
+        rule += "---|"
         lines += ["", head, rule]
         for r in st["rows"]:
             mark = " ←" if r["value"] == st["chosen"] else ""
+            if r.get("excluded"):
+                mark += " (excluded: more insulin with too many lows)"
             row = (f"| {r['label']}{mark} | {_signed_mgdl(r['mean_shift'])} "
                    f"| {_fmt(r['est']['tir'], '%')} | {_fmt(r['est']['tbr'], '%')} "
                    f"| {r['est']['lows']} |")
             if not whole:
                 row += f" {_fmt(r['est_all']['tir'], '%')} | {_fmt(r['est_all']['tbr'], '%')} |"
+            row += f" {_fmt(r['est_all'].get('tbr54'), '%')} |"
             lines.append(row)
         if st["chosen"] == st.get("neutral"):
             lines += ["", f"No change suggested: {st['why']}."]

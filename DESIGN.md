@@ -74,9 +74,11 @@ determine-basal through every 5-minute cycle of the period, closed-loop: the ins
 difference from each earlier cycle is added to the insulin-on-board projection with oref0's
 own insulin curve, and shifts glucose by units × profile ISF (adjusted by autosens) × the
 fraction of that insulin's action completed, so the loop sees and reacts to the shifted
-glucose at the next cycle. Basal is judged on fasting stretches, ISF on correction
-stretches, carb ratio on meal stretches and the last three on the whole period, each stage
-keeping the earlier choices. They replaced the report's earlier decision-level section,
+glucose at the next cycle. Basal is judged on fasting stretches, carb ratio on meal stretches, and ISF and the last three
+on the whole period (ISF only once there are 6 h of correction stretches to judge it from), each
+stage keeping the earlier choices. A value giving more insulin than the current setting is only
+considered when the whole period's estimate keeps time below 70 under 2% and below 54 under
+0.6%. Both rules followed the mis-set profile test on TimSim (validation/BAD_PROFILES.md). They replaced the report's earlier decision-level section,
 which replayed two fixed changes open-loop over the last 400 cycles and summed each cycle's
 30-minute delivery forecast across every cycle, counting the same insulin many times on a
 loop that runs every minute.
