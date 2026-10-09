@@ -344,16 +344,23 @@ def run_settings_tests(
                        "why": "no carbs were logged in this period, so the carb ratio never "
                               "reached a dose; left unchanged"})
 
-    base_target = next((r["profile"].get("target_bg") for r in requests
-                        if r.get("profile", {}).get("target_bg") is not None), None)
+    # Targets often change through the day, so the offset is applied to every target in the
+    # schedule and the label gives the step and the range of targets it produces.
+    targets = sorted({round(r["profile"]["target_bg"]) for r in requests
+                      if r.get("profile", {}).get("target_bg") is not None})
+    lowest = targets[0] if targets else None
     offsets = [o for o in TARGET_OFFSETS_MGDL
-               if base_target is None or base_target + o >= MIN_TARGET_MGDL]
+               if lowest is None or lowest + o >= MIN_TARGET_MGDL]
 
     def fmt_target(o: int) -> str:
-        now = " (current)" if o == 0 else ""
-        if base_target is None:
-            return f"{o:+d} mg/dL{now}"
-        return f"{round(base_target + o)} mg/dL ({(base_target + o) / 18.0:.1f} mmol/L){now}"
+        if not targets:
+            return f"{o:+d} mg/dL" + (" (current)" if o == 0 else "")
+        lo, hi = targets[0] + o, targets[-1] + o
+        span = (f"{lo} mg/dL ({lo / 18.0:.1f} mmol/L)" if lo == hi else
+                f"{lo}–{hi} mg/dL ({lo / 18.0:.1f}–{hi / 18.0:.1f} mmol/L)")
+        if o == 0:
+            return f"{span} (current)"
+        return f"{o / 18.0:+.1f} mmol/L ({o:+d} mg/dL) on every target: {span}"
 
     chosen["target_offset"] = stage(
         "Target", "target", "all", offsets, lambda o: scen(target_offset=o), 0, fmt_target)

@@ -152,3 +152,23 @@ def test_max_iob_stage_steps_the_current_value():
     assert [r["value"] for r in stage["rows"]] == [4.2, 4.8, 5.4, 6.0, 6.6, 7.2, 7.8]
     assert any(sc.get("profile_set", {}).get("max_iob") == 4.2 for sc in seen)
     assert stage["rows"][3]["label"] == "6 U (current)"
+
+
+def test_target_labels_describe_the_whole_schedule():
+    # a target of 86 overnight and 112 by day: the step applies to both, and the label says so
+    entries = _readings([120] * 300)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 112 if i % 2 else 86}}
+                for i, r in enumerate(entries)]
+    kept = {}
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        return {"t": t, "scenarios": [{"du": [0.0] * len(t), "dbg": [0.0] * len(t), "failed": 0}
+                                      for _ in payload["scenarios"]]}
+
+    res = run_settings_tests(fake_sim, requests, entries, [], {})
+    labels = [r["label"] for r in res["stages"][3]["rows"]]
+    assert labels[0] == "86–112 mg/dL (4.8–6.2 mmol/L) (current)"   # 86-9 = 77 is under 80
+    assert labels[1] == "+0.5 mmol/L (+9 mg/dL) on every target: 95–121 mg/dL (5.3–6.7 mmol/L)"
