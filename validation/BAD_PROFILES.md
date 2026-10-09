@@ -81,11 +81,20 @@ strengthened ISF by 20%. Over the evaluation month, time below 70 went from 0.41
 below 54 from 0.01% to 0.81% (+0.79, beyond the null 95th percentile of +0.57), and rescue events
 from 11 to 29, while time in range rose by 0.9 points.
 
-The mechanism is the selection rule. The ISF stage judges on correction stretches, where this
-subject sat below 70% in range, so no value met both goals; the rule then takes the most time in
-range among values keeping time below 70 under 2%. That let it trade a subject with almost no
-lows for more lows in return for time in range. The twin's own estimate was a rise in time below
-70 from 0.1% to 0.4% over the learning fortnight; the realised rise was 1.45 points.
+The carb ratio was not what the twin acted on. Rerunning that learning fortnight (deterministic)
+and printing the twin's tables showed the too-strong ratio caused no visible problem: meal
+stretches ran 81.9% in range with 0.1% below, and the fortnight as a whole 84.5% and 0.1%.
+
+The ISF stage judged on correction stretches, the readings within 3 hours of one above
+180 mg/dL. They are selected for being high, and here they ran 49.3% in range over 37.5 hours.
+The 70% goal cannot often be met on a slice chosen that way, so ISF −20% (78.4% on that slice)
+was taken as the smallest change meeting both goals. Any subject with 6 hours or more of
+correction stretches is pushed towards stronger ISF by this. The twin's own estimate for the
+whole fortnight was a rise in time below 70 from 0.1% to 0.4%; the realised rise in the
+evaluation month was 1.45 points, to 1.86%, with time below 54 at 0.81%.
+
+An earlier version of this section, written before the tables were reproduced, put the change
+down to the rule used when no value meets both goals. That was wrong.
 
 ## Direction of the twin's changes
 
@@ -122,9 +131,10 @@ number of subjects meeting the pass rule, but it did not meet the plan's harm cr
 one clear harm came from its selection rule. Two changes to the twin follow directly, neither yet
 made:
 
-- A change towards more insulin should not be accepted when its estimated time below range is
-  higher than the current setting's. The present rule allows any rise up to 2%.
-- A time-below-54 goal, which the twin does not have.
+- The ISF stage should judge on the whole period, using correction stretches only to decide
+  whether there is enough to judge; a time-in-range goal applied to readings selected for being
+  high pushes ISF stronger whatever the person's settings.
+- A time-below-54 limit on any change towards more insulin, which the twin does not have.
 
 And two to the test: each evaluation month repeated on several seeds, so a per-subject harm rule
 can be set above the noise; and the pass rule given to the twin as its goals, as a second arm.
