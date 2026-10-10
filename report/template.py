@@ -122,8 +122,8 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
     goals = result["goals"]
     obs = result["observed"]["all"]
     lines += [
-        f"Goal: time in range above {goals['tir_gt_pct']:.0f}% and time below range under "
-        f"{goals['tbr_lt_pct']:.0f}%. Observed over {result['days']} days: "
+        f"Aim ({result.get('aim', 'standard')}): time in range above {goals['tir_gt_pct']:.0f}% "
+        f"and time below range under {goals['tbr_lt_pct']:.0f}%. Observed over {result['days']} days: "
         f"{_fmt(obs['tir'], '%')} in range, {_fmt(obs['tbr'], '%')} below, "
         f"{obs['lows']} low episodes.",
         "",

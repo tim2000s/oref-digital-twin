@@ -237,3 +237,25 @@ def test_isf_is_judged_on_the_whole_period_not_on_the_high_slice():
     isf = res["stages"][1]
     assert isf["enough_hours"] >= 6 and isf["measured_on"] == "all"
     assert isf["chosen"] == 1.0 and isf["why"] == "already meets both goals"
+
+
+def test_the_tighter_aim_acts_where_the_standard_aim_is_satisfied():
+    # 75% in range with no lows, judged on the target stage (whole period): the standard aim
+    # (70%) leaves the target alone; the tighter (80%) takes the smallest step reaching it.
+    day = [120] * 75 + [200] * 25
+    entries = _readings(day * 4)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    shift = lambda sc: sc["target_offset"] * 2.0            # a lower target lowers glucose
+    std = run_settings_tests(_shift_sim(shift), requests, entries, [], {})
+    tight = run_settings_tests(_shift_sim(shift), requests, entries, [], {}, aim="tighter")
+    assert std["stages"][3]["chosen"] == 0 and std["goals"]["tir_gt_pct"] == 70.0
+    assert tight["stages"][3]["chosen"] == -18 and tight["goals"]["tir_gt_pct"] == 80.0
+    assert tight["aim"] == "tighter"
+
+
+def test_an_unknown_aim_is_refused():
+    import pytest
+    entries = _readings([120] * 300)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    with pytest.raises(ValueError):
+        run_settings_tests(_shift_sim(lambda sc: 0.0), requests, entries, [], {}, aim="tight")

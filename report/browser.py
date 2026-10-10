@@ -171,7 +171,7 @@ def build_report(
 
 
 def settings_tests(sim_runner: Callable | None = None,
-                   progress: Callable | None = None) -> dict[str, Any]:
+                   progress: Callable | None = None, aim: str = "standard") -> dict[str, Any]:
     """Basal, ISF, carb-ratio, target and SMB tests on the last report's data.
 
     Returns {"report_md": section, "result": tables} or {"report_md": note, "skipped": why}.
@@ -210,7 +210,7 @@ def settings_tests(sim_runner: Callable | None = None,
         return skipped(f"Settings tests skipped: only {len(requests)} usable loop cycles, under "
                        f"one day's worth. Diagnostic: {_openaps_shape(pull)}")
     result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings,
-                                progress=progress)
+                                progress=progress, aim=aim)
     result["insulin_curve"] = curve
     variant = _LAST.get("variant") or {}
     if variant.get("advisability") != "full":

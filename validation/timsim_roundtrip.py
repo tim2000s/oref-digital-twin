@@ -247,7 +247,7 @@ def titrate_one(job):
 
 
 def roundtrip_one(job):
-    name, store, eval_seeds, condition, learn_days, eval_days, null_arm = job
+    name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse = job
     if isinstance(eval_seeds, int):
         eval_seeds = [eval_seeds]
     _paths()
@@ -266,7 +266,7 @@ def roundtrip_one(job):
     raw = to_nightscout(learn, sugg, p0)
     oracle = OrefOracle()
     rep = build_report(raw, oref_runner=oracle._runner, settings=twin_settings(p0))
-    tests = settings_tests(sim_runner=oracle.simulate)
+    tests = settings_tests(sim_runner=oracle.simulate, aim=aim)
     oracle._simulator.close()
     if "skipped" in tests:
         return {"name": name, "error": tests["skipped"]}
@@ -280,17 +280,31 @@ def roundtrip_one(job):
     p_null = replace(p0, limits=replace(p0.limits, max_iob_u=p0.limits.max_iob_u + 0.03))
     per_seed, runs0, runs1, runs_null = {}, [], [], []
     for s in eval_seeds:
-        r0, _ = run_timsim(name, p0, eval_days, s)
         r1, _ = run_timsim(name, p1, eval_days, s, smb_minutes=smb_run)
-        runs0.append(r0)
         runs1.append(r1)
-        per_seed[str(s)] = {"start": outcomes(r0), "twin": outcomes(r1)}
+        per_seed[str(s)] = {"twin": outcomes(r1)}
+        if reuse:
+            # TimSim is deterministic and the mis-set and null arms do not depend on the twin,
+            # so a previous run's arms on the same seeds are these arms
+            per_seed[str(s)].update({k: v for k, v in reuse["per_seed"][str(s)].items()
+                                     if k in ("start", "null")})
+            continue
+        r0, _ = run_timsim(name, p0, eval_days, s)
+        runs0.append(r0)
+        per_seed[str(s)]["start"] = outcomes(r0)
         if null_arm:
             rn, _ = run_timsim(name, p_null, eval_days, s)
             runs_null.append(rn)
             per_seed[str(s)]["null"] = outcomes(rn)
-    e0, e1 = runs0, runs1
+    e1 = runs1
+    if reuse:
+        start_pooled = reuse["eval_start"]
+        null_pooled = reuse.get("eval_null")
+    else:
+        start_pooled = outcomes_pooled(runs0)
+        null_pooled = outcomes_pooled(runs_null) if null_arm else None
     return {
+        "aim": aim, "reused_arms_from": reuse.get("_from") if reuse else None,
         "name": name, "condition": condition, "seconds": round(time.time() - t0, 1),
         "mis_set": CONDITIONS[condition],
         "titrated_vs_start": {
@@ -309,9 +323,9 @@ def roundtrip_one(job):
         "twin_observed": tests["result"]["observed"]["all"],
         "learn": outcomes(learn),
         "eval_seeds": list(eval_seeds),
-        "eval_start": outcomes_pooled(e0),
+        "eval_start": start_pooled,
         "eval_twin": outcomes_pooled(e1),
-        **({"eval_null": outcomes_pooled(runs_null)} if null_arm else {}),
+        **({"eval_null": null_pooled} if null_pooled is not None else {}),
         "per_seed": per_seed,
         "report_md": rep["report_md"] + "\n\n" + tests["report_md"],
     }
@@ -357,6 +371,10 @@ def main():
                          "benchmark seed alone")
     ap.add_argument("--null", action="store_true",
                     help="add the null arm: the starting profile with max IOB 0.03 U higher")
+    ap.add_argument("--aim", default="standard", help="the twin's aim, a key of replay.scenarios.AIMS")
+    ap.add_argument("--reuse-arms", dest="reuse_arms",
+                    help="a bad_profiles_<tag>.json on the same seeds whose mis-set and null arms "
+                         "are reused instead of rerun")
     a = ap.parse_args()
     conditions = [c.strip() for c in a.conditions.split(",") if c.strip()]
     unknown = [c for c in conditions if c not in CONDITIONS]
@@ -380,8 +398,17 @@ def main():
     ok = [n for n in ok if n in subjects]
 
     eval_seeds = ([int(s) for s in a.eval_seeds.split(",")] if a.eval_seeds else [seeds.BENCH])
-    jobs = [(n, store, eval_seeds, c, a.learn_days, a.eval_days, a.null)
-            for c in conditions for n in ok]
+    reuse = {}
+    if a.reuse_arms:
+        prev = json.load(open(a.reuse_arms))
+        if prev["design"].get("eval_seeds") != eval_seeds or prev["design"]["eval_days"] != a.eval_days:
+            raise SystemExit("--reuse-arms needs the same evaluation seeds and days")
+        for r in prev["rows"]:
+            reuse[(r["name"], r["condition"])] = {
+                "_from": os.path.basename(a.reuse_arms), "per_seed": r["per_seed"],
+                "eval_start": r["eval_start"], "eval_null": r.get("eval_null")}
+    jobs = [(n, store, eval_seeds, c, a.learn_days, a.eval_days, a.null, a.aim,
+             reuse.get((n, c))) for c in conditions for n in ok]
     with ProcessPoolExecutor(a.workers) as ex:
         rows = list(ex.map(roundtrip_one, jobs))
     good = [r for r in rows if "error" not in r]
@@ -394,7 +421,8 @@ def main():
                                   "store": os.path.relpath(store, TWIN), "subjects": ok,
                                   "learn_days": a.learn_days, "learn_seed": LEARN_SEED,
                                   "eval_days": a.eval_days, "eval_seeds": eval_seeds,
-                                  "eval_seed": eval_seeds[0], "null_arm": a.null},
+                                  "eval_seed": eval_seeds[0], "null_arm": a.null,
+                                  "aim": a.aim, "reused_arms_from": a.reuse_arms},
                        "failed": [r for r in rows if "error" in r], "rows": good,
                        "seconds": round(time.time() - t0, 1)}, fh, indent=1, default=float)
         print(f"wrote {out} ({len(good)} rows, {time.time()-t0:.0f}s)", flush=True)

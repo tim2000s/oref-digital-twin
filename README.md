@@ -58,7 +58,8 @@ keeping the values chosen before it:
 | 5 | SMB limit (maximum SMB basal minutes) | 15 to 90 minutes | The whole period |
 | 6 | Max IOB | −30% to +30% | The whole period |
 
-The goal is time in range above 70% and time below range under 2%. At each stage the page
+The page offers two aims: time in range above 70% and time below range under 2% (standard), or
+time in range above 80% with the same limit on lows (tighter). At each stage the page
 picks the smallest change that meets both. When no value does, it keeps time below range
 under 2% with the most time in range, and failing that it picks the value with the least
 time below range, because a low is the more immediate harm. A value that gives more insulin than the current

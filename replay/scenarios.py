@@ -38,6 +38,9 @@ from ingestion.models import GlucoseReading, Treatment
 
 GOAL_TIR_PCT = 70.0       # time in range, 70-180 mg/dL: more than this
 GOAL_TBR_PCT = 2.0        # time below 70 mg/dL: less than this
+# The page offers two aims; the tighter one asks for more time in range with the same limit on
+# lows. Neither changes the limits on any change towards more insulin below.
+AIMS = {"standard": (70.0, 2.0), "tighter": (80.0, 2.0)}
 # A value giving more insulin than the current setting is only considered when the whole
 # period's estimate stays under both of these (Tim Street, 9 October 2026). Without it the rule
 # could trade a person with almost no lows up towards 2% for time in range, which on TimSim took
@@ -196,11 +199,12 @@ def _metrics(ts: list[int], bg: list[float], mask: list[bool], step_min: float) 
             "tbr": round(tbr, 1), "tbr54": round(tbr54, 2), "lows": lows}
 
 
-def _meets(m: dict) -> bool:
-    return m["tir"] is not None and m["tir"] > GOAL_TIR_PCT and m["tbr"] < GOAL_TBR_PCT
+def _meets(m: dict, goal_tir: float = GOAL_TIR_PCT, goal_tbr: float = GOAL_TBR_PCT) -> bool:
+    return m["tir"] is not None and m["tir"] > goal_tir and m["tbr"] < goal_tbr
 
 
-def choose(rows: list[dict]) -> tuple[dict, str]:
+def choose(rows: list[dict], goal_tir: float = GOAL_TIR_PCT,
+           goal_tbr: float = GOAL_TBR_PCT) -> tuple[dict, str]:
     """Pick a row: meet both goals with the smallest change; else keep lows down first.
 
     Time below range comes first because a low is the immediate harm: when no value meets
@@ -212,16 +216,17 @@ def choose(rows: list[dict]) -> tuple[dict, str]:
 
     # More insulin than now is only on the table while the whole period's lows stay low.
     rows = [r for r in rows if not r.get("excluded")]
-    ok = [r for r in rows if _meets(r["est"])]
+    ok = [r for r in rows if _meets(r["est"], goal_tir, goal_tbr)]
     if ok:
         best = min(ok, key=lambda r: (change(r), -r["est"]["tir"]))
         why = ("already meets both goals" if change(best) == 0 else
                "the smallest change that meets both goals")
         return best, why
-    safe = [r for r in rows if r["est"]["tbr"] is not None and r["est"]["tbr"] < GOAL_TBR_PCT]
+    safe = [r for r in rows if r["est"]["tbr"] is not None and r["est"]["tbr"] < goal_tbr]
     if safe:
         best = max(safe, key=lambda r: (r["est"]["tir"], -change(r)))
-        return best, "no value reaches 70% in range; this keeps lows under 2% with the most time in range"
+        return best, (f"no value reaches {goal_tir:g}% in range; this keeps lows under "
+                      f"{goal_tbr:g}% with the most time in range")
     judged = [r for r in rows if r["est"]["tbr"] is not None]
     best = min(judged, key=lambda r: (r["est"]["tbr"], -r["est"]["tir"], change(r)))
     return best, "no value gets lows under 2%; this has the fewest"
@@ -234,12 +239,19 @@ def run_settings_tests(
     treatments: list[Treatment],
     settings: dict[str, Any],
     progress: Callable[[str], None] | None = None,
+    aim: str = "standard",
 ) -> dict[str, Any]:
     """Run the stages and return the tables and choices for the report.
+
+    `aim` is a key of AIMS: the time-in-range and time-below-range goals the stages choose
+    against.
 
     `progress`, if given, is called with a short line as each stage starts, so a page can
     say what it is doing.
     """
+    if aim not in AIMS:
+        raise ValueError(f"unknown aim {aim!r}; known: {sorted(AIMS)}")
+    goal_tir, goal_tbr = AIMS[aim]
     say = progress or (lambda _msg: None)
     n_stages = 6
     pts = [r for r in entries if r.sgv_mgdl is not None]
@@ -326,7 +338,7 @@ def run_settings_tests(
             entry["why"] = (f"only {gate['hours']} h of {enough_on or measured_on} readings, "
                             f"under the {MIN_SEGMENT_HOURS} h needed to judge it; left unchanged")
         else:
-            best, why = choose(rows)
+            best, why = choose(rows, goal_tir, goal_tbr)
             entry["chosen"] = best["value"]
             entry["chosen_label"] = best["label"]
             entry["why"] = why
@@ -431,7 +443,8 @@ def run_settings_tests(
 
     final = run([scen()])[0]
     return {
-        "goals": {"tir_gt_pct": GOAL_TIR_PCT, "tbr_lt_pct": GOAL_TBR_PCT,
+        "aim": aim,
+        "goals": {"tir_gt_pct": goal_tir, "tbr_lt_pct": goal_tbr,
                   "strengthen_tbr70_lt_pct": STRENGTHEN_TBR70_MAX,
                   "strengthen_tbr54_lt_pct": STRENGTHEN_TBR54_MAX},
         "cycles": len(requests),

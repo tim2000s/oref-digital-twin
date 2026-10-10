@@ -194,7 +194,8 @@ async function run() {
     setStatus('Running settings tests…');
     let section;
     try {
-      section = await ask('settings_tests');
+      const aim = document.querySelector('input[name="aim"]:checked')?.value || 'standard';
+      section = await ask('settings_tests', { aim });
     } catch (err) {
       section = `## Settings tests (estimated)\n\n_Settings tests errored: ${err.message.split('\n').slice(-2).join(' ')}_`;
     }

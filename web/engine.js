@@ -86,8 +86,8 @@ const ops = {
     }
   },
 
-  settings_tests() {
-    return toJs(B.settings_tests.callKwargs({ progress })).report_md;
+  settings_tests({ aim }) {
+    return toJs(B.settings_tests.callKwargs({ progress, aim: aim || 'standard' })).report_md;
   },
 
   gate({ narrative, source }) {
