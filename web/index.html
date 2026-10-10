@@ -61,10 +61,10 @@
   </select>
   <fieldset class="aim">
     <legend>What the settings tests aim for</legend>
-    <label><input type="radio" name="aim" value="standard" checked /> Time in range above 70%,
+    <label><input type="radio" name="aim" value="tighter" checked /> Time in range above 80%,
+      time below 70 mg/dL under 2% <span class="muted">(tighter, the default)</span></label>
+    <label><input type="radio" name="aim" value="standard" /> Time in range above 70%,
       time below 70 mg/dL under 2% <span class="muted">(standard)</span></label>
-    <label><input type="radio" name="aim" value="tighter" /> Time in range above 80%,
-      time below 70 mg/dL under 2% <span class="muted">(tighter)</span></label>
   </fieldset>
   <label for="maxiob">Max IOB <span class="muted">(optional — enables settings experiments)</span></label>
   <input id="maxiob" type="number" step="0.1" min="0" placeholder="e.g. 6" />

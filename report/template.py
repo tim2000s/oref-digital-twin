@@ -141,6 +141,9 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
         "",
         f"_{result['caveat']}_",
         "",
+        "_In testing on simulated people these estimates overstated the fall in lows by 1.5 to "
+        "3 times. Use them to compare options, not to predict the result._",
+        "",
         f"A value that gives more insulin than your current setting is only considered when the "
         f"estimate for the whole period keeps time below 70 under "
         f"{goals.get('strengthen_tbr70_lt_pct', 2):g}% and time below 54 under "

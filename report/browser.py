@@ -176,7 +176,7 @@ def build_report(
 
 
 def settings_tests(sim_runner: Callable | None = None,
-                   progress: Callable | None = None, aim: str = "standard") -> dict[str, Any]:
+                   progress: Callable | None = None, aim: str = "tighter") -> dict[str, Any]:
     """Basal, ISF, carb-ratio, target and SMB tests on the last report's data.
 
     Returns {"report_md": section, "result": tables} or {"report_md": note, "skipped": why}.

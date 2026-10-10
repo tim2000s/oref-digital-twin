@@ -73,3 +73,14 @@ def test_settings_tests_section_when_skipped():
 
     md = render_settings_tests(None, note="Settings tests skipped: no profile.")
     assert md.startswith("## Settings tests") and "no profile" in md
+
+
+def test_settings_tests_section_says_how_far_to_trust_the_estimates():
+    from replay.tests.test_scenarios import _readings, _shift_sim
+    from replay.scenarios import run_settings_tests
+    from report.template import render_settings_tests
+
+    entries = _readings([120] * 300)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    md = render_settings_tests(run_settings_tests(_shift_sim(lambda sc: 0.0), requests, entries, [], {}))
+    assert "overstated the fall in lows by 1.5 to 3 times" in md

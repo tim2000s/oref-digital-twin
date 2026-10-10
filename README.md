@@ -64,8 +64,10 @@ keeping the values chosen before it:
 | 5 | SMB limit (maximum SMB basal minutes) | 15 to 90 minutes | The whole period |
 | 6 | Max IOB | −30% to +30% | The whole period |
 
-The page offers two aims: time in range above 70% and time below range under 2% (standard), or
-time in range above 80% with the same limit on lows (tighter). At each stage the page
+The page offers two aims: time in range above 80% with time below range under 2% (tighter, the
+default since 10 October 2026), or time in range above 70% with the same limit on lows
+(standard). Tested on simulated people (validation/BAD_PROFILES_3.md), the tighter aim reached
+its goal slightly more often with no measured harm. At each stage the page
 picks the smallest change that meets both. When no value does, it keeps time below range
 under 2% with the most time in range, and failing that it picks the value with the least
 time below range, because a low is the more immediate harm. A value that gives more insulin than the current
@@ -88,7 +90,9 @@ and the page labels them that way. The model takes your profile ISF as your real
 sensitivity, and assumes your meals, activity and own treatments, hypo treatments included,
 would have been the same under the new setting. It has not yet been checked against periods
 where someone actually changed a setting, so it is better at ranking settings than at
-predicting what a change will do. The tests run stock oref0; if the page detects a variant
+predicting what a change will do: on simulated people its estimates overstated the fall in lows
+by 1.5 to 3 times, and the report says so beside its tables. All testing so far is in simulation
+(twelve TimSim adults under stock oref0); none of it is evidence about real people. The tests run stock oref0; if the page detects a variant
 such as Boost or AutoISF, it says that what the variant adds is not modelled.
 
 DESIGN.md §2.1 sets out the model, and `replay/README.md` covers the simulator, its checks
