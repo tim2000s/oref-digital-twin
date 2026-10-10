@@ -60,8 +60,16 @@ the first run, and six of the 14 were in the all-too-weak condition.
 | All too weak: ISF, basal, carb ratio | 0, 0, 6 | 0, 2, 0 | 12, 10, 6 |
 
 In the too-strong conditions lows fell: in all three too strong, median time below 70 from 5.16%
-to 3.03% and below 54 from 1.52% to 0.91%, with time in range unchanged (84.9% to 85.0%). In the
-too-weak conditions the twin mostly left the profile alone.
+to 3.03% and below 54 from 1.52% to 0.91%, with time in range unchanged (84.9% to 85.0%).
+
+In the too-weak conditions the twin mostly returned the settings unchanged. "Too weak" describes
+how the settings were made, not their outcome, and most of those subjects already met the twin's
+goals over the learning fortnight (ISF ×1.4: 9 of 12; basal ×0.7: 8; carb ratio ×1.4: 5; all three:
+11), so leaving them alone is what the goals ask for. Where single-setting weak profiles failed the
+pass rule it was mostly on lows (carb ratio ×1.4: 9 of 12 at 1.5% or more below 70), where more
+insulin would be wrong. Only the all-too-weak condition was weak in outcome: median time in range
+76.7%, 9 of 12 at or below 80%, with few lows, which meets the twin's 70% goal and falls short only
+of the pass rule's 80%.
 
 The twin's estimate of the fall in time below 70 was again larger than what happened, by 1.5 to
 3.3 times where there was a fall (for example −2.85 estimated against −1.84 realised in all three
@@ -72,9 +80,9 @@ too strong).
 - It shows that on these twelve simulated people, with harm measured against the noise a
   meaningless change produces over 84 days, the twin's changes did not raise time below 54
   beyond that noise in any case, and lowered it in most of the too-strong conditions.
-- It does not show the twin finds the right settings. Few subjects meet the pass rule either
-  way, and in the too-weak conditions the twin rarely adds insulin: with goals of 70% in range and
-  2% below, a weak profile above 70% gives it no reason to.
+- It does not show the twin reaches the pass rule. Few subjects meet it either way. Most of the
+  shortfall is lows the loop's settings did not cause; the rest is the all-too-weak condition
+  sitting between 70% and 80% in range, which the twin's 70% goal does not ask it to correct.
 - The safety of strengthening rests on 14 cases. That is too few to say much about the rule that
   now governs them; a test built to make the twin strengthen more often would be needed.
 - The plan asked how many values the strengthening limit excluded. The run kept each subject's
