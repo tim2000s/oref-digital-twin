@@ -21,6 +21,7 @@ from replay import OrefOracle, from_cycle
 from variant import detect_variant
 
 from .grounding import check_narrative
+from .guidance import JURISDICTIONS
 from .template import render_report
 
 MAX_CYCLES = 400                       # cap oref calls for browser responsiveness
@@ -136,8 +137,12 @@ def build_report(
     oref_runner: Callable | None = None,
     settings: dict[str, Any] | None = None,
     max_iob_override: float | None = None,
+    jurisdiction: str = "UK",
 ) -> dict[str, Any]:
     """raw: {base_url, start_ms, end_ms, entries, treatments, devicestatus, profiles}.
+
+    `jurisdiction` picks the driving rules quoted in the report: a key of
+    report.guidance.JURISDICTIONS ("UK", "EU", "US" or "none").
 
     Produces the diagnostic report. With `oref_runner` (the browser injects one backed by
     oref0-in-WASM) it also resolves the settings the settings tests will replay with, from the
@@ -163,7 +168,7 @@ def build_report(
     diag_d = diagnostics.to_dict()
     variant_d = verdict.to_dict()
     return {
-        "report_md": render_report(diag_d, variant_d),
+        "report_md": render_report(diag_d, variant_d, JURISDICTIONS.get(jurisdiction, "UK")),
         "diagnostics": diag_d,
         "variant": variant_d,
         "coverage": {"cgm": pull.cgm.to_dict(), "loop": pull.loop.to_dict(), "warnings": pull.warnings()},

@@ -27,7 +27,7 @@
     :root { color-scheme: light dark; }
     body { font-family: system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
     label { display: block; margin: .6rem 0 .2rem; font-weight: 600; }
-    input { width: 100%; padding: .5rem; box-sizing: border-box; }
+    input, select { width: 100%; padding: .5rem; box-sizing: border-box; }
     button { margin-top: 1rem; padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
     #status { color: #888; margin: 1rem 0; }
     #report { border-top: 1px solid #8884; margin-top: 1.5rem; padding-top: 1rem; }
@@ -52,6 +52,13 @@
   <input id="token" type="password" placeholder="token" />
   <label for="days">Days to analyse</label>
   <input id="days" type="number" value="7" min="1" max="90" />
+  <label for="jurisdiction">Driving rules to quote in the report</label>
+  <select id="jurisdiction">
+    <option value="UK" selected>UK (DVLA)</option>
+    <option value="EU">EU (Directive 2006/126/EC)</option>
+    <option value="US">US (American Diabetes Association; rules vary by state)</option>
+    <option value="none">None</option>
+  </select>
   <fieldset class="aim">
     <legend>What the settings tests aim for</legend>
     <label><input type="radio" name="aim" value="standard" checked /> Time in range above 70%,

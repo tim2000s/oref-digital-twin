@@ -65,12 +65,13 @@ const ops = {
 
   // Fetch, then the deterministic report. The raw Nightscout data stays in this worker; the
   // page gets the report and the abstracted findings narration is allowed to see.
-  async analyse({ url, token, days, settings, maxIob }) {
+  async analyse({ url, token, days, settings, maxIob, jurisdiction }) {
     const raw = await fetchNightscout(url, token, days, progress);
     progress('Analysing…');
     const kwargs = { oref_runner: B.make_js_oref_runner() };
     if (settings) kwargs.settings = pyodide.toPy(settings);
     if (maxIob !== null && maxIob !== undefined) kwargs.max_iob_override = maxIob;
+    kwargs.jurisdiction = jurisdiction || 'UK';
     const rawPy = pyodide.toPy(raw);
     let result;
     try {

@@ -79,7 +79,8 @@ def _variant_block(variant: dict | None) -> list[str]:
     return lines
 
 
-def render_report(diagnostics: dict, variant: dict | None = None) -> str:
+def render_report(diagnostics: dict, variant: dict | None = None,
+                  jurisdiction: str | None = "UK") -> str:
     """Render a full deterministic Markdown report from structured findings."""
     counts = diagnostics.get("counts", {})
     parts: list[str] = [
@@ -94,6 +95,11 @@ def render_report(diagnostics: dict, variant: dict | None = None) -> str:
     parts += _glycemia_block(diagnostics.get("glycemia", {}))
     parts.append("")
     parts += _findings_block(diagnostics.get("findings", []))
+    from .guidance import render as render_guidance
+
+    guidance = render_guidance(diagnostics.get("findings", []), jurisdiction)
+    if guidance:
+        parts += [""] + guidance
     parts += ["", "---", "", DISCLAIMER]
     return "\n".join(parts)
 

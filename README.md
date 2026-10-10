@@ -20,6 +20,12 @@ settings file can be loaded: an AndroidAPS preferences export, decrypted in the 
 your master password, or a Trio settings JSON. Without them the page reads max IOB from the
 loop's own reason text and assumes 30 minutes for the SMB limit.
 
+Pick which country's driving rules the report quotes: the UK (DVLA), the EU (Directive
+2006/126/EC), the US (the American Diabetes Association's position; rules vary by state) or none.
+The report quotes them word for word with their source and date, beside the international and,
+for the UK, NICE glucose targets, and adds the guidance on hypoglycaemia when it finds lows. How
+the quotes are kept honest is in `guidance/README.md`.
+
 Your token and data stay in the browser. If you tick the written-summary box, only the
 anonymous findings (percentages and finding names, no readings, token or address) go to a
 narration service, and its text is checked against those findings before it is shown.
@@ -98,7 +104,8 @@ and its timings.
 | `diagnostics/` | Deterministic sanity checks and out-of-sample pattern detection. |
 | `replay/` | The oref0 `determine-basal` oracle, the closed-loop simulator and the staged settings tests. |
 | `settings/` | Settings ingestion, including client-side decryption of AAPS preference exports. |
-| `report/` | The report: Pyodide entry point, Markdown template and the grounding check on narration. |
+| `report/` | The report: Pyodide entry point, Markdown template, quoted official guidance and the grounding check on narration. |
+| `guidance/` | Fetching and checking the official sources the report quotes. |
 | `web/` | The browser page (GitHub Pages, Pyodide and an oref0 bundle). |
 | `worker/` | The optional narration service (Cloudflare Worker). |
 | `docs/` | Supporting notes and references. |

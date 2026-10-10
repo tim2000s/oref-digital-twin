@@ -1,0 +1,65 @@
+[
+ {
+  "id": "dvla-public",
+  "body": "DVLA (GOV.UK)",
+  "jurisdiction": "UK",
+  "title": "Diabetes and driving",
+  "url": "https://www.gov.uk/diabetes-driving"
+ },
+ {
+  "id": "dvla-professionals",
+  "body": "DVLA",
+  "jurisdiction": "UK",
+  "title": "Diabetes mellitus: assessing fitness to drive (guidance for medical professionals)",
+  "url": "https://www.gov.uk/guidance/diabetes-mellitus-assessing-fitness-to-drive"
+ },
+ {
+  "id": "dvla-inf294",
+  "body": "DVLA",
+  "jurisdiction": "UK",
+  "title": "INF294: A guide to insulin treated diabetes and driving (car and motorcycle)",
+  "url": "https://assets.publishing.service.gov.uk/media/690b2d50c22e4ed8b05184bd/inf294-a-guide-to-insulin-treated-diabetes-and-driving.pdf"
+ },
+ {
+  "id": "nice-ng17",
+  "body": "NICE",
+  "jurisdiction": "UK (England)",
+  "title": "NG17 Type 1 diabetes in adults: diagnosis and management, recommendations",
+  "url": "https://www.nice.org.uk/guidance/ng17/chapter/Recommendations"
+ },
+ {
+  "id": "nice-ng18",
+  "body": "NICE",
+  "jurisdiction": "UK (England)",
+  "title": "NG18 Diabetes (type 1 and type 2) in children and young people, recommendations",
+  "url": "https://www.nice.org.uk/guidance/ng18/chapter/Recommendations"
+ },
+ {
+  "id": "battelino-2019",
+  "body": "International consensus (Battelino et al., Diabetes Care 2019;42:1593-1603)",
+  "jurisdiction": "International",
+  "title": "Clinical Targets for Continuous Glucose Monitoring Data Interpretation: Recommendations From the International Consensus on Time in Range",
+  "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6973648/"
+ },
+ {
+  "id": "ispad-2024-targets",
+  "body": "ISPAD",
+  "jurisdiction": "International (children and young people)",
+  "title": "ISPAD Clinical Practice Consensus Guidelines 2024: Glycemic Targets and Glucose Monitoring",
+  "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11854972/"
+ },
+ {
+  "id": "ada-driving-2013",
+  "body": "American Diabetes Association",
+  "jurisdiction": "US",
+  "title": "Diabetes and driving (position statement), Diabetes Care 2013;36 Suppl 1:S80-S85",
+  "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3537281/"
+ },
+ {
+  "id": "eu-directive-2006-126",
+  "body": "European Union",
+  "jurisdiction": "EU",
+  "title": "Directive 2006/126/EC on driving licences, Annex III, consolidated text of 1 November 2020",
+  "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02006L0126-20201101"
+ }
+]

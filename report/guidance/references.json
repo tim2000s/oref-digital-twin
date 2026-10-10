@@ -1,0 +1,256 @@
+[
+ {
+  "id": "dvla-dont-drive",
+  "source": "dvla-inf294",
+  "topics": [
+   "driving"
+  ],
+  "jurisdiction": "UK",
+  "quote": "Don’t drive if your glucose (sugar) level is 4.0mmol/L or below. If your glucose (sugar) is between 4.0 mmol/L and 5.0mmol/L, eat a fast-acting carbohydrate snack, for example, glucose tablets, sweets or a sugary drink.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "ebff5b00db91adacc33850ed31445a8a466db7dfb7a9e6015355c8cc530d0a00"
+ },
+ {
+  "id": "dvla-after-a-low",
+  "source": "dvla-inf294",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "UK",
+  "quote": "wait at least 45 minutes after glucose (sugar) levels return to at least 5.0mmol/L or above before driving again – this allows brain function and reaction time to fully recover",
+  "retrieved": "2026-10-10",
+  "source_sha256": "ebff5b00db91adacc33850ed31445a8a466db7dfb7a9e6015355c8cc530d0a00"
+ },
+ {
+  "id": "dvla-alarms-support",
+  "source": "dvla-inf294",
+  "topics": [
+   "driving"
+  ],
+  "jurisdiction": "UK",
+  "quote": "device alarms are a helpful tool but they should support, not replace your own awareness of low blood glucose symptoms or regular self-checks.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "ebff5b00db91adacc33850ed31445a8a466db7dfb7a9e6015355c8cc530d0a00"
+ },
+ {
+  "id": "dvla-check-every-2h",
+  "source": "dvla-professionals",
+  "topics": [
+   "driving"
+  ],
+  "jurisdiction": "UK",
+  "quote": "A maximum of 2 hours should pass between the pre-driving glucose test and the first glucose check performed after driving has started.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "1ea2c47c979d3adaa7a4a70dbfe1b5ca838bc87a2960d7db3af5b71d83de925a"
+ },
+ {
+  "id": "dvla-cgm-alarms",
+  "source": "dvla-professionals",
+  "topics": [
+   "driving"
+  ],
+  "jurisdiction": "UK",
+  "quote": "They should be set at appropriate levels of above 4.0mmol/L while driving.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "1ea2c47c979d3adaa7a4a70dbfe1b5ca838bc87a2960d7db3af5b71d83de925a"
+ },
+ {
+  "id": "dvla-cgm-backup-meter",
+  "source": "dvla-professionals",
+  "topics": [
+   "driving"
+  ],
+  "jurisdiction": "UK",
+  "quote": "Users of these systems must carry a finger prick blood glucose meter as a backup.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "1ea2c47c979d3adaa7a4a70dbfe1b5ca838bc87a2960d7db3af5b71d83de925a"
+ },
+ {
+  "id": "dvla-severe-definition",
+  "source": "dvla-professionals",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "UK",
+  "quote": "The law defines ‘severe’ as an episode of hypoglycaemia requiring the assistance of another person.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "1ea2c47c979d3adaa7a4a70dbfe1b5ca838bc87a2960d7db3af5b71d83de925a"
+ },
+ {
+  "id": "dvla-group1-recurrent",
+  "source": "dvla-professionals",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "UK",
+  "quote": "has not experienced 2 or more episodes of severe hypoglycaemia while awake in the preceding 12 months and the most recent episode occurred more than 3 months ago",
+  "retrieved": "2026-10-10",
+  "source_sha256": "1ea2c47c979d3adaa7a4a70dbfe1b5ca838bc87a2960d7db3af5b71d83de925a"
+ },
+ {
+  "id": "dvla-asleep",
+  "source": "dvla-professionals",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "UK",
+  "quote": "For Group 1 drivers, hypoglycaemia that happens during established sleep is no longer considered relevant for licensing purposes, unless there are concerns about the driver’s ability to recognise low glucose.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "1ea2c47c979d3adaa7a4a70dbfe1b5ca838bc87a2960d7db3af5b71d83de925a"
+ },
+ {
+  "id": "dvla-severe-while-driving",
+  "source": "dvla-professionals",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "UK",
+  "quote": "All Group 1 and Group 2 drivers who experience an episode of severe hypoglycaemia whilst driving must not drive and must notify DVLA.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "1ea2c47c979d3adaa7a4a70dbfe1b5ca838bc87a2960d7db3af5b71d83de925a"
+ },
+ {
+  "id": "eu-severe-recurrent",
+  "source": "eu-directive-2006-126",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "EU",
+  "quote": "In the following paragraphs, a severe hypoglycaemia means that the assistance of another person is needed and a recurrent hypoglycaemia is defined as a second severe hypoglycaemia during a period of 12 months.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "0a12787c06b099ec5dacb9526ce9cf44957d10f63941864f53ecb74543eb051d"
+ },
+ {
+  "id": "eu-awareness",
+  "source": "eu-directive-2006-126",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "EU",
+  "quote": "Driving licences shall not be issued to, or renewed for, applicants or drivers who have inadequate awareness of hypoglycaemia.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "0a12787c06b099ec5dacb9526ce9cf44957d10f63941864f53ecb74543eb051d"
+ },
+ {
+  "id": "eu-waking-hours",
+  "source": "eu-directive-2006-126",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "EU",
+  "quote": "For recurrent severe hypoglycaemias during waking hours a licence shall not be issued or renewed until 3 months after the most recent episode.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "0a12787c06b099ec5dacb9526ce9cf44957d10f63941864f53ecb74543eb051d"
+ },
+ {
+  "id": "eu-report-severe",
+  "source": "eu-directive-2006-126",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "EU",
+  "quote": "A severe hypoglycaemic event during waking hours, even unrelated to driving, should be reported and should give rise to a reassessment of the licensing status.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "0a12787c06b099ec5dacb9526ce9cf44957d10f63941864f53ecb74543eb051d"
+ },
+ {
+  "id": "ada-sleep",
+  "source": "ada-driving-2013",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "US",
+  "quote": "Generally, severe hypoglycemia that occurs during sleep should not disqualify a person from driving.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "2d89c1956ee60c801bd26ba3f1c0674ae6fe5abaa89743f14c07918b71fed353"
+ },
+ {
+  "id": "ada-awareness-testing",
+  "source": "ada-driving-2013",
+  "topics": [
+   "driving",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "US",
+  "quote": "People who experience progressive impairment of their awareness of hypoglycemia should consult a health care provider to determine whether it is safe to continue driving with proper measures to avoid disruptive hypoglycemia (such as testing blood glucose before driving and at regular intervals in the course of a journey lasting more than 30–60 min).",
+  "retrieved": "2026-10-10",
+  "source_sha256": "2d89c1956ee60c801bd26ba3f1c0674ae6fe5abaa89743f14c07918b71fed353"
+ },
+ {
+  "id": "ispad-tir-70",
+  "source": "ispad-2024-targets",
+  "topics": [
+   "targets"
+  ],
+  "jurisdiction": "International",
+  "quote": "SMBG meter values should be targeted to correspond to an HbA1c ≤7% (≤53 mmol/mol), to align with the CGM TIR target of >70% between 4 and 10 mmol (70–180 mg/dL), and the strong correlation of CGM metrics with HbA1c reviewed earlier.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "804b8e9a589c7d3d5a3f124de2df9b5ab38474fd801046f2adf8d1b49a3263a0"
+ },
+ {
+  "id": "battelino-tbr-hours",
+  "source": "battelino-2019",
+  "topics": [
+   "targets",
+   "hypoglycaemia"
+  ],
+  "jurisdiction": "International",
+  "quote": "When applying the CGM metrics in clinical practice, it may be more meaningful and motivating to communicate to people with diabetes the importance of working to reduce the time spent <70 mg/dL (<3.9 mmol/L) to less than 1 h per day and time spent <54 mg/dL (<3.0 mmol/L) to less than 15 min per day, rather than using <4% and <1%, respectively, as the goal.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "3769fbbd797282469f6422cf668ca67da937864557a150c248dedcc16e713fc3"
+ },
+ {
+  "id": "nice-ng17-hba1c",
+  "source": "nice-ng17",
+  "topics": [
+   "targets"
+  ],
+  "jurisdiction": "UK (England)",
+  "quote": "Support adults with type 1 diabetes to aim for a target HbA1c level of 48 mmol/mol (6.5%) or lower, to minimise the risk of long‑term vascular complications.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "91df5a8eee5c6e04541ea8cf175b62379fa93d9d301e3bb6b51e47d9145a92fc"
+ },
+ {
+  "id": "nice-ng17-glucose",
+  "source": "nice-ng17",
+  "topics": [
+   "targets"
+  ],
+  "jurisdiction": "UK (England)",
+  "quote": "Advise adults with type 1 diabetes to aim for: a fasting plasma glucose level of 5 to 7 mmol/litre on waking and a plasma glucose level of 4 to 7 mmol/litre before meals at other times of the day.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "91df5a8eee5c6e04541ea8cf175b62379fa93d9d301e3bb6b51e47d9145a92fc"
+ },
+ {
+  "id": "nice-ng17-driving-testing",
+  "source": "nice-ng17",
+  "topics": [
+   "driving"
+  ],
+  "jurisdiction": "UK (England)",
+  "quote": "Enable additional blood glucose measurement (more than 10 times a day) for adults with type 1 diabetes who are using capillary blood glucose monitoring if this is necessary because of: the person's lifestyle (for example, they drive for long periods of time, they undertake high‑risk activities or have a high‑risk occupation, or they are travelling) or impaired hypoglycaemia awareness.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "91df5a8eee5c6e04541ea8cf175b62379fa93d9d301e3bb6b51e47d9145a92fc"
+ },
+ {
+  "id": "nice-ng18-hba1c",
+  "source": "nice-ng18",
+  "topics": [
+   "targets"
+  ],
+  "jurisdiction": "UK (England)",
+  "quote": "Explain to children and young people with type 1 diabetes and their families or carers that an HbA1c target level of 48 mmol/mol (6.5%) or lower will minimise their risk of long‑term complications.",
+  "retrieved": "2026-10-10",
+  "source_sha256": "48b7a720a71162a1cff7a02b85b8f2ec6f3bf264e79ecf1440c180ab270860e2"
+ }
+]

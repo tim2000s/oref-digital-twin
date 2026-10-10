@@ -167,6 +167,7 @@ async function run() {
     setStatus('Fetching Nightscout…');
     const { report_md: reportMd, source } = await ask('analyse', {
       url: $('url').value, token: $('token').value.trim(), days, settings, maxIob,
+      jurisdiction: $('jurisdiction').value,
     });
 
     let html = mdToHtml(reportMd);
