@@ -4,6 +4,9 @@ Advisory decision support for AndroidAPS and Trio dosing settings. It runs in th
 
 https://tim2000s.github.io/oref-digital-twin/
 
+To run your own copy on your own GitHub account, fork this repository and follow
+[INSTALL.md](INSTALL.md); it takes about ten minutes and needs no server.
+
 > Read-only and advisory only. Nothing here writes to Nightscout, a pump or a loop, and it
 > is not medical advice. Any settings change it suggests is a trial to discuss with your
 > clinician and test deliberately, one setting at a time.

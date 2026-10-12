@@ -24,8 +24,16 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp web/index.html web/app.js web/engine.js web/nightscout.js web/config.js \
+          cp web/index.html web/app.js web/engine.js web/nightscout.js \
              web/settings.js web/aaps_prefs.mjs web/oref-bundle.js web/odt-packages.zip _site/
+      - name: Write the narration setting
+        # Empty unless this repository sets the NARRATOR_URL variable (see INSTALL.md), in which
+        # case the page offers a written summary from that Worker.
+        env:
+          NARRATOR_URL: ${{ vars.NARRATOR_URL }}
+        run: |
+          python3 -c 'import json, os; print("export const NARRATOR_URL = " + json.dumps(os.environ.get("NARRATOR_URL", "")) + ";")' > _site/config.js
+          cat _site/config.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

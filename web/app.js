@@ -214,5 +214,9 @@ async function run() {
   }
 }
 
+// A copy of the site without a narration Worker offers no written summary, rather than a box
+// that can only fail (see INSTALL.md).
+if (!NARRATOR_URL) $('narrate-row').style.display = 'none';
+
 $('run').addEventListener('click', run);
 boot().catch((e) => setStatus('Failed to load the analysis engine: ' + e.message));

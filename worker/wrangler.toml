@@ -1,5 +1,5 @@
-# Must match the deployed Worker (oref-digital-twin.diabettech.workers.dev, the URL in
-# web/config.js), or `wrangler deploy` creates a second Worker the page never calls.
+# The Worker is deployed as https://oref-digital-twin.<your-subdomain>.workers.dev. Keep the name
+# the same across deploys, or `wrangler deploy` creates a second Worker the page never calls.
 name = "oref-digital-twin"
 main = "worker.js"
 compatibility_date = "2024-11-01"
@@ -10,7 +10,9 @@ binding = "AI"
 
 # CORS: only allow the Pages site to call the Worker.
 [vars]
-ALLOWED_ORIGIN = "https://tim2000s.github.io"
+# Set to your GitHub Pages origin before deploying: https://<your-github-username>.github.io
+# (no repository path). The Worker refuses requests from any other site.
+ALLOWED_ORIGIN = "https://YOUR-GITHUB-USERNAME.github.io"
 
 # Per-IP rate limit (binds as env.RL): 20 requests per 60 seconds.
 # A public keyless endpoint can be abused, which would burn the Workers AI allocation.

@@ -36,8 +36,9 @@ python3 -m http.server -d web 8000    # then open http://localhost:8000
 ## Deploy
 
 `.github/workflows/pages.yml` builds the package bundle and deploys `web/` to GitHub Pages
-on push to `main`. Set `NARRATOR_URL` in `app.js` to your deployed Worker to enable
-narration (leave empty for report-only).
+on push to `main`. The narration Worker's address comes from the repository variable
+`NARRATOR_URL`, written into `config.js` at build time; with none set, the page leaves the
+written summary out. INSTALL.md at the repository root covers setting up a copy.
 
 ## Notes / caveats
 
