@@ -10,6 +10,7 @@ npm install --no-audit --no-fund >/dev/null   # pinned oref0 (see package.json)
 # exist in the browser, and without this every determine-basal call throws immediately.
 npx --yes esbuild browser-entry.mjs --bundle --format=iife --platform=browser \
     --inject:./process-shim.mjs \
+    --banner:js="/* oref digital twin engine, AGPL-3.0-or-later. Bundles oref0, lodash, moment and moment-timezone (MIT); their licences are in THIRD_PARTY_NOTICES.txt. */" \
     --outfile=../../web/oref-bundle.js
 echo "wrote web/oref-bundle.js"
 

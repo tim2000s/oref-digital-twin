@@ -125,5 +125,7 @@ scoped, never stored and revocable.
 
 ## Licence
 
-Intended: AGPL-3.0, to stay consistent with the AAPS and oref ecosystem this builds on and
-replays. See `LICENSE`; confirm before the first substantive release.
+GNU Affero General Public License v3.0 or later (`LICENSE`), consistent with the AAPS and oref
+ecosystem this builds on and replays. If you run a modified copy as a public page, the AGPL asks
+you to offer its source to the people using it; a public fork does that. The page's engine bundles
+oref0, lodash, moment and moment-timezone under the MIT licence (`THIRD_PARTY_NOTICES.txt`).

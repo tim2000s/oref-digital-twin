@@ -25,7 +25,8 @@ jobs:
         run: |
           mkdir -p _site
           cp web/index.html web/app.js web/engine.js web/nightscout.js \
-             web/settings.js web/aaps_prefs.mjs web/oref-bundle.js web/odt-packages.zip _site/
+             web/settings.js web/aaps_prefs.mjs web/oref-bundle.js web/odt-packages.zip \
+             LICENSE THIRD_PARTY_NOTICES.txt _site/
       - name: Write the narration setting
         # Empty unless this repository sets the NARRATOR_URL variable (see INSTALL.md), in which
         # case the page offers a written summary from that Worker.

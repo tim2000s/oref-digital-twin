@@ -84,4 +84,7 @@ it shows.
 
 ## Licence
 
-See `LICENSE`.
+GNU Affero General Public License v3.0 or later (`LICENSE`). A public fork satisfies its
+requirement to offer the source of a modified copy to the people using it. Third-party notices for
+the bundled engine are in `THIRD_PARTY_NOTICES.txt`; the Pages workflow publishes both files with
+the site.

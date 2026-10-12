@@ -1,3 +1,4 @@
+/* oref digital twin engine, AGPL-3.0-or-later. Bundles oref0, lodash, moment and moment-timezone (MIT); their licences are in THIRD_PARTY_NOTICES.txt. */
 (() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
