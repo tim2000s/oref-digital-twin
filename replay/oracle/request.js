@@ -183,6 +183,40 @@ function simulate(payload) {
   }
   const absorbed = (m) => (shape ? (m < shape.length ? shape[m] : 0)
     : 1 - (m <= tab.n ? tab.left[m] : 0));
+  // Optional rescue eating, payload.rescue = {threshold, refractory_min, delay, rise, rise_min}
+  // (off unless given; the page does not set it). One rule of when a person eats for a low is
+  // applied to the real glucose and to the shifted glucose; the shifted trace gains its own
+  // rescues and loses the real trace's, so a change that removes a low also removes its rescue.
+  // Where the two sets of times agree the terms cancel exactly. Fitted on AndroidAPS lows.
+  const rescue = payload.rescue || null;
+  let rescueShape = null;
+  const realRescues = [];
+  if (rescue) {
+    const delay = Math.round(rescue.delay), riseMin = Math.max(1, Math.round(rescue.rise_min));
+    const len = delay + riseMin + (tau > 0 ? Math.ceil(10 * tau) : 0) + 1;
+    rescueShape = new Float64Array(len);
+    const keepFrac = tau > 0 ? Math.exp(-1 / tau) : 1;
+    for (let m = 1; m < len; m++) {
+      const ramp = (m - 1 >= delay && m - 1 < delay + riseMin) ? 1 / riseMin : 0;
+      rescueShape[m] = rescueShape[m - 1] * keepFrac + ramp;
+    }
+    let last = -Infinity;
+    for (const c of cycles) {
+      if (c.glucose_status.glucose < rescue.threshold && c.currentTime - last >= rescue.refractory_min * 60000) {
+        realRescues.push(c.currentTime);
+        last = c.currentTime;
+      }
+    }
+  }
+  const rescueEffect = (times, time) => {
+    let e = 0;
+    for (const r of times) {
+      if (r > time) break;
+      const m = Math.round((time - r) / 60000);
+      e += m < rescueShape.length ? rescueShape[m] : (tau > 0 ? 0 : rescueShape[rescueShape.length - 1]);
+    }
+    return e * rescue.rise;
+  };
   const t = cycles.map((c) => c.currentTime);
   const gap = t.map((ti, i) => (i + 1 < t.length ? Math.min((t[i + 1] - ti) / 60000, maxGap) : 5));
   // the body's sensitivity at each cycle, as oref itself would take it
@@ -229,6 +263,9 @@ function simulate(payload) {
     };
     for (const d of doses) d.isf = isfAt(d.t);
 
+    const ownRescues = [];
+    let lastRescue = -Infinity;
+
     function effectAt(time) {
       let e = 0;
       for (const d of live) {
@@ -236,6 +273,7 @@ function simulate(payload) {
         const m = Math.round((time - d.t) / 60000);
         e -= d.u * d.isf * absorbed(m);
       }
+      if (rescue) e += rescueEffect(ownRescues, time) - rescueEffect(realRescues, time);
       return e;
     }
 
@@ -256,8 +294,14 @@ function simulate(payload) {
       }
       live = keep;
 
-      const shift = settled + effectAt(now);
+      let shift = settled + effectAt(now);
       const gs0 = c.glucose_status;
+      if (rescue && gs0.glucose + shift < rescue.threshold &&
+          now - lastRescue >= rescue.refractory_min * 60000) {
+        ownRescues.push(now);
+        lastRescue = now;
+        shift = settled + effectAt(now);
+      }
       // Left untouched when nothing has shifted, so a scenario that changes nothing gives the
       // baseline decision exactly.
       const gs = shift === 0 ? gs0 : {

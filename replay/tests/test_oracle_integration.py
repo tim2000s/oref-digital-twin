@@ -121,7 +121,7 @@ def test_every_dose_in_the_history_is_counted():
     assert abs(together - sum(one)) < 0.01
 
 
-def _flat_day(hours=8, base=1_758_376_800_000):
+def _flat_day(hours=8, base=1_758_376_800_000, mid=130):
     """Cycles every 5 minutes, glucose waving gently around 130, scheduled-rate temps.
 
     Perfectly flat CGM will not do: oref0 reads it as a stuck sensor and does nothing.
@@ -130,7 +130,7 @@ def _flat_day(hours=8, base=1_758_376_800_000):
 
     from ingestion.models import Treatment
 
-    bg = lambda t: round(130 + 12 * math.sin(2 * math.pi * (t - base) / (100 * 60_000)), 1)
+    bg = lambda t: round(mid + 12 * math.sin(2 * math.pi * (t - base) / (100 * 60_000)), 1)
     n = hours * 12
     times = [base + i * 5 * 60_000 for i in range(n)]
     entries = [GlucoseReading(ts_ms=t, sgv_mgdl=bg(t)) for t in
@@ -170,3 +170,27 @@ def test_decay_is_off_by_default_and_shrinks_a_lasting_shift():
     assert plain["scenarios"] == zero["scenarios"]
     late = lambda sim: sum(abs(x) for x in sim["scenarios"][0]["dbg"][-36:]) / 36
     assert late(plain) > 1.0 and late(decayed) < 0.8 * late(plain)
+
+
+RESCUE = {"threshold": 70, "refractory_min": 60, "delay": 10, "rise": 68.8, "rise_min": 91}
+
+
+def test_rescue_model_with_no_change_matches_the_baseline_exactly():
+    # the real trace dips below 70, so real rescues exist and must cancel against the shifted ones
+    cycles = _flat_day(mid=76)
+    assert any(c["glucose_status"]["glucose"] < 70 for c in cycles)
+    sim = OrefOracle().simulate({"cycles": cycles, "scenarios": [{"label": "same"}], "rescue": RESCUE})
+    s = sim["scenarios"][0]
+    assert all(d == 0 for d in s["du"]) and all(g == 0 for g in s["dbg"])
+
+
+def test_rescue_model_treats_new_lows_and_removes_rescues_a_change_makes_unneeded():
+    cycles = _flat_day(mid=76)
+    scen = [{"label": "less", "basal_scale": 0.5}, {"label": "more", "basal_scale": 1.5}]
+    plain = OrefOracle().simulate({"cycles": cycles, "scenarios": scen})
+    resc = OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "rescue": RESCUE})
+    mean = lambda sim, i: sum(sim["scenarios"][i]["dbg"]) / len(sim["scenarios"][i]["dbg"])
+    # less insulin lifts glucose off the lows, so their real rescues come out of the shifted trace
+    assert mean(resc, 0) < mean(plain, 0)
+    # more insulin makes new lows, which the person treats
+    assert mean(resc, 1) > mean(plain, 1)

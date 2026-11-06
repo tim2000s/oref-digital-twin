@@ -44,9 +44,9 @@ def changed_profile(p, ch):
 
 
 def one(job):
-    """job: a subject name, or (name, decay_tau_min, stored row list) to re-estimate with the
-    twin's optional decay and take the TimSim truth from an earlier run (see --truth-from)."""
-    name, tau, stored = (job, 0, None) if isinstance(job, str) else job
+    """job: a subject name, or (name, options, stored row list) to re-estimate with the twin's
+    optional decay and rescue model and take the TimSim truth from an earlier run (--truth-from)."""
+    name, opts, stored = (job, {}, None) if isinstance(job, str) else job
     T._paths()
     from ingestion.pull import pull_from_raw
     from ingestion.models import GlucoseReading
@@ -76,8 +76,8 @@ def one(job):
             for k, ch in CHANGES.items()]
     oracle = OrefOracle()
     sim = oracle.simulate({"cycles": reqs, "scenarios": scen, "cache_key": name})
-    decayed = (oracle.simulate({"cycles": reqs, "scenarios": scen, "cache_key": name,
-                                "decay_tau_min": tau}) if tau else None)
+    decayed = (oracle.simulate({"cycles": reqs, "scenarios": scen, "cache_key": name, **opts})
+               if opts else None)
     oracle._simulator.close()
     ts = [e["date"] for e in raw["entries"]]
     obs = [float(e["sgv"]) for e in raw["entries"]]
@@ -99,7 +99,7 @@ def one(job):
                          "same_fortnight": by[k]["same_fortnight"], "rescues": by[k]["rescues"],
                          "failed_cycles": sd.get("failed", 0)})
         return {"name": name, "replay_exact": exact, "base": base, "twin_base": twin_base,
-                "cycles": len(reqs), "rows": rows, "decay_tau_min": tau}
+                "cycles": len(reqs), "rows": rows, **opts}
 
     # determinism: the unchanged profile replayed must give the learning run back exactly
     again, _ = T.run_timsim(name, p0, T.LEARN_DAYS, T.LEARN_SEED)
@@ -121,14 +121,18 @@ def main():
     ap.add_argument("--subjects", type=int, default=12)
     ap.add_argument("--decay-tau-min", type=float, default=0,
                     help="re-estimate with the twin's decay at this time constant; needs --truth-from")
+    ap.add_argument("--rescue", help="re-estimate with the twin's rescue model, given as JSON "
+                    "{threshold, refractory_min, delay, rise, rise_min}; needs --truth-from")
     ap.add_argument("--truth-from", help="an earlier results file whose TimSim truth is reused")
     ap.add_argument("--out", default=os.path.join(HERE, "results", "same_week_2026-10-10.json"))
     a = ap.parse_args()
     names = [n for n, r in json.load(open(STORE))["subjects"].items() if r.get("found")][: a.subjects]
     jobs = names
-    if a.decay_tau_min:
+    opts = {**({"decay_tau_min": a.decay_tau_min} if a.decay_tau_min else {}),
+            **({"rescue": json.loads(a.rescue)} if a.rescue else {})}
+    if opts:
         stored = {s["name"]: s["rows"] for s in json.load(open(a.truth_from))["subjects"]}
-        jobs = [(n, a.decay_tau_min, stored[n]) for n in names]
+        jobs = [(n, opts, stored[n]) for n in names]
     t0 = time.time()
     with ProcessPoolExecutor(a.workers) as ex:
         out = list(ex.map(one, jobs))
