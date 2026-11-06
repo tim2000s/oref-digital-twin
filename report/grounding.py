@@ -24,7 +24,8 @@ from typing import Any
 # The exemption is withdrawn when the number is attached to a dosing/glucose unit — "3
 # units" is a dose, not prose, and must be grounded like any other figure.
 _STRUCTURAL = {0.0, 1.0, 2.0, 3.0, 24.0}
-_NUM_RE = re.compile(r"-?\d+(?:\.\d+)?")
+# a minus straight after a digit is a range ("70-180"), not a negative number
+_NUM_RE = re.compile(r"(?:(?<!\d)-)?\d+(?:\.\d+)?")
 _UNIT_AFTER_RE = re.compile(r"\s*(?:u\b|iu\b|units?\b|u/h\b|mg/dl\b|mmol)", re.IGNORECASE)
 
 # Dosing directives — an advisory-only tool must not emit these. Targeted at second-person

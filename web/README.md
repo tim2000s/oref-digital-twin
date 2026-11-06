@@ -2,8 +2,8 @@
 
 Runs the whole read-only pipeline in the browser via Pyodide (CPython in WASM). The
 Nightscout token and data stay on the device; the deterministic report renders with no
-network. Optional narration goes to the Cloudflare Worker and is re-verified by the
-grounding gate before it is shown. See [../DESIGN.md](../DESIGN.md) §7, §10.
+network. The optional summary is written by a language model running on the device
+(`narrator.js`) and is re-verified by the grounding gate before it is shown. See [../DESIGN.md](../DESIGN.md) §7, §10.
 
 ## Flow
 
@@ -21,29 +21,33 @@ worker cannot use a script tag's integrity attribute.
    two requests at a time), hands the raw JSON to `report.browser.build_report`, and renders the
    deterministic Markdown report. A request with no usable reply is retried twice with backoff,
    and a window that still fails is halved, down to three hours.
-3. If narration is enabled and `NARRATOR_URL` is set, it sends **only** `abstracted_findings`
-   (stats + finding-keys, no data/token) to the Worker, runs the returned text through
-   `report.browser.gate_narrative`, and shows it **only if it passes** — otherwise the
-   verified deterministic report stands.
+3. The settings tests run and their section is appended to the report.
+4. If the summary box is ticked, the page starts `narrator.js`, a module worker running WebLLM,
+   loads Llama 3.1 8B into it (about 5 GB the first time, then from the browser's cache), and
+   gives it only `abstracted_findings` (stats and finding keys, no data or token). The text goes
+   through `report.browser.gate_narrative` and is shown above the report only if it passes;
+   otherwise the verified deterministic report stands. It runs last so that a first download
+   delays nothing else. The model needs WebGPU, and the box is hidden without it. It runs in a
+   worker because the page's CSP does not allow compiling WebAssembly.
 
 ## Build & run locally
 
 ```bash
-bash web/build.sh                     # produces web/odt-packages.zip
+bash web/build.sh                     # produces web/odt-packages.zip and fetches web/web-llm.js
 python3 -m http.server -d web 8000    # then open http://localhost:8000
 ```
 
 ## Deploy
 
 `.github/workflows/pages.yml` builds the package bundle and deploys `web/` to GitHub Pages
-on push to `main`. The narration Worker's address comes from the repository variable
-`NARRATOR_URL`, written into `config.js` at build time; with none set, the page leaves the
-written summary out. INSTALL.md at the repository root covers setting up a copy.
+on push to `main`. INSTALL.md at the repository root covers setting up a copy.
 
 ## Notes / caveats
 
-- `odt-packages.zip` is a build artifact (gitignored) — the workflow builds it; `build.sh`
-  builds it locally.
+- `odt-packages.zip` and `web-llm.js` are build artifacts (gitignored); `build.sh` makes both.
+  `web-llm.js` is WebLLM 0.2.85 from jsDelivr, checked against a SHA-384 pinned in `build.sh`,
+  and served from the site because the CSP allows script only from the page's own origin. The
+  model weights and their WebAssembly come from Hugging Face and GitHub at run time.
 - `replay/` (oref0 counterfactuals) is not in the browser bundle yet — running oref0 in the
   browser is a documented follow-up; the diagnostic report does not need it.
 - CORS: cgm-remote-monitor sends CORS headers only when `cors` is in its `ENABLE` setting

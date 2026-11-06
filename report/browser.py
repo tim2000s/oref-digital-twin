@@ -5,7 +5,7 @@ raw arrays here. This runs the whole read-only pipeline — normalise, classify 
 diagnose and render the deterministic report, then run the settings tests through real
 oref0 (in the browser) as a second step — in Pyodide.
 
-`abstracted_findings` is the ONLY thing that may be sent to the narration Worker.
+`abstracted_findings` is the ONLY thing the narration model (in the browser) is given.
 """
 
 from __future__ import annotations
@@ -274,7 +274,7 @@ def make_js_oref_simulator():
 
 
 def abstracted_findings(result: dict[str, Any]) -> dict[str, Any]:
-    """The only payload allowed to leave the browser for narration — no raw data/token."""
+    """The only payload the narration model sees — no raw data/token."""
     diag = result.get("diagnostics", {})
     return {
         "counts": diag.get("counts", {}),

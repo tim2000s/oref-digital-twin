@@ -72,6 +72,13 @@ def test_structural_small_integers_allowed():
     assert res.passed, res.to_dict()
 
 
+
+def test_range_hyphen_is_not_a_negative_number():
+    txt = ("Time in range (70-180 mg/dL) was 55%. Severe hypoglycaemia below 54 was 3.0%, above "
+           "the 1% limit. Overnight SMBs at high IOB, 4 of 10, are an association only.")
+    res = check_narrative(txt, SOURCE)
+    assert res.passed, res.to_dict()
+
 # --- hedged / indirect dosing advice ---------------------------------------------------
 # The narrator is a small instruct model told not to prescribe. It complies by hedging, so
 # the hedged forms are the ones that actually reach users. Each of these passed the gate

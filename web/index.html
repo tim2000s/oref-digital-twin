@@ -6,7 +6,8 @@
   <!--
     This page handles a Nightscout read-only token and an AAPS master password, so the
     script surface is locked down: only this origin may supply script to the page, and nothing
-    may be posted anywhere. The engine runs in a worker (engine.js), which loads Pyodide from
+    may be posted anywhere. The optional summary model runs in its own worker (narrator.js),
+    since compiling its WebAssembly is not allowed here. The engine runs in a worker (engine.js), which loads Pyodide from
     the pinned CDN after checking its SHA-384 against the value pinned there. Pyodide compiles CPython to WASM, so
     'unsafe-eval'/'wasm-unsafe-eval' are unavoidable. connect-src has to allow any https
     host because the Nightscout URL is supplied by the user at runtime.
@@ -24,63 +25,176 @@
   " />
   <title>oref digital twin</title>
   <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
-    label { display: block; margin: .6rem 0 .2rem; font-weight: 600; }
-    input, select { width: 100%; padding: .5rem; box-sizing: border-box; }
-    button { margin-top: 1rem; padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
-    #status { color: #888; margin: 1rem 0; }
-    #report { border-top: 1px solid #8884; margin-top: 1.5rem; padding-top: 1rem; }
-    .muted { color: #888; font-size: .9rem; }
-    .warn { color: #b45; }
-    .scroll { overflow-x: auto; }
-    fieldset.aim { border: 1px solid #8884; margin: .8rem 0 0; padding: .4rem .8rem; }
-    fieldset.aim label { font-weight: 400; display: flex; gap: .5rem; align-items: baseline; }
-    fieldset.aim input { width: auto; }
-    table { border-collapse: collapse; font-size: .85rem; margin: .5rem 0; }
-    th, td { border-bottom: 1px solid #8884; padding: .25rem .5rem; text-align: left; white-space: nowrap; }
+    /* Palette from Trio (navy backgrounds, loop green, insulin blue, UAM purple) and the Boost
+       overview (cyan accent, card greys), so the page looks like the apps its users run. */
+    :root {
+      color-scheme: dark;
+      --bg: #030f1c; --bg-2: #0a2237; --card: #1a1d28cc; --edge: #ffffff14;
+      --text: #e8eaf0; --muted: #9aa0ad; --accent: #00d4ff; --green: #6fcf97;
+      --insulin: #1e96fc; --uam: #d12bf7; --amber: #ffc145; --red: #eb5757;
+      --field: #10121a; --glow: 0 0 24px #00d4ff40;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        color-scheme: light;
+        --bg: #eef3f8; --bg-2: #dbe7f3; --card: #ffffffd9; --edge: #0a223720;
+        --text: #0a2237; --muted: #52606f; --accent: #0090b8; --green: #1f8a4c;
+        --insulin: #1468c2; --uam: #9b1bb8; --amber: #a86a00; --red: #c0392b;
+        --field: #ffffff; --glow: 0 0 18px #0090b830;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text); line-height: 1.5;
+      font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background:
+        radial-gradient(60rem 30rem at 85% -10%, #00d4ff22, transparent 60%),
+        radial-gradient(50rem 30rem at -10% 10%, #d12bf71a, transparent 60%),
+        linear-gradient(180deg, var(--bg-2), var(--bg) 40rem) fixed;
+    }
+    main { max-width: 46rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+    header { display: flex; align-items: center; gap: 1rem; margin: .5rem 0 1.25rem; }
+    header svg { flex: none; filter: drop-shadow(0 0 10px #00d4ff66); }
+    h1 { margin: 0; font-size: 1.7rem; letter-spacing: -.02em; }
+    h1 span { background: linear-gradient(90deg, var(--accent), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .tag { margin: .1rem 0 0; color: var(--muted); font-size: .9rem; }
+    .card {
+      background: var(--card); border: 1px solid var(--edge); border-radius: 18px;
+      padding: 1rem 1.1rem 1.2rem; margin: 1rem 0; backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px #0006;
+    }
+    .card h2 { margin: 0 0 .4rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+    .grid > .wide { grid-column: 1 / -1; }
+    @media (max-width: 34rem) { .grid { grid-template-columns: 1fr; } }
+    label { display: block; margin: .7rem 0 .25rem; font-weight: 600; font-size: .92rem; }
+    input, select {
+      width: 100%; padding: .6rem .7rem; font: inherit; color: var(--text);
+      background: var(--field); border: 1px solid var(--edge); border-radius: 10px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: var(--glow); }
+    input[type=file] { padding: .45rem; }
+    input[type=checkbox], input[type=radio] { width: auto; accent-color: var(--accent); }
+    fieldset.aim { border: 0; margin: .8rem 0 0; padding: 0; display: grid; gap: .5rem; }
+    fieldset.aim legend { font-weight: 600; font-size: .92rem; margin-bottom: .4rem; }
+    fieldset.aim label {
+      font-weight: 400; display: flex; gap: .6rem; align-items: baseline; margin: 0;
+      padding: .6rem .75rem; border: 1px solid var(--edge); border-radius: 12px; cursor: pointer;
+    }
+    fieldset.aim label:has(input:checked) { border-color: var(--green); box-shadow: 0 0 0 1px var(--green) inset; }
+    #narrate-row { font-weight: 400; display: flex; gap: .6rem; align-items: baseline; }
+    button {
+      width: 100%; margin-top: 1.1rem; padding: .85rem 1rem; font: inherit; font-weight: 700;
+      font-size: 1.05rem; letter-spacing: .02em; color: #03141f; cursor: pointer; border: 0;
+      border-radius: 14px; background: linear-gradient(90deg, var(--accent), var(--green));
+      box-shadow: var(--glow); transition: transform .1s, filter .15s;
+    }
+    button:hover:not(:disabled) { filter: brightness(1.1); }
+    button:active:not(:disabled) { transform: scale(.99); }
+    button:disabled { cursor: progress; filter: grayscale(.7) brightness(.7); box-shadow: none; }
+    #status {
+      display: flex; align-items: center; gap: .6rem; margin: 1rem 0; color: var(--muted);
+      font-size: .92rem; min-height: 1.5rem;
+    }
+    #status:not(:empty)::before {
+      content: ""; flex: none; width: .6rem; height: .6rem; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { opacity: .35; transform: scale(.8); } }
+    @media (prefers-reduced-motion: reduce) { #status::before { animation: none; } }
+    #report:empty { display: none; }
+    #report h1, #report h2 { color: var(--accent); font-size: 1.15rem; margin: 1.4rem 0 .4rem; }
+    #report h1 { font-size: 1.35rem; }
+    #report h3 { font-size: 1rem; margin: 1.1rem 0 .3rem; }
+    #report strong { color: var(--green); }
+    #report hr { border: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--edge), transparent); margin: 1.5rem 0; }
+    .muted { color: var(--muted); font-size: .88rem; }
+    .warn { color: var(--amber); }
+    .scroll { overflow-x: auto; border-radius: 10px; border: 1px solid var(--edge); margin: .5rem 0; }
+    table { border-collapse: collapse; font-size: .85rem; width: 100%; font-variant-numeric: tabular-nums; }
+    th { text-align: left; color: var(--muted); font-weight: 600; background: #ffffff08; }
+    th, td { border-bottom: 1px solid var(--edge); padding: .4rem .6rem; white-space: nowrap; }
+    tbody tr:hover { background: #00d4ff0d; }
+    .notice { border-left: 3px solid var(--uam); }
   </style>
 </head>
 <body>
-  <h1>oref digital twin</h1>
-  <p class="muted">Read-only, advisory-only. Your Nightscout token and data stay in this
-    browser — they are never sent to any server. Not medical advice.</p>
+<main>
+  <header>
+    <!-- A glucose reading in a ring, after the Trio and Boost overview "bobble". -->
+    <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+      <defs><linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#00d4ff"/><stop offset="1" stop-color="#6fcf97"/></linearGradient></defs>
+      <circle cx="28" cy="28" r="23" fill="none" stroke="url(#ring)" stroke-width="5"/>
+      <path d="M14 32 L21 32 L25 22 L30 38 L34 28 L42 28" fill="none" stroke="#e8eaf0"
+        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <h1>oref <span>digital twin</span></h1>
+      <p class="tag">What your loop did, and what other settings might have done.</p>
+    </div>
+  </header>
 
-  <label for="url">Nightscout URL</label>
-  <input id="url" placeholder="https://your-nightscout.example" />
-  <label for="token">Access token (read-only)</label>
-  <input id="token" type="password" placeholder="token" />
-  <label for="days">Days to analyse</label>
-  <input id="days" type="number" value="7" min="1" max="90" />
-  <label for="jurisdiction">Driving rules to quote in the report</label>
-  <select id="jurisdiction">
-    <option value="UK" selected>UK (DVLA)</option>
-    <option value="EU">EU (Directive 2006/126/EC)</option>
-    <option value="US">US (American Diabetes Association; rules vary by state)</option>
-    <option value="none">None</option>
-  </select>
-  <fieldset class="aim">
-    <legend>What the settings tests aim for</legend>
-    <label><input type="radio" name="aim" value="tighter" checked /> Time in range above 80%,
-      time below 70 mg/dL under 2% <span class="muted">(tighter, the default)</span></label>
-    <label><input type="radio" name="aim" value="standard" /> Time in range above 70%,
-      time below 70 mg/dL under 2% <span class="muted">(standard)</span></label>
-  </fieldset>
-  <label for="maxiob">Max IOB <span class="muted">(optional — enables settings experiments)</span></label>
-  <input id="maxiob" type="number" step="0.1" min="0" placeholder="e.g. 6" />
-  <label for="prefsfile">Settings file <span class="muted">(optional — AAPS prefs export or Trio settings JSON; stays in your browser)</span></label>
-  <input id="prefsfile" type="file" accept=".json,application/json" />
-  <label for="prefspw">Master password <span class="muted">(AAPS encrypted files only — never leaves your device)</span></label>
-  <input id="prefspw" type="password" />
+  <p class="card notice muted">Read-only and advisory only. Your Nightscout token and data stay in this
+    browser and are never sent to any server. Not medical advice.</p>
+
+  <section class="card">
+    <h2>Nightscout</h2>
+    <div class="grid">
+      <div class="wide">
+        <label for="url">Nightscout URL</label>
+        <input id="url" placeholder="https://your-nightscout.example" />
+      </div>
+      <div>
+        <label for="token">Access token (read-only)</label>
+        <input id="token" type="password" placeholder="token" />
+      </div>
+      <div>
+        <label for="days">Days to analyse</label>
+        <input id="days" type="number" value="7" min="1" max="90" />
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Report</h2>
+    <label for="jurisdiction">Driving rules to quote in the report</label>
+    <select id="jurisdiction">
+      <option value="UK" selected>UK (DVLA)</option>
+      <option value="EU">EU (Directive 2006/126/EC)</option>
+      <option value="US">US (American Diabetes Association; rules vary by state)</option>
+      <option value="none">None</option>
+    </select>
+    <fieldset class="aim">
+      <legend>What the settings tests aim for</legend>
+      <label><input type="radio" name="aim" value="tighter" checked /> <span>Time in range above 80%,
+        time below 70 mg/dL under 2% <span class="muted">(tighter, the default)</span></span></label>
+      <label><input type="radio" name="aim" value="standard" /> <span>Time in range above 70%,
+        time below 70 mg/dL under 2% <span class="muted">(standard)</span></span></label>
+    </fieldset>
+    <label id="narrate-row" style="margin-top:1rem"><input type="checkbox" id="narrate" /> <span>Also write a
+      plain-language summary <span class="muted">(runs a language model on this device; the first
+      time it downloads about 5 GB, which the browser keeps, and it needs a computer with a
+      reasonably capable graphics chip; nothing is sent anywhere)</span></span></label>
+  </section>
+
+  <section class="card">
+    <h2>Optional settings</h2>
+    <label for="maxiob">Max IOB <span class="muted">(enables settings experiments)</span></label>
+    <input id="maxiob" type="number" step="0.1" min="0" placeholder="e.g. 6" />
+    <label for="prefsfile">Settings file <span class="muted">(AAPS prefs export or Trio settings JSON; stays in your browser)</span></label>
+    <input id="prefsfile" type="file" accept=".json,application/json" />
+    <label for="prefspw">Master password <span class="muted">(AAPS encrypted files only; never leaves your device)</span></label>
+    <input id="prefspw" type="password" />
+  </section>
 
   <button id="run" disabled>Analyse</button>
 
-  <label id="narrate-row" style="margin-top:1.5rem"><input type="checkbox" id="narrate" /> Also generate a
-    written summary (sends only anonymous findings — no data or token — to the narration service)</label>
-
-  <p id="status">Loading Python runtime…</p>
-  <div id="report"></div>
+  <p id="status" role="status">Loading Python runtime…</p>
+  <div id="report" class="card"></div>
 
   <script type="module" src="./app.js"></script>
+</main>
 </body>
 </html>

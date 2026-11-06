@@ -39,5 +39,7 @@ coverage/
 
 # web build artifact (Pyodide package bundle)
 web/odt-packages.zip
+web/web-llm.js
 _site/
 web/aaps_prefs.mjs
+validation/narrator/node_modules

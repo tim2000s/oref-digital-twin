@@ -1,0 +1,42 @@
+{
+ "model": "Llama-3.1-8B-Instruct-q4f16_1-MLC",
+ "prompt": "You rewrite structured diabetes-loop findings into a clear, calm report for the person.\nHard rules:\n- Use ONLY numbers that appear in the provided findings. Never introduce a new number.\n- Never give dosing instructions or tell the user to change a setting. This is advisory only.\n- Preserve every caveat: association is not causation; a counterfactual is decision-level, not a blood-glucose prediction.\n- Whenever you mention SMBs, say that the pattern is an association and does not prove causation.\n- Lead with anything critical. Be plain and British-spelled. Do not add a diagnosis.\n- Write two or three short paragraphs of plain prose to the person, with no headings or lists.\n- Keep each number with the unit it has in the findings: percentages stay percentages and \"4 of 10\" stays \"4 of 10\". Do not mention the counts.",
+ "source": {
+  "glycemia": {
+   "mean_mgdl": 120,
+   "tir_70_180": 55,
+   "tbr_lt54": 3
+  },
+  "counts": {
+   "critical": 1,
+   "warning": 1,
+   "info": 0
+  },
+  "findings": [
+   {
+    "key": "tbr_lt54_over_limit",
+    "severity": "critical",
+    "title": "Severe hypoglycaemia exposure above the 1% limit",
+    "detail": "3.0% of readings are below 54 mg/dL, above the 1% limit."
+   },
+   {
+    "key": "smb_high_iob_overnight",
+    "severity": "warning",
+    "title": "Overnight SMBs at high IOB",
+    "detail": "4 of 10 overnight SMBs at high IOB."
+   }
+  ]
+ },
+ "texts": [
+  "I've got some information to share with you. It's worth noting that your average blood glucose level is 120 mg/dL, which is a bit higher than the target. Also, 55% of your readings are within the range of 70-180 mg/dL, which is a good sign.\n\nHowever, there's a more serious issue to consider. You've had a severe hypoglycaemia exposure, which means that 3% of your readings have been below 54 mg/dL. This is above the 1% limit, and it's a critical situation.\n\nAdditionally, there's an association between your overnight SMBs and high insulin on board (IOB). It's not proven that this is causing any issues, but 4 out of 10 overnight SMBs have been at high IOB. This is just an association, and it doesn't necessarily mean that it's causing any problems.",
+  "I've got some information to share with you. It's worth noting that you've had a severe hypoglycaemia exposure above the 1% limit. This means that 3% of your readings are below 54 mg/dL, which is above the 1% limit. This is a critical finding.\n\nAlso, there's an association between your overnight SMBs and high insulin on board (IOB). This means that 4 out of 10 overnight SMBs are happening when you have high IOB. Please keep in mind that this is just an association and doesn't necessarily mean that one causes the other. It's just something to be aware of.",
+  "I've got some information to share with you. It's worth noting that your mean blood glucose level is 120 mg/dL. Also, 55% of your readings are within the target range of 70-180 mg/dL.\n\nHowever, there's a concern about your exposure to severe hypoglycaemia. The data shows that 3% of your readings are below 54 mg/dL, which is above the 1% limit. This is a critical issue that needs attention.\n\nAdditionally, the data suggests an association between your overnight SMBs and high insulin on board (IOB). It appears that 4 of 10 overnight SMBs are happening when you have high IOB. This doesn't necessarily mean that the SMBs are causing the high IOB, but it's worth keeping an eye on this pattern.",
+  "I've got some information to share with you. There's been a severe hypoglycaemia exposure, which is a critical issue. This means that 3% of your readings have been below 54 mg/dL, which is above the 1% limit. This is a significant concern.\n\nAlso, I've noticed an association between your overnight Subcutaneous Boluses (SMBs) and high Insulin On Board (IOB) levels. This means that 4 of every 10 overnight SMBs have been at high IOB levels. Please note that this is just an association and does not necessarily mean that the SMBs are causing the high IOB levels. It's also worth remembering that this is not a prediction of future blood glucose levels, but rather a pattern that's been observed.",
+  "I've got some information to share with you. It's worth noting that you've had a severe hypoglycaemia exposure, which is a critical situation. This has occurred above the 1% limit, with 3.0% of your readings being below 54 mg/dL. Additionally, there's an association between your overnight SMBs and high insulin on board (IOB). This pattern is an association and does not prove causation, but 4 of 10 overnight SMBs have been at high IOB.",
+  "I've got some information to share with you. It's worth noting that your glycemia levels have been a bit high, averaging 120 mg/dL. Also, 55% of your readings have been within the range of 70-180 mg/dL.\n\nThere's been a concerning trend of severe hypoglycaemia exposure. The data shows that 3% of your readings have been below 54 mg/dL, which is above the 1% limit. This is a critical situation, and it's essential to be aware of it.\n\nAdditionally, there's an association between your overnight SMBs and high insulin on board (IOB) levels. The data suggests that 4 out of 10 overnight SMBs have been at high IOB levels. This doesn't necessarily mean that the SMBs are causing the high IOB, but it's worth keeping an eye on this pattern.",
+  "I've got some things to tell you. You've had a severe hypoglycaemia exposure, which means you've had a situation where your blood glucose levels have been very low. This has happened more than would be expected, which is a concern. Specifically, 3% of your readings have been below 54 mg/dL, which is above the 1% limit.\n\nAlso, I've noticed that you've had some SMBs at high insulin on board levels overnight. This is an association, not a proven cause, but it's worth keeping an eye on. In 4 of 10 overnight SMBs, you've had high insulin on board levels.",
+  "I've got some information to share with you. There's been a severe hypoglycaemia exposure above the 1% limit. This means that 3.0% of your readings are below 54 mg/dL, which is above the 1% limit. This is a critical finding.\n\nAlso, there's an association between your overnight SMBs and high IOB. This means that 4 of 10 overnight SMBs at high IOB. This is an association, not a proven cause, and it's worth keeping an eye on.",
+  "I wanted to let you know that there's been a concerning issue with your blood glucose levels. The average level is 120 mg/dL, which is a bit higher than ideal. Also, 55% of your readings are within the range of 70-180 mg/dL, which is a good sign. However, there's been a severe hypoglycaemia exposure, which is a critical issue. This means that 3% of your readings are below 54 mg/dL, which is above the 1% limit.\n\nAdditionally, there's an association between your overnight SMBs and high insulin on board (IOB). This means that 4 out of 10 overnight SMBs are happening when you have high IOB. Please note that this is just an association and doesn't necessarily mean that the SMBs are causing the high IOB. It's also worth noting that this pattern doesn't prove causation.",
+  "I've got some information to share with you. It's worth noting that you've had a severe hypoglycaemia exposure, which is a critical situation. This has happened above the 1% limit, with 3.0% of your readings being below 54 mg/dL. Also, there's an association between your overnight SMBs and high insulin on board (IOB). This association is not a proof of causation, but it's been observed that 4 of 10 overnight SMBs have been at high IOB."
+ ]
+}

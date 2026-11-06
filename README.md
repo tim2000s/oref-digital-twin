@@ -1,19 +1,41 @@
 # oref-digital-twin
 
-Advisory decision support for AndroidAPS and Trio dosing settings. It runs in the browser:
-
-https://tim2000s.github.io/oref-digital-twin/
-
-To run your own copy on your own GitHub account, fork this repository and follow
-[INSTALL.md](INSTALL.md); it takes about ten minutes and needs no server.
+Advisory decision support for AndroidAPS and Trio dosing settings. It is a single web page that
+runs entirely in your browser, and you host your own copy on GitHub Pages under your own
+GitHub account, at no cost and with no server.
 
 > Read-only and advisory only. Nothing here writes to Nightscout, a pump or a loop, and it
 > is not medical advice. Any settings change it suggests is a trial to discuss with your
 > clinician and test deliberately, one setting at a time.
 
+## Setting up your own copy
+
+It takes about ten minutes and needs a free GitHub account.
+
+1. Sign in to GitHub, open this repository and choose Fork (top right). Keep the name
+   `oref-digital-twin` and create the fork. Your copy holds no one's data, so a public fork is
+   safe.
+2. In your fork, open the Actions tab and choose "I understand my workflows, go ahead and
+   enable them". GitHub turns workflows off in every new fork until you do.
+3. Open Settings, then Pages. Under Build and deployment, set Source to GitHub Actions.
+4. Back in the Actions tab, choose "Deploy web to GitHub Pages" on the left, then Run workflow
+   on the `main` branch. It takes about a minute.
+
+Your copy is then at
+
+    https://{your-github-id}.github.io/oref-digital-twin/
+
+where `{your-github-id}` is your GitHub username in lower case. A user called `JaneDoe` would
+open `https://janedoe.github.io/oref-digital-twin/`. The summary of the workflow run shows the
+same address, and every later push to `main` republishes it.
+
+Open the address and wait for the status line to read "Ready.", which takes a few seconds.
+INSTALL.md has the same steps in more detail, how to keep your copy up to date and how to run
+it on your own computer instead.
+
 ## Using it
 
-Open the page and enter your Nightscout address (it must start with `https://`) and a
+Open your copy and enter your Nightscout address (it must start with `https://`) and a
 read-only token, which is one with the `readable` role made in Nightscout's Admin Tools.
 Choose how many days to analyse; the default is 7. Your Nightscout must have `cors` in its
 `ENABLE` setting, because the page fetches from it directly.
@@ -29,13 +51,31 @@ The report quotes them word for word with their source and date, beside the inte
 for the UK, NICE glucose targets, and adds the guidance on hypoglycaemia when it finds lows. How
 the quotes are kept honest is in `guidance/README.md`.
 
-Your token and data stay in the browser. If you tick the written-summary box, only the
-anonymous findings (percentages and finding names, no readings, token or address) go to a
-narration service, and its text is checked against those findings before it is shown.
+Your token and data stay in the browser. Nothing is sent anywhere except the requests to your
+own Nightscout.
 
 The main report appears once the data has arrived, which on a slow Nightscout can take a
 couple of minutes for a week. The settings tests then run for about two more minutes, with
 a status line saying so. Keep the page open meanwhile; on a phone, switching away can stop it.
+
+### The plain-language summary
+
+Ticking "Also write a plain-language summary" adds a few paragraphs of prose above the report,
+written by a language model (Llama 3.1 8B) that runs on your own device through WebGPU. Only the
+anonymous findings (percentages and finding names, no readings, token or address) are given to
+it, and it sends nothing anywhere. Its text is checked against those findings before it is
+shown, and a summary that adds a number, gives a dosing instruction or leaves out a critical
+finding is withheld in favour of the report alone.
+
+The first time, the model downloads about 5 GB, which the browser keeps for later visits. It
+needs a computer with a reasonably capable graphics chip and a browser with WebGPU (current
+Chrome or Edge on desktop; Safari 26 or later), and the option is hidden where WebGPU is
+missing. Phones will mostly not manage it. The summary is written after the settings tests
+finish, so it never delays the report. Everything else on the page works without it.
+
+On the findings used in the grounding tests, the 8B model's summaries passed the check 19 times
+in 20 over two runs; a smaller 3B model passed 4 in 10 and described SMBs as glucose readings
+(`validation/narrator/`). That is one set of findings, not a measure across real reports.
 
 ## What it does
 
@@ -111,10 +151,9 @@ and its timings.
 | `diagnostics/` | Deterministic sanity checks and out-of-sample pattern detection. |
 | `replay/` | The oref0 `determine-basal` oracle, the closed-loop simulator and the staged settings tests. |
 | `settings/` | Settings ingestion, including client-side decryption of AAPS preference exports. |
-| `report/` | The report: Pyodide entry point, Markdown template, quoted official guidance and the grounding check on narration. |
+| `report/` | The report: Pyodide entry point, Markdown template, quoted official guidance and the grounding check on the summary. |
 | `guidance/` | Fetching and checking the official sources the report quotes. |
-| `web/` | The browser page (GitHub Pages, Pyodide and an oref0 bundle). |
-| `worker/` | The optional narration service (Cloudflare Worker). |
+| `web/` | The browser page (GitHub Pages, Pyodide, an oref0 bundle and the in-browser summary model). |
 | `docs/` | Supporting notes and references. |
 
 ## Privacy
@@ -128,4 +167,5 @@ scoped, never stored and revocable.
 GNU Affero General Public License v3.0 or later (`LICENSE`), consistent with the AAPS and oref
 ecosystem this builds on and replays. If you run a modified copy as a public page, the AGPL asks
 you to offer its source to the people using it; a public fork does that. The page's engine bundles
-oref0, lodash, moment and moment-timezone under the MIT licence (`THIRD_PARTY_NOTICES.txt`).
+oref0, lodash, moment and moment-timezone under the MIT licence, and the site serves WebLLM
+under the Apache License 2.0 (`THIRD_PARTY_NOTICES.txt`).

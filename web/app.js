@@ -5,11 +5,11 @@
  * The engine (the Nightscout fetch, Pyodide and real oref0) runs in a Web Worker,
  * engine.js, so the page stays responsive during the minutes the settings tests take and can
  * show which step is running. Everything stays client-side: the token and the data go to the
- * worker, never to a server. Optional narration goes to the Cloudflare Worker, and its text is
- * re-verified by the grounding gate in the engine before it is shown.
+ * worker, never to a server. Optional narration runs a small language model on this device
+ * (narrator.js), and its text is re-verified by the grounding gate in the engine before it is
+ * shown.
  */
 
-import { NARRATOR_URL } from './config.js';
 import { loadSettingsFromFile } from './settings.js';
 
 const $ = (id) => document.getElementById(id);
@@ -91,18 +91,49 @@ function mdToHtml(md) {
   function inline(s) { return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/_(.+?)_/g, '<em>$1</em>'); }
 }
 
-// The summary is optional, so no failure here may cost the person their report: a network
-// error used to escape this function and replace the finished report with "Failed to fetch".
+// --- the optional written summary, from a model running on this device ---
+// Llama 3.1 8B, the model the earlier Cloudflare narrator ran. On the grounding tests' findings
+// it passed the gate 19 times in 20 over two runs; Llama 3.2 3B passed 4 in 10 and called SMBs glucose
+// readings (validation/narrator/).
+// The f32 build is for GPUs without 16-bit shaders. About 5 GB downloads once and is cached.
+const NARRATOR_MODEL = 'Llama-3.1-8B-Instruct-q4f16_1-MLC';
+const NARRATOR_MODEL_F32 = 'Llama-3.1-8B-Instruct-q4f32_1-MLC';
+const NARRATOR_PROMPT = [
+  'You rewrite structured diabetes-loop findings into a clear, calm report for the person.',
+  'Hard rules:',
+  '- Use ONLY numbers that appear in the provided findings. Never introduce a new number.',
+  '- Never give dosing instructions or tell the user to change a setting. This is advisory only.',
+  '- Preserve every caveat: association is not causation; a counterfactual is decision-level, not a blood-glucose prediction.',
+  '- Whenever you mention SMBs, say that the pattern is an association and does not prove causation.',
+  '- Lead with anything critical. Be plain and British-spelled. Do not add a diagnosis.',
+  '- Write two or three short paragraphs of plain prose to the person, with no headings or lists.',
+  '- Keep each number with the unit it has in the findings: percentages stay percentages and "4 of 10" stays "4 of 10". Do not mention the counts.',
+].join('\n');
+let narrator = null;
+
+// The summary is optional, so no failure here may cost the person their report.
 async function narrate(sourceJson) {
-  if (!NARRATOR_URL) return null;
   try {
-    const r = await fetch(NARRATOR_URL, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ findings: sourceJson }),
+    if (!narrator) {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) return null;
+      const model = adapter.features.has('shader-f16') ? NARRATOR_MODEL : NARRATOR_MODEL_F32;
+      const { CreateWebWorkerMLCEngine } = await import('./web-llm.js');
+      narrator = await CreateWebWorkerMLCEngine(
+        new Worker('./narrator.js', { type: 'module' }), model,
+        { initProgressCallback: (p) => setStatus('Loading the summary model: ' + p.text) },
+      );
+    }
+    setStatus('Writing the summary…');
+    const res = await narrator.chat.completions.create({
+      messages: [
+        { role: 'system', content: NARRATOR_PROMPT },
+        { role: 'user', content: 'Findings JSON:\n' + JSON.stringify(sourceJson) },
+      ],
+      max_tokens: 700,
+      temperature: 0.2,
     });
-    if (!r.ok) return null;
-    const { narrative } = await r.json();
-    return narrative || null;
+    return res.choices[0]?.message?.content?.trim() || null;
   } catch {
     return null;
   }
@@ -172,22 +203,6 @@ async function run() {
 
     let html = mdToHtml(reportMd);
     if (settingsNote) html = `<p class="muted">${settingsNote}</p>` + html;
-
-    if ($('narrate').checked && NARRATOR_URL) {
-      setStatus('Generating written summary…');
-      const narrative = await narrate(source);
-      if (narrative) {
-        const gate = await ask('gate', { narrative, source });
-        if (gate.passed) {
-          html = `<h2>Summary</h2>${mdToHtml(narrative)}<hr>` + html;
-        } else {
-          html = `<p class="warn">The written summary failed verification (${gate.violations.length} issue(s)); showing the verified report instead.</p>` + html;
-        }
-      } else {
-        html = '<p class="muted">The written summary is unavailable just now; this is the verified report.</p>' + html;
-      }
-    }
-
     $('report').innerHTML = html;
 
     // The settings tests re-run the loop through every 5-minute cycle under about thirty
@@ -201,6 +216,22 @@ async function run() {
       section = `## Settings tests (estimated)\n\n_Settings tests errored: ${err.message.split('\n').slice(-2).join(' ')}_`;
     }
     $('report').insertAdjacentHTML('beforeend', '<hr>' + mdToHtml(section));
+
+    // Last, so a first-time model download delays neither the report nor the settings tests.
+    if ($('narrate').checked) {
+      setStatus('Preparing the written summary…');
+      const narrative = await narrate(source);
+      let top;
+      if (narrative) {
+        const gate = await ask('gate', { narrative, source });
+        top = gate.passed
+          ? `<h2>Summary</h2>${mdToHtml(narrative)}<hr>`
+          : `<p class="warn">The written summary failed verification (${gate.violations.length} issue(s)); showing the verified report instead.</p>`;
+      } else {
+        top = '<p class="muted">The written summary could not be produced on this device; this is the verified report.</p>';
+      }
+      $('report').insertAdjacentHTML('afterbegin', top);
+    }
     setStatus('Done.');
   } catch (e) {
     setStatus('');
@@ -214,9 +245,8 @@ async function run() {
   }
 }
 
-// A copy of the site without a narration Worker offers no written summary, rather than a box
-// that can only fail (see INSTALL.md).
-if (!NARRATOR_URL) $('narrate-row').style.display = 'none';
+// A browser without WebGPU cannot run the summary model, so it is not offered there.
+if (!navigator.gpu) $('narrate-row').style.display = 'none';
 
 $('run').addEventListener('click', run);
 boot().catch((e) => setStatus('Failed to load the analysis engine: ' + e.message));
