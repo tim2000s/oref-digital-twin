@@ -43,7 +43,10 @@ def changed_profile(p, ch):
                    target_lo=p.target_lo + off, target_hi=p.target_hi + off)
 
 
-def one(name):
+def one(job):
+    """job: a subject name, or (name, decay_tau_min, stored row list) to re-estimate with the
+    twin's optional decay and take the TimSim truth from an earlier run (see --truth-from)."""
+    name, tau, stored = (job, 0, None) if isinstance(job, str) else job
     T._paths()
     from ingestion.pull import pull_from_raw
     from ingestion.models import GlucoseReading
@@ -73,22 +76,38 @@ def one(name):
             for k, ch in CHANGES.items()]
     oracle = OrefOracle()
     sim = oracle.simulate({"cycles": reqs, "scenarios": scen, "cache_key": name})
+    decayed = (oracle.simulate({"cycles": reqs, "scenarios": scen, "cache_key": name,
+                                "decay_tau_min": tau}) if tau else None)
     oracle._simulator.close()
     ts = [e["date"] for e in raw["entries"]]
     obs = [float(e["sgv"]) for e in raw["entries"]]
     twin_base = score(obs)
 
+    def estimate(s):
+        dbg = [d if d is not None else 0.0 for d in s["dbg"]]
+        est = score([g + _interp(sim["t"], dbg, t) for t, g in zip(ts, obs)])
+        return {m: est[m] - twin_base[m] for m in est}
+
+    rows = []
+    if stored is not None:
+        # The stored truth is only valid for this run if nothing upstream moved: the learning
+        # fortnight and the twin without decay must reproduce the stored estimates exactly.
+        by = {r["change"]: r for r in stored}
+        exact = all(estimate(s) == by[k]["estimated"] for k, s in zip(CHANGES, sim["scenarios"]))
+        for k, s, sd in zip(CHANGES, sim["scenarios"], decayed["scenarios"]):
+            rows.append({"change": k, "estimated": estimate(sd), "estimated_no_decay": estimate(s),
+                         "same_fortnight": by[k]["same_fortnight"], "rescues": by[k]["rescues"],
+                         "failed_cycles": sd.get("failed", 0)})
+        return {"name": name, "replay_exact": exact, "base": base, "twin_base": twin_base,
+                "cycles": len(reqs), "rows": rows, "decay_tau_min": tau}
+
     # determinism: the unchanged profile replayed must give the learning run back exactly
     again, _ = T.run_timsim(name, p0, T.LEARN_DAYS, T.LEARN_SEED)
     exact = [float(x) for x in again.cgm] == cgm
-
-    rows = []
     for (k, ch), s in zip(CHANGES.items(), sim["scenarios"]):
-        dbg = [d if d is not None else 0.0 for d in s["dbg"]]
-        est = score([g + _interp(sim["t"], dbg, t) for t, g in zip(ts, obs)])
         truth_run, _ = T.run_timsim(name, changed_profile(p0, ch), T.LEARN_DAYS, T.LEARN_SEED)
         truth = score([float(x) for x in truth_run.cgm])
-        rows.append({"change": k, "estimated": {m: est[m] - twin_base[m] for m in est},
+        rows.append({"change": k, "estimated": estimate(s),
                      "same_fortnight": {m: truth[m] - base[m] for m in truth},
                      "rescues": [learn.rescue_events, truth_run.rescue_events],
                      "failed_cycles": s.get("failed", 0)})
@@ -100,12 +119,20 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=7)
     ap.add_argument("--subjects", type=int, default=12)
+    ap.add_argument("--decay-tau-min", type=float, default=0,
+                    help="re-estimate with the twin's decay at this time constant; needs --truth-from")
+    ap.add_argument("--truth-from", help="an earlier results file whose TimSim truth is reused")
+    ap.add_argument("--out", default=os.path.join(HERE, "results", "same_week_2026-10-10.json"))
     a = ap.parse_args()
     names = [n for n, r in json.load(open(STORE))["subjects"].items() if r.get("found")][: a.subjects]
+    jobs = names
+    if a.decay_tau_min:
+        stored = {s["name"]: s["rows"] for s in json.load(open(a.truth_from))["subjects"]}
+        jobs = [(n, a.decay_tau_min, stored[n]) for n in names]
     t0 = time.time()
     with ProcessPoolExecutor(a.workers) as ex:
-        out = list(ex.map(one, names))
-    path = os.path.join(HERE, "results", "same_week_2026-10-10.json")
+        out = list(ex.map(one, jobs))
+    path = a.out
     json.dump({"changes": CHANGES, "subjects": out, "seconds": round(time.time() - t0, 1)},
               open(path, "w"), indent=1)
     print(f"wrote {path} in {time.time() - t0:.0f}s; replay exact for "

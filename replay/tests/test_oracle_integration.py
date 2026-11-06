@@ -156,3 +156,17 @@ def test_simulated_basal_cut_raises_glucose_and_increase_lowers_it():
         {"label": "less", "basal_scale": 0.7}, {"label": "more", "basal_scale": 1.3}]})
     less, more = (sum(s["dbg"]) / len(s["dbg"]) for s in sim["scenarios"])
     assert less > 1.0 and more < -1.0
+
+
+def test_decay_is_off_by_default_and_shrinks_a_lasting_shift():
+    # The loop answers any shift with its own doses, so the decay's shape cannot be read off a
+    # closed-loop run; what must hold is that it is inert when unset and that a lasting
+    # difference leaves a smaller shift late in the period when it is set.
+    cycles = _flat_day()
+    scen = [{"label": "less", "basal_scale": 0.7}]
+    plain = OrefOracle().simulate({"cycles": cycles, "scenarios": scen})
+    zero = OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "decay_tau_min": 0})
+    decayed = OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "decay_tau_min": 144})
+    assert plain["scenarios"] == zero["scenarios"]
+    late = lambda sim: sum(abs(x) for x in sim["scenarios"][0]["dbg"][-36:]) / 36
+    assert late(plain) > 1.0 and late(decayed) < 0.8 * late(plain)

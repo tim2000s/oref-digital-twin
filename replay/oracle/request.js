@@ -165,6 +165,24 @@ function simulate(payload) {
   const maxGap = payload.max_gap_min || 30;
   if (!cycles.length) return { baseline: [], scenarios: [] };
   const tab = curveTables(cycles[0].iob_inputs.profile);
+  // Optional pull-back of each dose's glucose effect, time constant decay_tau_min (off unless
+  // given; the page does not set it). Measured in TimSim: glucose follows an insulin difference
+  // for an hour or two, then returns with a time constant of about 2.4 h, where the shift without
+  // this stays for the rest of the period (validation/DECAY.md).
+  // shape[m] is a unit dose's effect m minutes on: its absorption, each part relaxing since.
+  const tau = payload.decay_tau_min || 0;
+  let shape = null;
+  if (tau > 0) {
+    const len = tab.n + Math.ceil(10 * tau) + 1;
+    shape = new Float64Array(len);
+    shape[0] = 1 - tab.left[0];
+    const keepFrac = Math.exp(-1 / tau);
+    for (let m = 1; m < len; m++) {
+      shape[m] = shape[m - 1] * keepFrac + (m <= tab.n ? tab.left[m - 1] - tab.left[m] : 0);
+    }
+  }
+  const absorbed = (m) => (shape ? (m < shape.length ? shape[m] : 0)
+    : 1 - (m <= tab.n ? tab.left[m] : 0));
   const t = cycles.map((c) => c.currentTime);
   const gap = t.map((ti, i) => (i + 1 < t.length ? Math.min((t[i + 1] - ti) / 60000, maxGap) : 5));
   // the body's sensitivity at each cycle, as oref itself would take it
@@ -216,7 +234,7 @@ function simulate(payload) {
       for (const d of live) {
         if (d.t > time) continue;
         const m = Math.round((time - d.t) / 60000);
-        e -= d.u * d.isf * (1 - (m <= tab.n ? tab.left[m] : 0));
+        e -= d.u * d.isf * absorbed(m);
       }
       return e;
     }
@@ -231,7 +249,10 @@ function simulate(payload) {
       // retire doses whose action is complete into the settled sum
       const keep = [];
       for (const d of live) {
-        if ((now - d.t) / 60000 > tab.n + 60) settled -= d.u * d.isf; else keep.push(d);
+        const age = (now - d.t) / 60000;
+        if (shape) {
+          if (age < shape.length + 60) keep.push(d);          // its effect has relaxed to nothing
+        } else if (age > tab.n + 60) settled -= d.u * d.isf; else keep.push(d);
       }
       live = keep;
 
