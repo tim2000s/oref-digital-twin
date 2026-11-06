@@ -84,6 +84,9 @@
     }
     fieldset.aim label:has(input:checked) { border-color: var(--green); box-shadow: 0 0 0 1px var(--green) inset; }
     #narrate-row { font-weight: 400; display: flex; gap: .6rem; align-items: baseline; }
+    #narrate-row:has(input:disabled) { opacity: .5; }
+    #narrate-why { margin: .3rem 0 0 1.6rem; }
+    #narrate-why:empty { display: none; }
     button {
       width: 100%; margin-top: 1.1rem; padding: .85rem 1rem; font: inherit; font-weight: 700;
       font-size: 1.05rem; letter-spacing: .02em; color: #03141f; cursor: pointer; border: 0;
@@ -177,6 +180,7 @@
       plain-language summary <span class="muted">(runs a language model on this device; the first
       time it downloads about 5 GB, which the browser keeps, and it needs a computer with a
       reasonably capable graphics chip; nothing is sent anywhere)</span></span></label>
+    <p id="narrate-why" class="muted"></p>
   </section>
 
   <section class="card">

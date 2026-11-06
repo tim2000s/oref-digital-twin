@@ -69,8 +69,11 @@ finding is withheld in favour of the report alone.
 
 The first time, the model downloads about 5 GB, which the browser keeps for later visits. It
 needs a computer with a reasonably capable graphics chip and a browser with WebGPU (current
-Chrome or Edge on desktop; Safari 26 or later), and the option is hidden where WebGPU is
-missing. Phones will mostly not manage it. The summary is written after the settings tests
+Chrome or Edge on desktop; Safari 26 or later). When the page loads it checks for WebGPU, a
+graphics chip that allows the 1 GB buffers the model needs, 8 GB of memory where the browser
+reports it, and room for the download, and greys the option out with the reason when any check
+fails. If the model still will not load, the option is switched off for that visit. Phones
+will mostly not manage it. The summary is written after the settings tests
 finish, so it never delays the report. Everything else on the page works without it.
 
 On the findings used in the grounding tests, the 8B model's summaries passed the check 19 times

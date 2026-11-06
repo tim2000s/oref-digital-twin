@@ -27,7 +27,10 @@ worker cannot use a script tag's integrity attribute.
    gives it only `abstracted_findings` (stats and finding keys, no data or token). The text goes
    through `report.browser.gate_narrative` and is shown above the report only if it passes;
    otherwise the verified deterministic report stands. It runs last so that a first download
-   delays nothing else. The model needs WebGPU, and the box is hidden without it. It runs in a
+   delays nothing else. On load, `narratorUnavailable()` greys the box out, giving the reason, when there is no
+   WebGPU, the GPU's buffer limits are under the 1 GB WebLLM requests for a model this size,
+   the browser reports under 8 GB of memory, or storage quota is under 6 GB. A model that
+   then fails to load switches the box off for the visit. It runs in a
    worker because the page's CSP does not allow compiling WebAssembly.
 
 ## Build & run locally

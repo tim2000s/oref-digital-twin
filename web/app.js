@@ -111,19 +111,50 @@ const NARRATOR_PROMPT = [
 ].join('\n');
 let narrator = null;
 
+// Why this device cannot run the summary model, or null if it looks able to. No browser reports
+// graphics memory, so these are proxies: the 1 GB buffer limits are what WebLLM itself requests
+// for a model this size, Chrome and Edge report RAM (as at most 8), and the download needs room.
+async function narratorUnavailable() {
+  if (!navigator.gpu) return 'this browser has no WebGPU';
+  const adapter = await navigator.gpu.requestAdapter().catch(() => null);
+  if (!adapter) return 'no usable graphics chip was found';
+  const GB = 2 ** 30;
+  if (adapter.limits.maxBufferSize < GB || adapter.limits.maxStorageBufferBindingSize < GB) {
+    return 'the graphics chip is too small for the model';
+  }
+  if (navigator.deviceMemory !== undefined && navigator.deviceMemory < 8) {
+    return `the model needs at least 8 GB of memory and this device reports ${navigator.deviceMemory} GB`;
+  }
+  const { quota } = await navigator.storage?.estimate?.().catch(() => ({})) ?? {};
+  if (quota !== undefined && quota < 6 * GB) return 'the browser has too little storage for the 5 GB model';
+  return null;
+}
+
+function disableNarrator(reason) {
+  $('narrate').checked = false;
+  $('narrate').disabled = true;
+  $('narrate-why').textContent = `Not available on this device: ${reason}.`;
+}
+
 // The summary is optional, so no failure here may cost the person their report.
 async function narrate(sourceJson) {
-  try {
-    if (!narrator) {
+  if (!narrator) {
+    const worker = new Worker('./narrator.js', { type: 'module' });
+    try {
       const adapter = await navigator.gpu.requestAdapter();
-      if (!adapter) return null;
       const model = adapter.features.has('shader-f16') ? NARRATOR_MODEL : NARRATOR_MODEL_F32;
       const { CreateWebWorkerMLCEngine } = await import('./web-llm.js');
-      narrator = await CreateWebWorkerMLCEngine(
-        new Worker('./narrator.js', { type: 'module' }), model,
-        { initProgressCallback: (p) => setStatus('Loading the summary model: ' + p.text) },
-      );
+      narrator = await CreateWebWorkerMLCEngine(worker, model,
+        { initProgressCallback: (p) => setStatus('Loading the summary model: ' + p.text) });
+    } catch (e) {
+      // The checks passed but the model would not load, which is usually memory; stop
+      // offering it for this visit rather than failing the same way on every run.
+      worker.terminate();
+      disableNarrator('the model could not be loaded (' + String(e.message || e).split('\n')[0] + ')');
+      return null;
     }
+  }
+  try {
     setStatus('Writing the summary…');
     const res = await narrator.chat.completions.create({
       messages: [
@@ -245,8 +276,7 @@ async function run() {
   }
 }
 
-// A browser without WebGPU cannot run the summary model, so it is not offered there.
-if (!navigator.gpu) $('narrate-row').style.display = 'none';
+narratorUnavailable().then((why) => why && disableNarrator(why));
 
 $('run').addEventListener('click', run);
 boot().catch((e) => setStatus('Failed to load the analysis engine: ' + e.message));
