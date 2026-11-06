@@ -137,12 +137,48 @@ sensitivity, and assumes your meals, activity and own treatments, hypo treatment
 would have been the same under the new setting. It has not yet been checked against periods
 where someone actually changed a setting, so it is better at ranking settings than at
 predicting what a change will do: on simulated people its estimates overstated the fall in lows
-by 1.5 to 3 times, and the report says so beside its tables. All testing so far is in simulation
-(twelve TimSim adults under stock oref0); none of it is evidence about real people. The tests run stock oref0; if the page detects a variant
-such as Boost or AutoISF, it says that what the variant adds is not modelled.
+by 1.5 to 3 times, and the report says so beside its tables. The tests run stock oref0; if the
+page detects a variant such as Boost or AutoISF, it says that what the variant adds is not
+modelled.
 
 DESIGN.md §2.1 sets out the model, and `replay/README.md` covers the simulator, its checks
 and its timings.
+
+## How it was tested
+
+The settings tests were checked on simulated people from TimSim, an enhanced version of the
+UVA/Padova type 1 diabetes simulator. The UVA/Padova model (the S2008 version, as published in
+the open-source simglucose) describes how glucose, insulin and meals interact in the body, and is
+widely used to test automated insulin delivery. On its own it produces glucose traces that are noticeably
+cleaner than real ones. TimSim adds the parts of real life the model leaves out, each of which can
+be switched on or off:
+
+- a defence against lows from the liver, which S2008 lacks, calibrated against published clamp
+  studies
+- meals eaten without telling the loop
+- carbohydrate eaten to treat lows
+- a sensor with realistic noise and compression lows
+- insulin sensitivity that drifts from week to week
+- infusion sets that stop absorbing and are noticed hours later
+
+Its people are driven by an oref0 loop, as real users are. In TimSim's own comparison against 24-hour
+windows from a closed-loop trial (DCLP3), a classifier could tell its traces from real ones with
+a score of 0.739, against 0.926 for the unmodified model; 0.5 would mean the two could not be
+told apart at all. It remains a simulator: its 100 people are resampled from a published cohort of 30, and it
+does not reproduce what a specific person's glucose would do after a dosing change.
+
+Twelve TimSim adults were used, each with settings first titrated by TimSim's own procedure.
+For each one, the page's settings tests were run on a 14-day stretch under stock oref0. The
+suggested profile and the starting profile were then each run for 28 fresh days with the same
+meals, sensor noise and drift, so the profile was the only difference.
+
+| Test | What it found | Write-up |
+|---|---|---|
+| Titrated starting profiles | Time below 70 fell by a mean 0.66 points (95% CI 0.30 to 1.09) and time in range by 2.61 (0.85 to 4.40); 11 of 12 met the standard aim, against 5 of 12 before | `validation/TIMSIM_ROUNDTRIP.md` |
+| Eight deliberately mis-set profiles per person, 96 runs, repeated with the tighter aim | The tighter aim was met in 37 of 96, against 35 with the standard aim and 26 with the mis-set profile; no harm criterion fixed before the run was met | `validation/BAD_PROFILES_3.md` |
+| The twin's estimates against the same fortnight replayed with each change, 120 comparisons | Estimates ranked changes well (Spearman correlation 0.86 for time below 70) but were about three times too large | `validation/SAME_WEEK.md` |
+
+All of this is evidence about TimSim's people under stock oref0, not about real people.
 
 ## Layout
 

@@ -84,3 +84,4 @@ def test_settings_tests_section_says_how_far_to_trust_the_estimates():
     requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
     md = render_settings_tests(run_settings_tests(_shift_sim(lambda sc: 0.0), requests, entries, [], {}))
     assert "overstated the fall in lows by 1.5 to 3 times" in md
+    assert "UVA/Padova" in md
