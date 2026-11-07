@@ -43,3 +43,21 @@ changes by their effect on lows fell below the interval it had without options, 
 as a condition. Together with the decay it overcorrects, which fits the separate finding that
 TimSim's pull-back is physiological rather than rescue eating. Neither arm was adopted, and the
 published page is unchanged.
+
+## A 10 g, 15-minute rule, 7 November 2026
+
+Added and tested on 7 November: a person below 70 mg/dL eats 10 g, again every 15 minutes while
+still low, each rising by 10 × ISF ÷ carb ratio after 10 minutes and over 30. Every number is
+taught practice, not fitted. Applied to both traces (as above) or to new lows only:
+
+| Arm | Below 70: slope | Below 70: Spearman | In range: slope | Below 54: Spearman |
+|---|---|---|---|---|
+| Both | 1.161 [0.954, 1.406] | 0.842 [0.803, 0.892] | 0.492 [0.382, 0.587] | 0.228 [0.047, 0.437] |
+| New lows only | 0.874 [0.745, 1.078] | 0.819 [0.763, 0.879] | 0.482 [0.357, 0.589] | 0.583 [0.430, 0.718] |
+| Both, with decay | 2.498 [2.109, 3.073] | 0.794 [0.741, 0.851] | 0.936 [0.688, 1.104] | 0.159 [−0.132, 0.419] |
+| New lows only, with decay | 1.878 [1.587, 2.244] | 0.711 [0.601, 0.825] | 0.960 [0.675, 1.137] | 0.475 [0.192, 0.665] |
+
+Without the decay both versions passed the criterion set beforehand (slope interval includes 1,
+Spearman at least 0.815), out of sample. Neither improved on the decay alone for time below 54, and
+both left time in range overstated about twofold where the decay does not, so the rule was removed
+again. Results in `results/same_week_rescue10g_*_2026-11-07.json`.

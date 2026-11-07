@@ -121,7 +121,7 @@ def test_every_dose_in_the_history_is_counted():
     assert abs(together - sum(one)) < 0.01
 
 
-def _flat_day(hours=8, base=1_758_376_800_000):
+def _flat_day(hours=8, base=1_758_376_800_000, mid=130):
     """Cycles every 5 minutes, glucose waving gently around 130, scheduled-rate temps.
 
     Perfectly flat CGM will not do: oref0 reads it as a stuck sensor and does nothing.
@@ -130,7 +130,7 @@ def _flat_day(hours=8, base=1_758_376_800_000):
 
     from ingestion.models import Treatment
 
-    bg = lambda t: round(130 + 12 * math.sin(2 * math.pi * (t - base) / (100 * 60_000)), 1)
+    bg = lambda t: round(mid + 12 * math.sin(2 * math.pi * (t - base) / (100 * 60_000)), 1)
     n = hours * 12
     times = [base + i * 5 * 60_000 for i in range(n)]
     entries = [GlucoseReading(ts_ms=t, sgv_mgdl=bg(t)) for t in
@@ -180,3 +180,30 @@ def test_target_change_leaves_a_running_temp_target_alone():
     assert all(d == 0 for d in sim["scenarios"][0]["du"])
     plain = OrefOracle().simulate({"cycles": _flat_day(), "scenarios": [{"label": "lower", "target_offset": -18}]})
     assert any(d != 0 for d in plain["scenarios"][0]["du"])
+
+
+RESCUE = {"grams": 10, "threshold": 70, "refractory_min": 15, "delay": 10, "rise_min": 30}
+
+
+def test_rescue_rule_with_no_change_matches_the_baseline_exactly():
+    # the real trace dips below 70, so in "both" its rescues must cancel the shifted ones
+    cycles = _flat_day(mid=76)
+    assert any(c["glucose_status"]["glucose"] < 70 for c in cycles)
+    for mode in ("both", "new"):
+        sim = OrefOracle().simulate({"cycles": cycles, "scenarios": [{"label": "same"}],
+                                     "rescue": {**RESCUE, "mode": mode}})
+        s = sim["scenarios"][0]
+        assert all(d == 0 for d in s["du"]) and all(g == 0 for g in s["dbg"]), mode
+
+
+def test_rescue_rule_treats_new_lows_and_removes_rescues_a_change_makes_unneeded():
+    cycles = _flat_day(mid=76)
+    scen = [{"label": "less", "basal_scale": 0.5}, {"label": "more", "basal_scale": 1.5}]
+    mean = lambda sim, i: sum(sim["scenarios"][i]["dbg"]) / len(sim["scenarios"][i]["dbg"])
+    plain = OrefOracle().simulate({"cycles": cycles, "scenarios": scen})
+    both = OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "rescue": {**RESCUE, "mode": "both"}})
+    new = OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "rescue": {**RESCUE, "mode": "new"}})
+    # less insulin lifts glucose off the real lows: "both" takes their rescues out, "new" leaves them
+    assert mean(both, 0) < mean(plain, 0) and mean(new, 0) == mean(plain, 0)
+    # more insulin makes new lows, which both versions treat
+    assert mean(both, 1) > mean(plain, 1) and mean(new, 1) > mean(plain, 1)
