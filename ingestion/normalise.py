@@ -7,6 +7,7 @@ lacks a usable timestamp (in which case the caller drops it and it is counted).
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from typing import Any
 
@@ -54,6 +55,15 @@ def _num(v: Any) -> float | None:
     return None
 
 
+def _num_or_str(v: Any) -> float | None:
+    if isinstance(v, str):
+        try:
+            return float(v)
+        except ValueError:
+            return None
+    return _num(v)
+
+
 def normalise_entry(doc: dict[str, Any]) -> GlucoseReading | None:
     ts = _doc_ts_ms(doc)
     if ts is None:
@@ -84,19 +94,36 @@ def normalise_treatment(doc: dict[str, Any]) -> Treatment | None:
     is_smb = bool(doc.get("isSMB")) or str(doc.get("type") or "").upper() == "SMB" or any(
         h in f"{entered_by} {event_type}".lower() for h in _SMB_HINTS
     )
+    # AndroidAPS 3 marks a deleted switch or temp target isValid false rather than removing it
+    if event_type in ("Temporary Target", "Profile Switch") and doc.get("isValid") is False:
+        return None
+    duration = _num(doc.get("duration"))
+    # AndroidAPS 3 ends a temp target or temporary switch early by rewriting its length in
+    # durationInMilliseconds and leaves `duration` in whole minutes, often 0 for an early end.
+    if event_type in ("Temporary Target", "Profile Switch") and _num(doc.get("durationInMilliseconds")) is not None:
+        duration = _num(doc.get("durationInMilliseconds")) / 60_000
+    pj = doc.get("profileJson")
+    units = doc.get("units")
+    target = lambda k: None if _num(doc.get(k)) is None else to_mgdl(
+        _num(doc.get(k)), units or ("mmol" if _num(doc.get(k)) < 40 else None))
     return Treatment(
         ts_ms=ts,
         event_type=event_type,
         insulin_u=_num(doc.get("insulin")),
         carbs_g=_num(doc.get("carbs")),
-        duration_min=_num(doc.get("duration")),
+        duration_min=duration,
         rate=_num(doc.get("rate")),
         absolute=_num(doc.get("absolute")),
-        target_low_mgdl=_num(doc.get("targetBottom")),
-        target_high_mgdl=_num(doc.get("targetTop")),
+        target_low_mgdl=target("targetBottom"),
+        target_high_mgdl=target("targetTop"),
         is_smb=is_smb,
         entered_by=entered_by or None,
         notes=doc.get("notes"),
+        percentage=_num(doc.get("percentage")),
+        # hours from AndroidAPS 2, milliseconds from AndroidAPS 3; no real shift exceeds a day
+        timeshift_h=(None if _num(doc.get("timeshift")) is None else _num(doc.get("timeshift")) / 3_600_000
+                     if abs(_num(doc.get("timeshift"))) > 24 else _num(doc.get("timeshift"))),
+        profile_json=pj if isinstance(pj, str) else (json.dumps(pj) if isinstance(pj, dict) else None),
     )
 
 
@@ -173,14 +200,20 @@ def _blocks(arr: Any, units: str | None, is_glucose: bool) -> list[ProfileBlock]
     for item in arr:
         if not isinstance(item, dict):
             continue
-        val = _num(item.get("value"))
+        # Nightscout's profile editor stores numbers as strings ("1.31", "3600"), and some
+        # uploaders give only "time" ("01:00"); both were read as missing or as midnight before.
+        val = _num_or_str(item.get("value"))
         if val is None:
             continue
         if is_glucose:
             val = to_mgdl(val, units)
-        secs = item.get("timeAsSeconds")
+        secs = _num_or_str(item.get("timeAsSeconds"))
         if secs is None:
-            secs = 0
+            try:
+                hm = str(item.get("time") or "0:0").split(":")
+                secs = int(hm[0]) * 3600 + int(hm[1] if len(hm) > 1 else 0) * 60
+            except ValueError:
+                secs = 0
         out.append(ProfileBlock(seconds_from_midnight=int(secs), value=val))
     return out
 
@@ -198,7 +231,7 @@ def normalise_profile(doc: dict[str, Any]) -> ProfileSnapshot | None:
     return ProfileSnapshot(
         valid_from_ms=parse_iso_ms(doc.get("startDate")) or _doc_ts_ms(doc),
         units=units,
-        dia_h=_num(block.get("dia")),
+        dia_h=_num_or_str(block.get("dia")),
         timezone=block.get("timezone"),
         basal=_blocks(block.get("basal"), units, is_glucose=False),
         isf_mgdl=_blocks(block.get("sens"), units, is_glucose=True),

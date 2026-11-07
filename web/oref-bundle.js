@@ -12746,7 +12746,7 @@
         }
         if (sc.isf_scale && sc.isf_scale !== 1) p.sens = profile.sens * sc.isf_scale;
         if (sc.cr_scale && sc.cr_scale !== 1) p.carb_ratio = profile.carb_ratio * sc.cr_scale;
-        if (sc.target_offset) {
+        if (sc.target_offset && !profile.temptargetSet) {
           for (const f of ["min_bg", "max_bg", "target_bg"]) p[f] = profile[f] + sc.target_offset;
         }
         Object.assign(p, sc.profile_set || {});
@@ -12763,6 +12763,47 @@
         const maxGap = payload.max_gap_min || 30;
         if (!cycles.length) return { baseline: [], scenarios: [] };
         const tab = curveTables(cycles[0].iob_inputs.profile);
+        const tau = payload.decay_tau_min || 0;
+        let shape = null;
+        if (tau > 0) {
+          const len = tab.n + Math.ceil(10 * tau) + 1;
+          shape = new Float64Array(len);
+          shape[0] = 1 - tab.left[0];
+          const keepFrac = Math.exp(-1 / tau);
+          for (let m = 1; m < len; m++) {
+            shape[m] = shape[m - 1] * keepFrac + (m <= tab.n ? tab.left[m - 1] - tab.left[m] : 0);
+          }
+        }
+        const absorbed = (m) => shape ? m < shape.length ? shape[m] : 0 : 1 - (m <= tab.n ? tab.left[m] : 0);
+        const rescue = payload.rescue || null;
+        let rescueShape = null;
+        const realRescues = [];
+        if (rescue) {
+          const delay = Math.round(rescue.delay), riseMin = Math.max(1, Math.round(rescue.rise_min));
+          const len = delay + riseMin + (tau > 0 ? Math.ceil(10 * tau) : 0) + 1;
+          rescueShape = new Float64Array(len);
+          const keepFrac = tau > 0 ? Math.exp(-1 / tau) : 1;
+          for (let m = 1; m < len; m++) {
+            const ramp = m - 1 >= delay && m - 1 < delay + riseMin ? 1 / riseMin : 0;
+            rescueShape[m] = rescueShape[m - 1] * keepFrac + ramp;
+          }
+          let last = -Infinity;
+          for (const c of cycles) {
+            if (c.glucose_status.glucose < rescue.threshold && c.currentTime - last >= rescue.refractory_min * 6e4) {
+              realRescues.push(c.currentTime);
+              last = c.currentTime;
+            }
+          }
+        }
+        const rescueEffect = (times, time) => {
+          let e = 0;
+          for (const r of times) {
+            if (r > time) break;
+            const m = Math.round((time - r) / 6e4);
+            e += m < rescueShape.length ? rescueShape[m] : tau > 0 ? 0 : rescueShape[rescueShape.length - 1];
+          }
+          return e * rescue.rise;
+        };
         const t = cycles.map((c) => c.currentTime);
         const gap = t.map((ti, i) => i + 1 < t.length ? Math.min((t[i + 1] - ti) / 6e4, maxGap) : 5);
         const isf = cycles.map((c) => c.profile.sens / (c.autosens_data && c.autosens_data.ratio || 1));
@@ -12808,13 +12849,16 @@
             return isf[j];
           };
           for (const d of doses) d.isf = isfAt(d.t);
+          const ownRescues = [];
+          let lastRescue = -Infinity;
           function effectAt(time) {
             let e = 0;
             for (const d of live) {
               if (d.t > time) continue;
               const m = Math.round((time - d.t) / 6e4);
-              e -= d.u * d.isf * (1 - (m <= tab.n ? tab.left[m] : 0));
+              e -= d.u * d.isf * absorbed(m);
             }
+            if (rescue) e += rescueEffect(ownRescues, time) - rescueEffect(realRescues, time);
             return e;
           }
           const du = new Array(cycles.length).fill(null);
@@ -12826,12 +12870,20 @@
             while (next < doses.length && doses[next].t <= now) live.push(doses[next++]);
             const keep = [];
             for (const d of live) {
-              if ((now - d.t) / 6e4 > tab.n + 60) settled -= d.u * d.isf;
+              const age = (now - d.t) / 6e4;
+              if (shape) {
+                if (age < shape.length + 60) keep.push(d);
+              } else if (age > tab.n + 60) settled -= d.u * d.isf;
               else keep.push(d);
             }
             live = keep;
-            const shift = settled + effectAt(now);
+            let shift = settled + effectAt(now);
             const gs0 = c.glucose_status;
+            if (rescue && gs0.glucose + shift < rescue.threshold && now - lastRescue >= rescue.refractory_min * 6e4) {
+              ownRescues.push(now);
+              lastRescue = now;
+              shift = settled + effectAt(now);
+            }
             const gs = shift === 0 ? gs0 : {
               ...gs0,
               glucose: Math.max(39, gs0.glucose + shift),

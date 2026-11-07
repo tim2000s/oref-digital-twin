@@ -95,3 +95,30 @@ def test_profile_mmol_converts_glucose_blocks():
     assert abs(p.isf_mgdl[0].value - 3.1 * MGDL_PER_MMOL) < 1e-2
     assert abs(p.target_low_mgdl[0].value - 5.0 * MGDL_PER_MMOL) < 1e-2
     assert abs(p.target_high_mgdl[0].value - 7.5 * MGDL_PER_MMOL) < 1e-2
+
+
+def test_aaps3_early_end_and_mmol_temp_target():
+    # AndroidAPS 3 ends a temp target early by rewriting durationInMilliseconds
+    t = normalise_treatment({"eventType": "Temporary Target", "date": 1_700_000_000_000, "duration": 0,
+                             "durationInMilliseconds": 39_793, "targetBottom": 8, "targetTop": 8,
+                             "units": "mmol"})
+    assert abs(t.duration_min - 39_793 / 60_000) < 1e-9
+    assert abs(t.target_low_mgdl - 8 * 18.018) < 0.01
+
+
+def test_profile_switch_fields_captured():
+    t = normalise_treatment({"eventType": "Profile Switch", "created_at": "2026-07-16T01:02:35.000Z",
+                             "percentage": 150, "timeshift": 1, "duration": 120,
+                             "profileJson": "{\"units\":\"mmol\"}"})
+    assert (t.percentage, t.timeshift_h, t.duration_min, t.profile_json) == (150, 1, 120, "{\"units\":\"mmol\"}")
+
+
+def test_profile_values_given_as_strings_and_times_given_as_clock_text():
+    from ingestion.normalise import normalise_profile
+    p = normalise_profile({"defaultProfile": "a", "store": {"a": {
+        "units": "mg/dl", "dia": "6",
+        "basal": [{"time": "00:00", "value": "1.31", "timeAsSeconds": "0"}, {"time": "01:30", "value": "1.35"}],
+        "sens": [{"time": "00:00", "value": "27"}], "carbratio": [{"time": "00:00", "value": "5.2"}],
+        "target_low": [{"time": "00:00", "value": "100"}], "target_high": [{"time": "00:00", "value": "100"}]}}})
+    assert [(b.seconds_from_midnight, b.value) for b in p.basal] == [(0, 1.31), (5400, 1.35)]
+    assert p.dia_h == 6 and p.isf_mgdl[0].value == 27 and p.carb_ratio[0].value == 5.2

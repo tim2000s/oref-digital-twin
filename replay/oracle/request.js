@@ -145,7 +145,8 @@ function applyScenario(profile, sc) {
   }
   if (sc.isf_scale && sc.isf_scale !== 1) p.sens = profile.sens * sc.isf_scale;
   if (sc.cr_scale && sc.cr_scale !== 1) p.carb_ratio = profile.carb_ratio * sc.cr_scale;
-  if (sc.target_offset) {
+  // A temp target replaces the profile target, so a change to the profile target leaves it alone.
+  if (sc.target_offset && !profile.temptargetSet) {
     for (const f of ['min_bg', 'max_bg', 'target_bg']) p[f] = profile[f] + sc.target_offset;
   }
   Object.assign(p, sc.profile_set || {});

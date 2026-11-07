@@ -78,6 +78,8 @@ def test_network_exception_exhausts_retries():
 def _routing_transport(method, url, params, headers, timeout):
     if "entries.json" in url:
         return 200, [fx.ENTRY, fx.ENTRY_MBG]
+    if "treatments.json" in url and "find[eventType]" in params:      # the before-window fetches
+        return 200, [{**fx.TREATMENT_TT, "_id": "prior"}] if params["find[eventType]"] == "Temporary Target" else []
     if "treatments.json" in url:
         return 200, [fx.TREATMENT_SMB, fx.TREATMENT_CARB, fx.TREATMENT_TT]
     if "devicestatus.json" in url:
@@ -92,7 +94,8 @@ def test_run_pull_end_to_end():
     result = run_pull(_cfg(), 0, DAY_MS, client=client)
 
     assert len(result.entries) == 2
-    assert len(result.treatments) == 3
+    # the window's three, plus a temp target from before the window that may still be running
+    assert len(result.treatments) == 4
     # the no-oref devicestatus doc is dropped as "not a loop cycle"
     assert len(result.devicestatus) == 1
     assert result.dropped["devicestatus"] == 1
@@ -124,3 +127,14 @@ def test_config_never_leaks_token_in_repr():
     cfg = NightscoutConfig(base_url="https://example.test", token="s3cr3t-value-xyz")
     assert "s3cr3t-value-xyz" not in repr(cfg)
     assert "***" in repr(cfg)
+
+
+def test_a_failing_before_window_fetch_does_not_cost_the_pull():
+    def transport(method, url, params, headers, timeout):
+        if "treatments.json" in url and "find[eventType]" in params:
+            return 500, {}
+        return _routing_transport(method, url, params, headers, timeout)
+
+    client = NightscoutClient(_cfg(), transport=transport, sleep=_no_sleep)
+    result = run_pull(_cfg(), 0, DAY_MS, client=client)
+    assert len(result.treatments) == 3 and len(result.devicestatus) == 1

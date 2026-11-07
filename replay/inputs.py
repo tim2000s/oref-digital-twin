@@ -12,17 +12,22 @@ object logged in devicestatus, which made absolute replayed decisions wrong in t
 direction. A cycle without treatments to rebuild from is now refused.
 
 Still approximated: `currenttemp`, the temp basal running at decision time, is assumed none.
-The profile comes from the Nightscout profile and the user's settings.
+The profile comes from the Nightscout profile and the user's settings, with the Profile Switch
+and Temporary Target treatments in force at each cycle applied on top (`in_force`). Before
+7 November 2026 every cycle ran on the latest profile alone; on AndroidAPS records a median 36% of
+a week's cycles had run on something else.
 """
 
 from __future__ import annotations
 
+import json
+from dataclasses import replace
 from datetime import datetime, timezone
 from functools import lru_cache
 
 from typing import Any
 
-from ingestion.models import DeviceStatusCycle, GlucoseReading, ProfileSnapshot, Treatment
+from ingestion.models import DeviceStatusCycle, GlucoseReading, ProfileBlock, ProfileSnapshot, Treatment
 
 # oref profile fields that must come from settings (not the Nightscout profile)
 REQUIRED_SETTINGS = ("max_iob",)
@@ -109,10 +114,98 @@ def build_glucose_status(entries: list[GlucoseReading], at_ms: int) -> dict | No
     }
 
 
-def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int) -> tuple[dict, list[str]]:
+def _shifted(blocks, hours: float):
+    """A schedule moved later by `hours`, as AndroidAPS applies a profile switch's timeshift
+    (checked against AndroidAPS's own logged basal: +1 h matched 99.6% of cycles)."""
+    if not hours:
+        return blocks
+    out = sorted((ProfileBlock(int(b.seconds_from_midnight + hours * 3600) % 86400, b.value) for b in blocks),
+                 key=lambda b: b.seconds_from_midnight)
+    if out and out[0].seconds_from_midnight != 0:   # midnight takes the block that wraps past it
+        out.insert(0, ProfileBlock(0, out[-1].value))
+    return out
+
+
+_SWITCHED: dict = {}
+
+
+def _switched(base: ProfileSnapshot | None, profile_json: str | None, pct: float | None,
+              shift_h: float | None) -> ProfileSnapshot | None:
+    """The profile a switch puts in force: its own profile if it carries one, else the base,
+    scaled as AndroidAPS scales it (basal x p, ISF and carb ratio / p) and shifted."""
+    # Every cycle asks again, so the answer is kept; the base is held in the entry so its id
+    # cannot be reused by another object while the entry lives.
+    key = (id(base), profile_json, pct, shift_h)
+    if key not in _SWITCHED:
+        if len(_SWITCHED) > 64:
+            _SWITCHED.clear()
+        _SWITCHED[key] = (base, _build_switched(base, profile_json, pct, shift_h))
+    return _SWITCHED[key][1]
+
+
+def _build_switched(base, profile_json, pct, shift_h):
+    from ingestion.normalise import normalise_profile
+    snap = base
+    if profile_json:
+        try:
+            snap = normalise_profile({"store": {"s": json.loads(profile_json)}, "defaultProfile": "s"}) or base
+        except ValueError:
+            snap = base
+    if snap is None:
+        return None
+    p = (pct or 100) / 100
+    scale = lambda blocks, f: [ProfileBlock(b.seconds_from_midnight, f(b.value)) for b in blocks]
+    # AndroidAPS names the switch's zone from its UTC offset at upload ("UTC" for a winter switch
+    # in the UK), so the person's own zone is kept where there is one.
+    return replace(snap, timezone=(base.timezone if base else None) or snap.timezone,
+                   dia_h=snap.dia_h or (base.dia_h if base else None),
+                   basal=_shifted(scale(snap.basal, lambda v: v * p), shift_h),
+                   isf_mgdl=_shifted(scale(snap.isf_mgdl, lambda v: v / p), shift_h),
+                   carb_ratio=_shifted(scale(snap.carb_ratio, lambda v: v / p), shift_h),
+                   target_low_mgdl=_shifted(snap.target_low_mgdl, shift_h),
+                   target_high_mgdl=_shifted(snap.target_high_mgdl, shift_h))
+
+
+def in_force(snapshot: ProfileSnapshot, treatments: list[Treatment] | None,
+             at_ms: int) -> tuple[ProfileSnapshot, tuple[float, float] | None]:
+    """The profile and temp target (low, high mg/dL) the loop ran with at `at_ms`.
+
+    The latest Profile Switch that has started and, if temporary, not yet run out; when a
+    temporary one ends, the one before it is back in force. The latest Temporary Target that has
+    started, if it is still running: one of length 0 is a cancellation.
+
+    Not modelled: a switch naming another stored profile without carrying it (careportal entries)
+    keeps the base profile; insulin on board nets past temps against the profile in force now,
+    not the one in force when each ran, which is wrong within one insulin duration of a switch;
+    allowSMB_with_high_temptarget is not read, so a replayed high temp target disables SMB as
+    AndroidAPS does by default.
+    """
+    # shortcut: scans every treatment for every cycle (0.09 s for a week in CPython); bisect if
+    # the page's longer windows show it.
+    sw = tt = None
+    for t in treatments or []:
+        if t.ts_ms > at_ms:
+            continue
+        if t.event_type == "Profile Switch":
+            if (not t.duration_min or at_ms < t.ts_ms + t.duration_min * 60_000) and (sw is None or t.ts_ms >= sw.ts_ms):
+                sw = t
+        elif t.event_type == "Temporary Target" and (tt is None or t.ts_ms >= tt.ts_ms):
+            tt = t
+    if sw is not None and (sw.profile_json or sw.percentage not in (None, 100) or sw.timeshift_h):
+        snapshot = _switched(snapshot, sw.profile_json, sw.percentage, sw.timeshift_h) or snapshot
+    target = None
+    if (tt is not None and tt.duration_min and at_ms < tt.ts_ms + tt.duration_min * 60_000
+            and tt.target_low_mgdl and tt.target_high_mgdl):
+        target = (tt.target_low_mgdl, tt.target_high_mgdl)
+    return snapshot, target
+
+
+def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int,
+                  temp_target: tuple[float, float] | None = None) -> tuple[dict, list[str]]:
     """Assemble an oref profile from the Nightscout profile + the user's settings.
 
     Returns (profile, warnings). Missing required settings are reported, not guessed.
+    `temp_target`, (low, high) mg/dL, replaces the scheduled target as oref0's profile does.
     """
     warnings: list[str] = []
     tz = snapshot.timezone
@@ -123,6 +216,8 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int) -> tupl
     cr = _block_value_at(snapshot.carb_ratio, sod, None)
     low = _block_value_at(snapshot.target_low_mgdl, sod, None)
     high = _block_value_at(snapshot.target_high_mgdl, sod, None)
+    if temp_target:
+        low, high = temp_target
     target = None
     if low is not None and high is not None:
         target = round((low + high) / 2.0, 1)
@@ -168,6 +263,8 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int) -> tupl
         "maxSMBBasalMinutes": settings.get("max_smb_minutes", 30),
         "maxUAMSMBBasalMinutes": settings.get("max_uam_minutes", 30),
     }
+    if temp_target:
+        profile["temptargetSet"] = True
 
     # These defaults are permissive: absent an SMB cap we assume 30 minutes, and absent a
     # max basal we assume 4x the scheduled rate. If SMB is on and the real caps are unknown,
@@ -341,7 +438,8 @@ def from_cycle(
     if gs is None:
         return None, warnings + ["no usable glucose for this cycle."]
 
-    profile, pwarn = build_profile(snapshot, settings, cycle.ts_ms)
+    snapshot, temp_target = in_force(snapshot, treatments, cycle.ts_ms)
+    profile, pwarn = build_profile(snapshot, settings, cycle.ts_ms, temp_target)
     warnings += pwarn
     if profile["max_iob"] is None or profile["target_bg"] is None:
         return None, warnings + ["cannot build a faithful profile (missing max_iob/target)."]

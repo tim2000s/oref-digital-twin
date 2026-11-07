@@ -42,6 +42,8 @@ def apply_delta(request: dict, delta: dict[str, Any]) -> dict:
     if not isinstance(profile, dict):
         raise ValueError("request has no profile to modify")
     for key, value in delta.items():
+        if key == "target_bg" and profile.get("temptargetSet"):
+            continue                    # a temp target replaces the profile target while it runs
         fields, coerce = DELTA_FIELDS[key]
         for field in fields:
             profile[field] = coerce(value)

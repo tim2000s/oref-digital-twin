@@ -142,6 +142,12 @@ class NightscoutClient:
     def fetch_devicestatus(self, start_ms: int, end_ms: int, window_days: int = DEFAULT_WINDOW_DAYS) -> list[dict]:
         return self._paged("devicestatus.json", start_ms, end_ms, "created_at", iso=True, window_days=window_days)
 
+    def fetch_before(self, event_type: str, before_ms: int, count: int) -> list[dict]:
+        """The latest `count` treatments of one type created before `before_ms`."""
+        docs = self._get("treatments.json", {"find[eventType]": event_type,
+                                             "find[created_at][$lt]": _iso(before_ms), "count": count})
+        return [d for d in docs if isinstance(d, dict)] if isinstance(docs, list) else []
+
     def fetch_profiles(self) -> list[dict]:
         docs = self._get("profile.json", {})
         return [d for d in docs if isinstance(d, dict)] if isinstance(docs, list) else []

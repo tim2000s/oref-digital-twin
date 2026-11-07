@@ -29,6 +29,8 @@ const MIN_WINDOW_MS = 3 * 3600_000;      // stop splitting below three hours
 // devicestatus query and still returned 200, so a tighter limit discards real answers.
 const REQUEST_TIMEOUT_MS = 300_000;
 const CONCURRENCY = 2;                   // concurrent queries slow a small server further
+// A profile switch or temp target set before the window can still be in force inside it.
+const PRIOR_EVENTS = [['Profile Switch', 20], ['Temporary Target', 5]];
 
 class NightscoutError extends Error {
   constructor(message, { retryable = false } = {}) {
@@ -200,6 +202,22 @@ async function fetchNightscout(rawBase, token, days, onProgress) {
     }
     progress.tick();
   }];
+  // The latest few of each from before the start (Nightscout returns treatments newest
+  // first). Optional: a site that fails this query still gets its report.
+  for (const [eventType, count] of PRIOR_EVENTS) {
+    jobs.push(async () => {
+      try {
+        const docs = await withRetry(() => nsGet(base, 'treatments.json', {
+          'find[eventType]': eventType, 'find[created_at][$lt]': new Date(startMs).toISOString(),
+          count,
+        }, token), eventType, progress);
+        if (Array.isArray(docs)) parts.treatments.push(...docs);
+      } catch (e) {
+        // a rejected token fails the window's own queries too, so nothing is hidden here
+      }
+      progress.tick();
+    });
+  }
   for (const spec of STREAMS) {
     for (let lo = startMs; lo < endMs; lo += spec.windowDays * DAY_MS) {
       const hi = Math.min(lo + spec.windowDays * DAY_MS, endMs);

@@ -63,6 +63,10 @@ class Treatment:
     is_smb: bool = False
     entered_by: str | None = None
     notes: str | None = None
+    # Profile Switch (AndroidAPS): the switched-to profile and how it is scaled and shifted
+    percentage: float | None = None
+    timeshift_h: float | None = None
+    profile_json: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

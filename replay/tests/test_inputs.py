@@ -159,3 +159,99 @@ def test_basal_schedule_shape():
     sched = basal_schedule(snap)
     assert sched == [{"i": 0, "start": "00:00:00", "minutes": 0, "rate": 0.8},
                      {"i": 1, "start": "06:30:00", "minutes": 390, "rate": 1.1}]
+
+
+# --- profile switches and temp targets in force at a cycle (in_force) ---
+
+H = 3_600_000
+T0 = 1_700_000_000_000 - (1_700_000_000_000 % 86_400_000)      # a UTC midnight
+
+
+def _switch(ts, pct=100, shift=0, dur=0, pj=None):
+    from ingestion.models import Treatment
+    return Treatment(ts_ms=ts, event_type="Profile Switch", duration_min=dur, percentage=pct,
+                     timeshift_h=shift, profile_json=pj)
+
+
+def _tt(ts, low, high, dur):
+    from ingestion.models import Treatment
+    return Treatment(ts_ms=ts, event_type="Temporary Target", duration_min=dur,
+                     target_low_mgdl=low, target_high_mgdl=high)
+
+
+def test_percentage_switch_scales_and_a_temporary_one_reverts():
+    from replay.inputs import in_force
+    tr = [_switch(T0, pct=120), _switch(T0 + 2 * H, pct=150, dur=60)]
+    snap, _ = in_force(_snapshot(), tr, T0 + H)
+    assert snap.basal[0].value == 1.2 and abs(snap.isf_mgdl[0].value - 50 / 1.2) < 1e-9
+    snap, _ = in_force(_snapshot(), tr, T0 + 2 * H + 30 * 60_000)
+    assert snap.basal[0].value == 1.5 and abs(snap.carb_ratio[0].value - 10 / 1.5) < 1e-9
+    snap, _ = in_force(_snapshot(), tr, T0 + 4 * H)          # the 150% has run out
+    assert snap.basal[0].value == 1.2
+    assert in_force(_snapshot(), tr, T0 - 1)[0].basal[0].value == 1.0
+
+
+def test_switch_with_its_own_profile_and_timeshift():
+    import json
+    from replay.inputs import build_profile, in_force
+    pj = json.dumps({"units": "mmol", "dia": 5, "timezone": "UTC",
+                     "basal": [{"timeAsSeconds": 0, "value": 0.5}, {"timeAsSeconds": 6 * 3600, "value": 1.0}],
+                     "sens": [{"timeAsSeconds": 0, "value": 2.0}], "carbratio": [{"timeAsSeconds": 0, "value": 8}],
+                     "target_low": [{"timeAsSeconds": 0, "value": 5.5}],
+                     "target_high": [{"timeAsSeconds": 0, "value": 5.5}]})
+    snap, _ = in_force(_snapshot(), [_switch(T0 - 24 * H, shift=1, pj=pj)], T0 + 6 * H + 30 * 60_000)
+    prof, _ = build_profile(snap, {"max_iob": 6.0}, T0 + 6 * H + 30 * 60_000)
+    assert prof["current_basal"] == 0.5          # the 06:00 block starts at 07:00 with +1 h
+    assert abs(prof["sens"] - 2.0 * 18.018) < 0.1 and prof["carb_ratio"] == 8
+    prof, _ = build_profile(snap, {"max_iob": 6.0}, T0 + 7 * H + 30 * 60_000)
+    assert prof["current_basal"] == 1.0
+
+
+def test_temp_target_runs_its_length_and_a_zero_length_one_cancels():
+    from replay.inputs import in_force
+    tr = [_tt(T0, 140, 140, 60), _tt(T0 + 2 * H, 80, 80, 120), _tt(T0 + 3 * H, 80, 80, 0)]
+    assert in_force(_snapshot(), tr, T0 + 30 * 60_000)[1] == (140, 140)
+    assert in_force(_snapshot(), tr, T0 + 90 * 60_000)[1] is None
+    assert in_force(_snapshot(), tr, T0 + 2.5 * H)[1] == (80, 80)
+    assert in_force(_snapshot(), tr, T0 + 3.5 * H)[1] is None
+
+
+def test_from_cycle_applies_the_temp_target():
+    cyc = DeviceStatusCycle(ts_ms=T0 + 30 * 60_000, bg_mgdl=150, iob=1.0)
+    entries = _entries(cyc.ts_ms, [(0, 150), (5, 148), (15, 140)])
+    req, _ = from_cycle(cyc, _snapshot(), entries, settings={"max_iob": 6.0},
+                        treatments=[_tt(T0, 140, 150, 60)])
+    p = req["profile"]
+    assert (p["min_bg"], p["max_bg"], p["target_bg"], p["temptargetSet"]) == (140, 150, 145.0, True)
+    req, _ = from_cycle(cyc, _snapshot(), entries, settings={"max_iob": 6.0}, treatments=[])
+    assert req["profile"]["target_bg"] == 105.0 and "temptargetSet" not in req["profile"]
+
+
+def test_aaps3_millisecond_timeshift_and_the_persons_own_zone():
+    import json
+    from ingestion.normalise import normalise_treatment
+    from replay.inputs import build_profile, in_force
+    pj = json.dumps({"units": "mg/dl", "timezone": "UTC",
+                     "basal": [{"timeAsSeconds": 0, "value": 0.5}, {"timeAsSeconds": 6 * 3600, "value": 1.0}],
+                     "sens": [{"timeAsSeconds": 0, "value": 50}], "carbratio": [{"timeAsSeconds": 0, "value": 8}],
+                     "target_low": [{"timeAsSeconds": 0, "value": 100}], "target_high": [{"timeAsSeconds": 0, "value": 100}]})
+    sw = normalise_treatment({"eventType": "Profile Switch", "date": T0 - 24 * H, "duration": 0,
+                              "percentage": 100, "timeshift": 3_600_000, "profileJson": pj})
+    assert sw.timeshift_h == 1
+    at = T0 + 6 * H + 30 * 60_000
+    snap, _ = in_force(_snapshot(), [sw], at)
+    assert build_profile(snap, {"max_iob": 6.0}, at)[0]["current_basal"] == 0.5
+    # the switch says UTC; the person's profile says Europe/London, which is UTC+1 in summer
+    summer = 1_752_000_000_000 - (1_752_000_000_000 % 86_400_000)      # a July midnight UTC
+    snap, _ = in_force(_snapshot(tz="Europe/London"), [sw], summer + 5 * H + 30 * 60_000)
+    assert snap.timezone == "Europe/London"
+    # 05:30 UTC is 06:30 in London, inside the shifted 07:00 block's predecessor
+    assert build_profile(snap, {"max_iob": 6.0}, summer + 5 * H + 30 * 60_000)[0]["current_basal"] == 0.5
+    assert build_profile(snap, {"max_iob": 6.0}, summer + 6 * H + 30 * 60_000)[0]["current_basal"] == 1.0
+
+
+def test_deleted_switch_and_temp_target_are_dropped():
+    from ingestion.normalise import normalise_treatment
+    for ev in ("Profile Switch", "Temporary Target"):
+        assert normalise_treatment({"eventType": ev, "date": T0, "isValid": False, "duration": 60}) is None
+        assert normalise_treatment({"eventType": ev, "date": T0, "isValid": True, "duration": 60}) is not None

@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from .client import NightscoutClient
+from .client import NightscoutClient, NightscoutError
 from .config import NightscoutConfig
 from .coverage import (
     StreamCoverage,
@@ -134,7 +134,7 @@ def pull_from_raw(
         profiles=profiles,
         cgm=cgm_coverage(entries),
         loop=loop_coverage(devicestatus),
-        treatment_counts=treatment_summary(treatments),
+        treatment_counts=treatment_summary([t for t in treatments if t.ts_ms >= start_ms]),
         dropped={
             "entries": d_e,
             "treatments": d_t,
@@ -142,6 +142,18 @@ def pull_from_raw(
             "profiles": d_p,
         },
     )
+
+
+def _prior(client: NightscoutClient, start_ms: int) -> list[dict]:
+    """Switches and temp targets from before the window, which can still be in force inside it.
+    Optional: a site that fails this query still gets its report, on the window's own records."""
+    out: list[dict] = []
+    for event_type, count in (("Profile Switch", 20), ("Temporary Target", 5)):
+        try:
+            out += client.fetch_before(event_type, start_ms, count)
+        except NightscoutError:
+            pass
+    return out
 
 
 def run_pull(
@@ -157,7 +169,7 @@ def run_pull(
     return pull_from_raw(
         config.base_url, start_ms, end_ms,
         client.fetch_entries(start_ms, end_ms, window_days),
-        client.fetch_treatments(start_ms, end_ms, window_days),
+        client.fetch_treatments(start_ms, end_ms, window_days) + _prior(client, start_ms),
         client.fetch_devicestatus(start_ms, end_ms, window_days),
         client.fetch_profiles(),
     )

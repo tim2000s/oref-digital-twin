@@ -194,3 +194,13 @@ def test_rescue_model_treats_new_lows_and_removes_rescues_a_change_makes_unneede
     assert mean(resc, 0) < mean(plain, 0)
     # more insulin makes new lows, which the person treats
     assert mean(resc, 1) > mean(plain, 1)
+
+
+def test_target_change_leaves_a_running_temp_target_alone():
+    cycles = _flat_day()
+    for c in cycles:
+        c["profile"] = {**c["profile"], "temptargetSet": True}
+    sim = OrefOracle().simulate({"cycles": cycles, "scenarios": [{"label": "lower", "target_offset": -18}]})
+    assert all(d == 0 for d in sim["scenarios"][0]["du"])
+    plain = OrefOracle().simulate({"cycles": _flat_day(), "scenarios": [{"label": "lower", "target_offset": -18}]})
+    assert any(d != 0 for d in plain["scenarios"][0]["du"])
