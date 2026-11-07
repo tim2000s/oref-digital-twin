@@ -196,3 +196,28 @@ def test_settings_tests_render_all_six_stages():
     for name in ("Basal", "ISF", "Carb ratio", "Target", "SMB limit", "Max IOB"):
         assert f". {name}" in md
     assert "6 U (current)" in md
+
+
+def test_settings_tests_warn_of_a_lasting_switch_inside_the_period():
+    raw = _day_raw()
+    raw["treatments"] = raw["treatments"] + [{"_id": "ps", "eventType": "Profile Switch",
+                                              "date": raw["start_ms"] + 12 * 3_600_000,
+                                              "duration": 0, "percentage": 130, "timeshift": 0}]
+    build_report(raw, oref_runner=_fake_oref_runner)
+    kept = {}
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        return {"t": t, "scenarios": [{"du": [0.0] * len(t), "failed": 0, "dbg": [0.0] * len(t)}
+                                      for _ in payload["scenarios"]]}
+
+    out = settings_tests(sim_runner=fake_sim)
+    assert out["result"]["settings_change_note"].startswith("Your settings changed during this period")
+    assert "basal +30%" in out["report_md"]
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    tz = ZoneInfo(fx.PROFILE_MMOL["store"][fx.PROFILE_MMOL["defaultProfile"]]["timezone"])
+    local = datetime.fromtimestamp((raw["start_ms"] + 12 * 3_600_000) / 1000, tz=tz).strftime("%d %b %Y")
+    assert f"on {local})" in out["report_md"]

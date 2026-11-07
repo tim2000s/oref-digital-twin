@@ -259,3 +259,31 @@ def test_an_unknown_aim_is_refused():
     requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
     with pytest.raises(ValueError):
         run_settings_tests(_shift_sim(lambda sc: 0.0), requests, entries, [], {}, aim="tight")
+
+
+def test_classify_a_bolus_without_carbs_under_180_as_a_meal():
+    flat = _readings([120] * 120)                            # 10 h, no rise a meal would show
+    at = lambda h: T0 + int(h * 3_600_000)
+    bolus = Treatment(ts_ms=at(2), event_type="Correction Bolus", insulin_u=4.0)
+    labels = classify(flat, [bolus])
+    assert labels[23] == "fasting" and labels[24] == labels[72] == "meal" and labels[73] == "fasting"
+    smb = Treatment(ts_ms=at(2), event_type="Correction Bolus", insulin_u=1.0, is_smb=True)
+    tiny = Treatment(ts_ms=at(2), event_type="Correction Bolus", insulin_u=0.3)
+    assert set(classify(flat, [smb, tiny])) == {"fasting"}
+    high = _readings([200] * 120)                            # a correction, not a meal
+    assert "meal" not in classify(high, [Treatment(ts_ms=at(2), event_type="Correction Bolus", insulin_u=4.0)])
+
+
+def test_classify_bolus_meal_rule_edges():
+    at = lambda h: T0 + int(h * 3_600_000)
+    b = lambda h, u=4.0: Treatment(ts_ms=at(h), event_type="Correction Bolus", insulin_u=u)
+    # no reading in the 15 minutes before the bolus: not judged
+    gap = [r for r in _readings([120] * 120) if not (at(1.5) < r.ts_ms <= at(2))]
+    assert "meal" not in classify(gap, [b(2)])
+    # a bolus at 175 on the way down from 250 is a correction
+    down = _readings([250] * 12 + [175] * 108)
+    assert "meal" not in classify(down, [b(1.05)])
+    # unflagged automatic boluses, every 5 minutes, would make the day a meal: the rule stands down
+    flat = _readings([120] * 288)
+    auto = [b(i / 12, 0.6) for i in range(288)]
+    assert set(classify(flat, auto)) == {"fasting"}

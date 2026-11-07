@@ -152,6 +152,8 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
     ]
     if result.get("variant_note"):
         lines += ["", f"_{result['variant_note']}_"]
+    if result.get("settings_change_note"):
+        lines += ["", f"_{result['settings_change_note']}_"]
     curve = result.get("insulin_curve") or {}
     fit = curve.get("insulin_curve_fit_u") or {}
     if curve.get("insulin_curve"):

@@ -255,3 +255,31 @@ def test_deleted_switch_and_temp_target_are_dropped():
     for ev in ("Profile Switch", "Temporary Target"):
         assert normalise_treatment({"eventType": ev, "date": T0, "isValid": False, "duration": 60}) is None
         assert normalise_treatment({"eventType": ev, "date": T0, "isValid": True, "duration": 60}) is not None
+
+
+def test_lasting_change_is_reported_and_temporary_ones_are_not():
+    from replay.inputs import lasting_change
+    week = 7 * 24 * H
+    assert lasting_change(_snapshot(), [], T0, T0 + week) is None
+    assert lasting_change(_snapshot(), [_switch(T0 + 24 * H, pct=150, dur=120)], T0, T0 + week) is None
+    assert lasting_change(_snapshot(), [_switch(T0 + 24 * H, pct=105)], T0, T0 + week) is None
+    ch = lasting_change(_snapshot(), [_switch(T0 + 3 * 24 * H, pct=120)], T0, T0 + week)
+    assert ch["ts_ms"] == T0 + 3 * 24 * H and ch["basal"] == 1.2 and ch["isf"] == round(1 / 1.2, 2)
+    # a switch before the window is the starting point, not a change inside it
+    assert lasting_change(_snapshot(), [_switch(T0 - H, pct=120)], T0, T0 + week) is None
+
+
+def test_daily_mean_weights_blocks_by_length():
+    from replay.inputs import _daily_mean
+    assert _daily_mean([ProfileBlock(0, 1.0), ProfileBlock(18 * 3600, 2.0)]) == 1.25
+    assert _daily_mean([ProfileBlock(6 * 3600, 2.0)]) == 2.0
+
+
+def test_lasting_change_catches_a_switch_that_went_out_and_came_back():
+    from replay.inputs import _daily_mean, lasting_change
+    week = 7 * 24 * H
+    ch = lasting_change(_snapshot(), [_switch(T0 + 24 * H, pct=130), _switch(T0 + 4 * 24 * H, pct=100)],
+                        T0, T0 + week)
+    assert ch is not None and ch["ts_ms"] == T0 + 4 * 24 * H and ch["basal"] == round(1 / 1.3, 2)
+    # a first block after midnight: the last block runs on until it
+    assert _daily_mean([ProfileBlock(6 * 3600, 1.0), ProfileBlock(18 * 3600, 2.0)]) == 1.5

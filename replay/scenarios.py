@@ -5,13 +5,14 @@ each value with the closed-loop simulator (oracle/request.js `simulate`), and ju
 value on the stretches of the day that setting governs, against time in range above 70% and
 time below range under 2%:
 
-  1. basal, on fasting stretches (no carbs or unannounced rise in the last 4 h, and no
-     reading above 180 mg/dL in the last 3 h);
+  1. basal, on fasting stretches (no carbs, unannounced rise or bolus taken as an unlogged meal
+     in the last 4 h, and no reading above 180 mg/dL in the last 3 h);
   2. ISF, on the whole period, judged only when there are at least 6 h of correction stretches
      (a reading above 180 mg/dL in the last 3 h, outside meals), with the basal from stage 1;
-  3. carb ratio, on meal stretches (the 4 h after logged carbs or an unannounced rise), with
-     the basal and ISF chosen before it; logged meal boluses are scaled by the same factor,
-     on the assumption that they came from the bolus wizard;
+  3. carb ratio, on meal stretches (the 4 h after logged carbs, a bolus under 180 mg/dL or an
+     unannounced rise), with the basal and ISF chosen before it; boluses given with logged
+     carbs are scaled by the same factor, on the assumption that they came from the bolus
+     wizard, and boluses without carbs are not, since nothing says how they were worked out;
   4. target, 5. SMB limits and 6. max IOB, on the whole period, with everything chosen
      before.
 
@@ -60,6 +61,7 @@ RISE_WINDOW_MIN = 60
 RISE_FROM_MGDL = 80       # a climb out of a low is recovery, not a meal
 CORRECTION_LOOKBACK_MIN = 180
 HIGH_MGDL = 180
+UNLOGGED_MEAL_BOLUS_U = 0.5  # a bolus this size without logged carbs, under HIGH_MGDL, is a meal
 LOW_MGDL = 70
 LOW_EPISODE_MIN = 15
 MIN_SEGMENT_HOURS = 6     # below this a stage is reported but not judged
@@ -114,6 +116,25 @@ def classify(entries: list[GlucoseReading], treatments: list[Treatment]) -> list
         lo_ts, lo_bg = lows[0]
         if lo_bg >= RISE_FROM_MGDL and bg - lo_bg >= RISE_MGDL:
             meal.append(Window(lo_ts, lo_ts + MEAL_WINDOW_MIN * 60_000))
+    # A bolus without logged carbs at glucose under HIGH_MGDL is taken as an unlogged meal. A
+    # well-covered meal may not rise RISE_MGDL, and its hours were then judged as fasting, where
+    # the bolus made the basal look too strong. On AndroidAPS records these boluses are a median
+    # 9% of a person's non-SMB bolus insulin (quartiles 3% to 20%).
+    # Taken as a meal: 0.5 U or more, not an SMB, a reading under HIGH_MGDL in the 15 minutes
+    # before it and none above HIGH_MGDL in the CORRECTION_LOOKBACK_MIN before (a bolus on the
+    # way down from a high is a correction). An uploader that leaves its automatic boluses
+    # unflagged would make every hour a meal, so more than 12 such boluses a day turns this off.
+    pts_t = [ts for ts, _ in pts]
+    boluses = [t for t in treatments if not t.is_smb and (t.insulin_u or 0) >= UNLOGGED_MEAL_BOLUS_U]
+    span_days = max((pts_t[-1] - pts_t[0]) / 86_400_000, 1.0) if pts_t else 1.0
+    for t in (boluses if len(boluses) <= 12 * span_days else []):
+        j = bisect.bisect_right(pts_t, t.ts_ms) - 1
+        if j < 0 or t.ts_ms - pts_t[j] > 15 * 60_000 or pts[j][1] >= HIGH_MGDL:
+            continue
+        i = bisect.bisect_left(pts_t, t.ts_ms - CORRECTION_LOOKBACK_MIN * 60_000)
+        if any(bg > HIGH_MGDL for _, bg in pts[i:j + 1]):
+            continue
+        meal.append(Window(t.ts_ms, t.ts_ms + MEAL_WINDOW_MIN * 60_000))
     meal.sort(key=lambda w: w.lo)
     merged: list[Window] = []
     for w in meal:

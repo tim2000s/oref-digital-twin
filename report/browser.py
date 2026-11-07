@@ -12,12 +12,14 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, timezone
 from typing import Any, Callable
 
 from diagnostics import run_diagnostics
 from ingestion.models import ProfileSnapshot
 from ingestion.pull import pull_from_raw
 from replay import OrefOracle, from_cycle
+from replay.inputs import lasting_change
 from variant import detect_variant
 
 from .grounding import check_narrative
@@ -217,6 +219,23 @@ def settings_tests(sim_runner: Callable | None = None,
     result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings,
                                 progress=progress, aim=aim)
     result["insulin_curve"] = curve
+    change = lasting_change(profile, pull.treatments, requests[0]["currentTime"], requests[-1]["currentTime"])
+    if change:
+        try:
+            from zoneinfo import ZoneInfo
+            tz = ZoneInfo(profile.timezone) if profile.timezone else timezone.utc
+        except Exception:
+            tz = timezone.utc
+        when = datetime.fromtimestamp(change["ts_ms"] / 1000, tz=tz).strftime("%d %b %Y")
+        parts = [f"{lab} {100 * (change[k] - 1):+.0f}%" for k, lab in
+                 (("basal", "basal"), ("isf", "ISF"), ("cr", "carb ratio")) if k in change and change[k] != 1]
+        if change.get("target_change"):
+            parts.append(f"target {change['target_change']:+d} mg/dL")
+        result["settings_change_note"] = (
+            f"Your settings changed during this period (up to {', '.join(parts)} by the last lasting "
+            f"profile switch, on {when}). The tests scale whatever was in force at each moment, so their "
+            "suggestions describe a mix of the old and new settings. For suggestions about your "
+            f"current settings, run the report on a period starting after {when}.")
     variant = _LAST.get("variant") or {}
     if variant.get("advisability") != "full":
         result["variant_note"] = (

@@ -200,6 +200,62 @@ def in_force(snapshot: ProfileSnapshot, treatments: list[Treatment] | None,
     return snapshot, target
 
 
+def _daily_mean(blocks) -> float | None:
+    """A schedule's mean over the day, each block weighted by how long it runs."""
+    b = sorted(blocks, key=lambda x: x.seconds_from_midnight)
+    if not b:
+        return None
+    ends = [x.seconds_from_midnight for x in b[1:]] + [86400]
+    head = b[0].seconds_from_midnight          # before the first block, the last one runs on
+    return (b[-1].value * head + sum(x.value * (e - x.seconds_from_midnight) for x, e in zip(b, ends))) / 86400
+
+
+def lasting_change(snapshot: ProfileSnapshot, treatments: list[Treatment] | None,
+                   start_ms: int, end_ms: int) -> dict | None:
+    """A lasting change of settings inside the period, or None.
+
+    Each stretch between lasting switches (temporary ones revert, so they are left out) is
+    compared with the settings in force at the end, by daily mean basal, ISF and carb ratio and
+    mean target. Reported when any stretch's first three differ from the end's by more than 10%
+    or its target by more than 9 mg/dL: the settings tests scale whatever was in force at each
+    moment, so across such a change their suggestions describe a mix of settings. `ts_ms` is the
+    last lasting switch, after which the settings at the end were in force; each figure is the
+    largest difference between an earlier stretch and the end, as a change towards the end.
+    """
+    lasting = sorted((t for t in treatments or [] if t.event_type == "Profile Switch" and not t.duration_min),
+                     key=lambda t: t.ts_ms)
+
+    def means(sw):
+        snap = snapshot if sw is None else (_switched(snapshot, sw.profile_json, sw.percentage, sw.timeshift_h)
+                                            or snapshot)
+        tgt = [_daily_mean(snap.target_low_mgdl), _daily_mean(snap.target_high_mgdl)]
+        return {"basal": _daily_mean(snap.basal), "isf": _daily_mean(snap.isf_mgdl),
+                "cr": _daily_mean(snap.carb_ratio),
+                "target": None if None in tgt else (tgt[0] + tgt[1]) / 2}
+
+    inside = [t for t in lasting if start_ms < t.ts_ms <= end_ms]
+    if not inside:
+        return None
+    first = max((t for t in lasting if t.ts_ms <= start_ms), key=lambda t: t.ts_ms, default=None)
+    stretches = [means(sw) for sw in [first] + inside]
+    end = stretches[-1]
+    out: dict = {}
+    for m in stretches[:-1]:
+        for k in ("basal", "isf", "cr"):
+            if m[k] and end[k]:
+                r = round(end[k] / m[k], 2)
+                if abs(r - 1) > abs(out.get(k, 1) - 1):
+                    out[k] = r
+        if m["target"] is not None and end["target"] is not None:
+            d = round(end["target"] - m["target"])
+            if abs(d) > abs(out.get("target_change") or 0):
+                out["target_change"] = d
+    if not (any(abs(out.get(k, 1) - 1) > 0.10 for k in ("basal", "isf", "cr"))
+            or abs(out.get("target_change") or 0) > 9):
+        return None
+    return {"ts_ms": inside[-1].ts_ms, **out}
+
+
 def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int,
                   temp_target: tuple[float, float] | None = None) -> tuple[dict, list[str]]:
     """Assemble an oref profile from the Nightscout profile + the user's settings.
