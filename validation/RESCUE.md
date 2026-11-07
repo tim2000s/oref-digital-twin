@@ -1,7 +1,8 @@
 # Rescue eating in the twin's simulator: TimSim results, 6 November 2026
 
 The option described here was removed on 7 November 2026, since it was not adopted and the page
-never used it. It is in commit ed51121, which reproduces the results below.
+never used it. The fitted model is in commit ed51121 and the 10 g rule in f186447; each
+reproduces its results below.
 
 The settings tests keep the person's real food and treatments. A low in the real record was usually
 treated, so a change that removes the low still carries the rescue's rise, and a change that adds a
@@ -60,4 +61,4 @@ taught practice, not fitted. Applied to both traces (as above) or to new lows on
 Without the decay both versions passed the criterion set beforehand (slope interval includes 1,
 Spearman at least 0.815), out of sample. Neither improved on the decay alone for time below 54, and
 both left time in range overstated about twofold where the decay does not, so the rule was removed
-again. Results in `results/same_week_rescue10g_*_2026-11-07.json`.
+again; commit f186447 holds it. Results in `results/same_week_rescue10g_*_2026-11-07.json`.
