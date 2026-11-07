@@ -12775,35 +12775,6 @@
           }
         }
         const absorbed = (m) => shape ? m < shape.length ? shape[m] : 0 : 1 - (m <= tab.n ? tab.left[m] : 0);
-        const rescue = payload.rescue || null;
-        let rescueShape = null;
-        const realRescues = [];
-        if (rescue) {
-          const delay = Math.round(rescue.delay), riseMin = Math.max(1, Math.round(rescue.rise_min));
-          const len = delay + riseMin + (tau > 0 ? Math.ceil(10 * tau) : 0) + 1;
-          rescueShape = new Float64Array(len);
-          const keepFrac = tau > 0 ? Math.exp(-1 / tau) : 1;
-          for (let m = 1; m < len; m++) {
-            const ramp = m - 1 >= delay && m - 1 < delay + riseMin ? 1 / riseMin : 0;
-            rescueShape[m] = rescueShape[m - 1] * keepFrac + ramp;
-          }
-          let last = -Infinity;
-          for (const c of cycles) {
-            if (c.glucose_status.glucose < rescue.threshold && c.currentTime - last >= rescue.refractory_min * 6e4) {
-              realRescues.push(c.currentTime);
-              last = c.currentTime;
-            }
-          }
-        }
-        const rescueEffect = (times, time) => {
-          let e = 0;
-          for (const r of times) {
-            if (r > time) break;
-            const m = Math.round((time - r) / 6e4);
-            e += m < rescueShape.length ? rescueShape[m] : tau > 0 ? 0 : rescueShape[rescueShape.length - 1];
-          }
-          return e * rescue.rise;
-        };
         const t = cycles.map((c) => c.currentTime);
         const gap = t.map((ti, i) => i + 1 < t.length ? Math.min((t[i + 1] - ti) / 6e4, maxGap) : 5);
         const isf = cycles.map((c) => c.profile.sens / (c.autosens_data && c.autosens_data.ratio || 1));
@@ -12849,8 +12820,6 @@
             return isf[j];
           };
           for (const d of doses) d.isf = isfAt(d.t);
-          const ownRescues = [];
-          let lastRescue = -Infinity;
           function effectAt(time) {
             let e = 0;
             for (const d of live) {
@@ -12858,7 +12827,6 @@
               const m = Math.round((time - d.t) / 6e4);
               e -= d.u * d.isf * absorbed(m);
             }
-            if (rescue) e += rescueEffect(ownRescues, time) - rescueEffect(realRescues, time);
             return e;
           }
           const du = new Array(cycles.length).fill(null);
@@ -12877,13 +12845,8 @@
               else keep.push(d);
             }
             live = keep;
-            let shift = settled + effectAt(now);
+            const shift = settled + effectAt(now);
             const gs0 = c.glucose_status;
-            if (rescue && gs0.glucose + shift < rescue.threshold && now - lastRescue >= rescue.refractory_min * 6e4) {
-              ownRescues.push(now);
-              lastRescue = now;
-              shift = settled + effectAt(now);
-            }
             const gs = shift === 0 ? gs0 : {
               ...gs0,
               glucose: Math.max(39, gs0.glucose + shift),

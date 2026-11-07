@@ -45,7 +45,7 @@ def changed_profile(p, ch):
 
 def one(job):
     """job: a subject name, or (name, options, stored row list) to re-estimate with the twin's
-    optional decay and rescue model and take the TimSim truth from an earlier run (--truth-from)."""
+    optional decay and take the TimSim truth from an earlier run (--truth-from)."""
     name, opts, stored = (job, {}, None) if isinstance(job, str) else job
     T._paths()
     from ingestion.pull import pull_from_raw
@@ -121,15 +121,12 @@ def main():
     ap.add_argument("--subjects", type=int, default=12)
     ap.add_argument("--decay-tau-min", type=float, default=0,
                     help="re-estimate with the twin's decay at this time constant; needs --truth-from")
-    ap.add_argument("--rescue", help="re-estimate with the twin's rescue model, given as JSON "
-                    "{threshold, refractory_min, delay, rise, rise_min}; needs --truth-from")
     ap.add_argument("--truth-from", help="an earlier results file whose TimSim truth is reused")
     ap.add_argument("--out", default=os.path.join(HERE, "results", "same_week_2026-10-10.json"))
     a = ap.parse_args()
     names = [n for n, r in json.load(open(STORE))["subjects"].items() if r.get("found")][: a.subjects]
     jobs = names
-    opts = {**({"decay_tau_min": a.decay_tau_min} if a.decay_tau_min else {}),
-            **({"rescue": json.loads(a.rescue)} if a.rescue else {})}
+    opts = {"decay_tau_min": a.decay_tau_min} if a.decay_tau_min else {}
     if opts:
         stored = {s["name"]: s["rows"] for s in json.load(open(a.truth_from))["subjects"]}
         jobs = [(n, opts, stored[n]) for n in names]

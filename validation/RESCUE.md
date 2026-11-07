@@ -1,5 +1,8 @@
 # Rescue eating in the twin's simulator: TimSim results, 6 November 2026
 
+The option described here was removed on 7 November 2026, since it was not adopted and the page
+never used it. It is in commit ed51121, which reproduces the results below.
+
 The settings tests keep the person's real food and treatments. A low in the real record was usually
 treated, so a change that removes the low still carries the rescue's rise, and a change that adds a
 low leaves it untreated. This note records an optional rescue model and its test against TimSim.
