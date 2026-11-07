@@ -103,9 +103,9 @@ def normalise_treatment(doc: dict[str, Any]) -> Treatment | None:
     if event_type in ("Temporary Target", "Profile Switch") and _num(doc.get("durationInMilliseconds")) is not None:
         duration = _num(doc.get("durationInMilliseconds")) / 60_000
     pj = doc.get("profileJson")
-    units = doc.get("units")
-    target = lambda k: None if _num(doc.get(k)) is None else to_mgdl(
-        _num(doc.get(k)), units or ("mmol" if _num(doc.get(k)) < 40 else None))
+    shift = _num(doc.get("timeshift"))
+    # no target is under 40 mg/dL, so a smaller one is mmol whatever the record's units say
+    target = lambda k: None if _num(doc.get(k)) is None else to_mgdl(_num(doc.get(k)), "mmol")
     return Treatment(
         ts_ms=ts,
         event_type=event_type,
@@ -121,8 +121,7 @@ def normalise_treatment(doc: dict[str, Any]) -> Treatment | None:
         notes=doc.get("notes"),
         percentage=_num(doc.get("percentage")),
         # hours from AndroidAPS 2, milliseconds from AndroidAPS 3; no real shift exceeds a day
-        timeshift_h=(None if _num(doc.get("timeshift")) is None else _num(doc.get("timeshift")) / 3_600_000
-                     if abs(_num(doc.get("timeshift"))) > 24 else _num(doc.get("timeshift"))),
+        timeshift_h=shift / 3_600_000 if shift and abs(shift) > 24 else shift,
         profile_json=pj if isinstance(pj, str) else (json.dumps(pj) if isinstance(pj, dict) else None),
     )
 

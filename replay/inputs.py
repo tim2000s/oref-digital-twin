@@ -36,16 +36,20 @@ REQUIRED_SETTINGS = ("max_iob",)
 INSULIN_CURVES = {"rapid-acting": 75, "ultra-rapid": 55, "bilinear": None}
 
 
-def _seconds_of_day(ts_ms: int, tz: str | None) -> int:
-    tzinfo = timezone.utc
+def zone(tz: str | None):
+    """The named time zone, or UTC when there is none or it is unknown."""
     if tz:
         try:
             from zoneinfo import ZoneInfo
 
-            tzinfo = ZoneInfo(tz)
+            return ZoneInfo(tz)
         except Exception:
-            tzinfo = timezone.utc
-    dt = datetime.fromtimestamp(ts_ms / 1000, tz=tzinfo)
+            pass
+    return timezone.utc
+
+
+def _seconds_of_day(ts_ms: int, tz: str | None) -> int:
+    dt = datetime.fromtimestamp(ts_ms / 1000, tz=zone(tz))
     return dt.hour * 3600 + dt.minute * 60 + dt.second
 
 
@@ -126,31 +130,21 @@ def _shifted(blocks, hours: float):
     return out
 
 
-_SWITCHED: dict = {}
+@lru_cache(maxsize=64)
+def _switch_profile(profile_json: str) -> ProfileSnapshot | None:
+    """A switch's own profile; parsed once, since every cycle asks again."""
+    from ingestion.normalise import normalise_profile
+    try:
+        return normalise_profile({"store": {"s": json.loads(profile_json)}, "defaultProfile": "s"})
+    except ValueError:
+        return None
 
 
 def _switched(base: ProfileSnapshot | None, profile_json: str | None, pct: float | None,
               shift_h: float | None) -> ProfileSnapshot | None:
     """The profile a switch puts in force: its own profile if it carries one, else the base,
     scaled as AndroidAPS scales it (basal x p, ISF and carb ratio / p) and shifted."""
-    # Every cycle asks again, so the answer is kept; the base is held in the entry so its id
-    # cannot be reused by another object while the entry lives.
-    key = (id(base), profile_json, pct, shift_h)
-    if key not in _SWITCHED:
-        if len(_SWITCHED) > 64:
-            _SWITCHED.clear()
-        _SWITCHED[key] = (base, _build_switched(base, profile_json, pct, shift_h))
-    return _SWITCHED[key][1]
-
-
-def _build_switched(base, profile_json, pct, shift_h):
-    from ingestion.normalise import normalise_profile
-    snap = base
-    if profile_json:
-        try:
-            snap = normalise_profile({"store": {"s": json.loads(profile_json)}, "defaultProfile": "s"}) or base
-        except ValueError:
-            snap = base
+    snap = (_switch_profile(profile_json) if profile_json else None) or base
     if snap is None:
         return None
     p = (pct or 100) / 100

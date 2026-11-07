@@ -122,3 +122,12 @@ def test_profile_values_given_as_strings_and_times_given_as_clock_text():
         "target_low": [{"time": "00:00", "value": "100"}], "target_high": [{"time": "00:00", "value": "100"}]}}})
     assert [(b.seconds_from_midnight, b.value) for b in p.basal] == [(0, 1.31), (5400, 1.35)]
     assert p.dia_h == 6 and p.isf_mgdl[0].value == 27 and p.carb_ratio[0].value == 5.2
+
+
+def test_temp_target_mislabelled_mgdl_but_holding_mmol_is_converted():
+    t = normalise_treatment({"eventType": "Temporary Target", "date": 1_700_000_000_000, "duration": 60,
+                             "targetBottom": 5.5, "targetTop": 5.5, "units": "mg/dl"})
+    assert abs(t.target_low_mgdl - 5.5 * 18.018) < 0.01
+    t = normalise_treatment({"eventType": "Temporary Target", "date": 1_700_000_000_000, "duration": 60,
+                             "targetBottom": 144, "targetTop": 144, "units": "mmol"})
+    assert t.target_low_mgdl == 144

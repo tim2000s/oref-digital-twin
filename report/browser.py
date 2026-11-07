@@ -12,14 +12,14 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Callable
 
 from diagnostics import run_diagnostics
 from ingestion.models import ProfileSnapshot
 from ingestion.pull import pull_from_raw
 from replay import OrefOracle, from_cycle
-from replay.inputs import lasting_change
+from replay.inputs import lasting_change, zone
 from variant import detect_variant
 
 from .grounding import check_narrative
@@ -221,12 +221,7 @@ def settings_tests(sim_runner: Callable | None = None,
     result["insulin_curve"] = curve
     change = lasting_change(profile, pull.treatments, requests[0]["currentTime"], requests[-1]["currentTime"])
     if change:
-        try:
-            from zoneinfo import ZoneInfo
-            tz = ZoneInfo(profile.timezone) if profile.timezone else timezone.utc
-        except Exception:
-            tz = timezone.utc
-        when = datetime.fromtimestamp(change["ts_ms"] / 1000, tz=tz).strftime("%d %b %Y")
+        when = datetime.fromtimestamp(change["ts_ms"] / 1000, tz=zone(profile.timezone)).strftime("%d %b %Y")
         parts = [f"{lab} {100 * (change[k] - 1):+.0f}%" for k, lab in
                  (("basal", "basal"), ("isf", "ISF"), ("cr", "carb ratio")) if k in change and change[k] != 1]
         if change.get("target_change"):
