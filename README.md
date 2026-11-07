@@ -133,11 +133,17 @@ predictions ran from what followed, and which algorithm variant appears to be ru
 
 The glucose figures in the settings tests are estimates from a deliberately simple model,
 and the page labels them that way. The model takes your profile ISF as your real
-sensitivity, and assumes your meals, activity and own treatments, hypo treatments included,
-would have been the same under the new setting. It has not yet been checked against periods
-where someone actually changed a setting, so it is better at ranking settings than at
-predicting what a change will do: on simulated people its estimates overstated the fall in lows
-by 1.5 to 3 times, and the report says so beside its tables. The tests run stock oref0; if the
+sensitivity. A low that only the changed setting causes is treated as people are taught to treat
+one: 10 g of fast carbohydrate every 15 minutes until glucose is back above 70 mg/dL, each raising
+it by 10 × your ISF ÷ your carb ratio. Otherwise it assumes your meals, activity and own
+treatments would have been the same under the new setting.
+
+It is better at ranking settings than at predicting what a change will do. On simulated people
+(validation/SAME_WEEK.md and validation/RESCUE.md) the estimated change in time below 70 came out
+about the right size and ranked the changes well, while the estimated change in time in range was
+about twice too large. Against twelve real setting changes by five AndroidAPS users the estimated
+change in time in range ranked the real one (Spearman 0.72) and the estimated change in lows did
+not. The report gives the simulated figures beside its tables. The tests run stock oref0; if the
 page detects a variant such as Boost or AutoISF, it says that what the variant adds is not
 modelled.
 

@@ -287,3 +287,17 @@ def test_classify_bolus_meal_rule_edges():
     flat = _readings([120] * 288)
     auto = [b(i / 12, 0.6) for i in range(288)]
     assert set(classify(flat, auto)) == {"fasting"}
+
+
+def test_settings_tests_ask_the_simulator_to_treat_new_lows():
+    from replay.scenarios import RESCUE
+    seen, inner = [], _shift_sim(lambda sc: 0.0)
+
+    def sim(payload):
+        seen.append(payload)
+        return inner(payload)
+
+    entries = _readings([120] * 300)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    run_settings_tests(sim, requests, entries, [], {})
+    assert seen and all(p.get("rescue") == RESCUE for p in seen) and RESCUE["mode"] == "new"

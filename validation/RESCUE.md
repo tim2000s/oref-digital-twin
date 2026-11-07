@@ -1,8 +1,8 @@
-# Rescue eating in the twin's simulator: TimSim results, 6 November 2026
+# Rescue eating in the twin's simulator: TimSim results, 6 and 7 November 2026
 
-The option described here was removed on 7 November 2026, since it was not adopted and the page
-never used it. The fitted model is in commit ed51121 and the 10 g rule in f186447; each
-reproduces its results below.
+The fitted model below was removed and is in commit ed51121. The 10 g rule at the end is the one
+the page now uses, in its "new lows only" version: the decay it was compared with was measured in
+TimSim's physiology and cannot be measured on real records, while treating lows is what people do.
 
 The settings tests keep the person's real food and treatments. A low in the real record was usually
 treated, so a change that removes the low still carries the rescue's rise, and a change that adds a
@@ -12,14 +12,13 @@ kept in a private analysis repository.
 
 ## The model
 
-`replay/oracle/request.js` accepts `rescue` in a simulate call: `{threshold, refractory_min, delay,
-rise, rise_min}`. One rule (a rescue at a cycle below `threshold`, no sooner than `refractory_min`
+The fitted model took `rescue` in a simulate call as `{threshold, refractory_min, delay, rise,
+rise_min}`. One rule (a rescue at a cycle below `threshold`, no sooner than `refractory_min`
 after the last) is applied to the real glucose and to the shifted glucose. The shifted trace gains
 its own rescues and loses the real trace's. Each rescue adds nothing for `delay` minutes, then
 `rise` mg/dL spread over `rise_min` minutes. With `decay_tau_min` also set, the rise relaxes with
 the same time constant. Where the two sets of rescue times agree the terms cancel exactly, so a
-change that alters nothing still gives the baseline. It is off unless given, and the page does not
-give it. Tested in `replay/tests/test_oracle_integration.py`.
+change that alters nothing still gives the baseline. It was off unless given. Tested in `replay/tests/test_oracle_integration.py`.
 
 The parameters came from 38 AndroidAPS users in the OpenAPS Data Commons with at least ten lows
 each: nadir 10 minutes after crossing 70 mg/dL, then a rise of 68.8 mg/dL [66.0, 80.0] over
@@ -42,8 +41,7 @@ all 12 subjects reproducing the stored estimates without options exactly. Result
 The rescue model brought the size of the estimate for lows right out of sample, but its ranking of
 changes by their effect on lows fell below the interval it had without options, which the plan set
 as a condition. Together with the decay it overcorrects, which fits the separate finding that
-TimSim's pull-back is physiological rather than rescue eating. Neither arm was adopted, and the
-published page is unchanged.
+TimSim's pull-back is physiological rather than rescue eating. Neither arm was adopted.
 
 ## A 10 g, 15-minute rule, 7 November 2026
 
@@ -60,5 +58,8 @@ taught practice, not fitted. Applied to both traces (as above) or to new lows on
 
 Without the decay both versions passed the criterion set beforehand (slope interval includes 1,
 Spearman at least 0.815), out of sample. Neither improved on the decay alone for time below 54, and
-both left time in range overstated about twofold where the decay does not, so the rule was removed
-again; commit f186447 holds it. Results in `results/same_week_rescue10g_*_2026-11-07.json`.
+both left time in range overstated about twofold where the decay does not. It was removed, then
+restored on the same day for the page (see the top of this note). On twelve real AndroidAPS setting
+changes, "new lows only" left the agreement of estimated with realised change within chance of
+where it was without it (Spearman for time below 70 +0.11 to +0.16, time in range +0.66 to +0.72,
+time below 54 +0.41 to +0.33). Results in `results/same_week_rescue10g_*_2026-11-07.json`.

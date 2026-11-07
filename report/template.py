@@ -142,8 +142,9 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
         f"_{result['caveat']}_",
         "",
         "_In testing on simulated people (TimSim, an enhanced version of the UVA/Padova type 1 "
-        "diabetes simulator) these estimates overstated the fall in lows by 1.5 to 3 times. Use "
-        "them to compare options, not to predict the result._",
+        "diabetes simulator) the estimated change in time below 70 came out about the right size, "
+        "and the estimated change in time in range about twice too large. Use them to compare "
+        "options, not to predict the result._",
         "",
         f"A value that gives more insulin than your current setting is only considered when the "
         f"estimate for the whole period keeps time below 70 under "

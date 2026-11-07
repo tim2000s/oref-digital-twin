@@ -21,8 +21,9 @@ setting is tested where the ones after it have least influence, and later stages
 the earlier choices.
 
 The glucose each value is judged on is the observed CGM shifted by the simulator's estimate,
-which takes the profile ISF as the body's sensitivity and assumes meals, activity and the
-person's own treatments would have been unchanged. These are modelled estimates, not
+which takes the profile ISF as the body's sensitivity, treats a low the change causes with 10 g
+every 15 minutes (RESCUE), and assumes meals, activity and the person's other treatments would
+have been unchanged. These are modelled estimates, not
 outcomes, and each stage's choice is a trial to test, not a setting to apply.
 """
 
@@ -71,10 +72,20 @@ SimRunner = Callable[[dict], dict]
 CAVEAT = (
     "Estimated, not measured: each value's glucose is your CGM shifted by the change in "
     "insulin the loop would have given, times your profile ISF, with the loop reacting to "
-    "the shifted glucose at every step. It assumes your meals, activity and own treatments "
-    "would have been the same, and that your profile ISF is your real sensitivity. Treat "
-    "any change as a trial to test, one setting at a time."
+    "the shifted glucose at every step. A low that only the changed setting causes is "
+    "treated as people are taught to treat one, with 10 g of fast carbohydrate every 15 minutes until "
+    "glucose is back above 70 mg/dL. Otherwise it assumes your meals, activity and own "
+    "treatments would have been the same, and that your profile ISF is your real sensitivity. "
+    "Treat any change as a trial to test, one setting at a time."
 )
+
+# How the simulator treats a low the changed setting causes (oracle/request.js, `rescue`): 10 g
+# every 15 minutes below 70 mg/dL, each rising by 10 x ISF / carb ratio after 10 minutes and over
+# 30, all taught practice rather than fitted. Lows already in the record were treated in the
+# record. On TimSim this brought the estimated change in time below 70 to the right size out of
+# sample (slope 0.874 [0.745, 1.078], against 0.348 without it), validation/RESCUE.md.
+RESCUE = {"grams": 10, "threshold": 70, "refractory_min": 15, "delay": 10, "rise_min": 30,
+          "mode": "new"}
 
 
 @dataclass
@@ -302,7 +313,7 @@ def run_settings_tests(
         todo = [sc for sc in scenarios if key_of(sc) not in done]
         if todo:
             # the cycles cross to the simulator once; later calls reuse them by cache_key
-            payload = {"scenarios": todo, "cache_key": cache_key}
+            payload = {"scenarios": todo, "cache_key": cache_key, "rescue": RESCUE}
             if not sent[0]:
                 payload["cycles"] = requests
                 sent[0] = True

@@ -188,6 +188,46 @@ function simulate(payload) {
   const gap = t.map((ti, i) => (i + 1 < t.length ? Math.min((t[i + 1] - ti) / 60000, maxGap) : 5));
   // the body's sensitivity at each cycle, as oref itself would take it
   const isf = cycles.map((c) => c.profile.sens / ((c.autosens_data && c.autosens_data.ratio) || 1));
+  // Optional rescue eating, payload.rescue = {grams, threshold, refractory_min, delay, rise_min,
+  // mode} (off unless given; the page's settings tests give mode "new", replay/scenarios.py
+  // RESCUE). A person below `threshold` eats `grams`
+  // of fast carbohydrate, again every `refractory_min` while still low; each rises by grams x ISF
+  // / carb ratio at that cycle, after `delay` minutes and over `rise_min`. Mode "both" applies the
+  // rule to the real glucose too, so the shifted trace loses the real trace's rescues where its
+  // lows are gone (the two cancel exactly when the times agree); mode "new" treats only lows the
+  // real glucose did not have.
+  const rescue = payload.rescue || null;
+  let rescueShape = null;
+  const realRescues = [];
+  // the spacing allows a minute's slack: loop cycles drift by seconds, so a strict 15 would wait 20
+  const rescueRise = (i) => (cycles[i].profile.carb_ratio ? rescue.grams * isf[i] / cycles[i].profile.carb_ratio : 0);
+  if (rescue) {
+    const delay = Math.round(rescue.delay), riseMin = Math.max(1, Math.round(rescue.rise_min));
+    rescueShape = new Float64Array(delay + riseMin + (tau > 0 ? Math.ceil(10 * tau) : 0) + 1);
+    const keepFrac = tau > 0 ? Math.exp(-1 / tau) : 1;
+    for (let m = 1; m < rescueShape.length; m++) {
+      const ramp = (m - 1 >= delay && m - 1 < delay + riseMin) ? 1 / riseMin : 0;
+      rescueShape[m] = rescueShape[m - 1] * keepFrac + ramp;
+    }
+    if (rescue.mode !== 'new') {
+      let last = -Infinity;
+      cycles.forEach((c, i) => {
+        if (c.glucose_status.glucose < rescue.threshold && t[i] - last >= (rescue.refractory_min - 1) * 60000) {
+          realRescues.push({ t: t[i], rise: rescueRise(i) });
+          last = t[i];
+        }
+      });
+    }
+  }
+  const rescueEffect = (list, time) => {
+    let e = 0;
+    for (const r of list) {
+      if (r.t > time) break;
+      const m = Math.round((time - r.t) / 60000);
+      e += r.rise * (m < rescueShape.length ? rescueShape[m] : (tau > 0 ? 0 : 1));
+    }
+    return e;
+  };
 
   // The two lib/iob runs per cycle are kept between calls that share a cache_key, which is
   // what lets a report run its stages one after another without repeating them.
@@ -230,6 +270,9 @@ function simulate(payload) {
     };
     for (const d of doses) d.isf = isfAt(d.t);
 
+    const ownRescues = [];
+    let lastRescue = -Infinity;
+
     function effectAt(time) {
       let e = 0;
       for (const d of live) {
@@ -237,6 +280,7 @@ function simulate(payload) {
         const m = Math.round((time - d.t) / 60000);
         e -= d.u * d.isf * absorbed(m);
       }
+      if (rescue) e += rescueEffect(ownRescues, time) - rescueEffect(realRescues, time);
       return e;
     }
 
@@ -257,8 +301,14 @@ function simulate(payload) {
       }
       live = keep;
 
-      const shift = settled + effectAt(now);
+      let shift = settled + effectAt(now);
       const gs0 = c.glucose_status;
+      if (rescue && gs0.glucose + shift < rescue.threshold && now - lastRescue >= (rescue.refractory_min - 1) * 60000
+          && (rescue.mode !== 'new' || gs0.glucose >= rescue.threshold)) {
+        ownRescues.push({ t: now, rise: rescueRise(i) });
+        lastRescue = now;
+        shift = settled + effectAt(now);
+      }
       // Left untouched when nothing has shifted, so a scenario that changes nothing gives the
       // baseline decision exactly.
       const gs = shift === 0 ? gs0 : {

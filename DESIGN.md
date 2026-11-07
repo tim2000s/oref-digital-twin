@@ -84,16 +84,20 @@ which replayed two fixed changes open-loop over the last 400 cycles and summed e
 loop that runs every minute.
 
 What the estimate assumes, each a modelling choice rather than a finding: the profile ISF
-is the body's real sensitivity; meals, activity and the person's own treatments, hypo
-treatments included, would have been the same; logged meal boluses scale with 1 / carb
-ratio. It is a model of the loop's response, not of the body's. On one week of an
+is the body's real sensitivity; a low only the change causes is treated with 10 g every 15
+minutes, each rising by 10 x ISF / carb ratio (taught practice, not fitted; validation/RESCUE.md);
+otherwise meals, activity and the person's own treatments would have been the same; logged meal
+boluses scale with 1 / carb ratio. It is a model of the loop's response, not of the body's. On one week of an
 AndroidAPS user's data a −30% basal left daily insulin almost unchanged (−0.07 U over seven
 days) because the loop made up the difference with temps and SMBs, and the estimate's
 effect was where glucose settled (+15 mg/dL on average). That pattern is the expected
 behaviour of a proportional controller.
 
-Not yet done: a backtest of the estimate against periods where a person actually changed a
-setting. Until that exists the estimates rank settings; they do not predict outcomes.
+Checked against periods where a person actually changed a setting: twelve changes by five
+AndroidAPS users, in a private analysis repository. The estimated change in time in range ranked
+the realised one (Spearman 0.72, p 0.006, with the rescue rule) and the estimated change in lows
+did not (0.16). Twelve events cannot calibrate the estimate, so it ranks settings; it does not
+predict outcomes.
 
 ---
 
