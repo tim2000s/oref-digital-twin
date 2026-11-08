@@ -227,12 +227,13 @@ def test_more_insulin_is_excluded_when_it_would_raise_lows_past_the_limits():
 def test_isf_is_judged_on_the_whole_period_not_on_the_high_slice():
     # Correction stretches (3 h after a reading over 180) are high by selection, 0% in range
     # here, but the whole period meets both goals; ISF must be left alone.
+    # The shift is small so a stronger ISF gains under TIR_GAIN_MIN on the whole period.
     # a slow rise (30 mg/dL an hour) so the high is not taken for an unannounced meal
     ramp = [round(110 + 90 * i / 36) for i in range(36)]
     day = [110] * 100 + ramp + [200] * 12 + [150] * 36 + [110] * 64
     entries = _readings(day * 4)
     requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
-    res = run_settings_tests(_shift_sim(lambda sc: (1 - sc["isf_scale"]) * -40), requests,
+    res = run_settings_tests(_shift_sim(lambda sc: (1 - sc["isf_scale"]) * -10), requests,
                              entries, [], {})
     isf = res["stages"][1]
     assert isf["enough_hours"] >= 6 and isf["measured_on"] == "all"
@@ -301,3 +302,40 @@ def test_settings_tests_ask_the_simulator_to_treat_new_lows():
     requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
     run_settings_tests(sim, requests, entries, [], {})
     assert seen and all(p.get("rescue") == RESCUE for p in seen) and RESCUE["mode"] == "new"
+
+
+def test_choose_with_a_gain_takes_a_clearly_better_value_over_no_change():
+    rows = [_row(0.8, 86, 1.5), _row(0.9, 83, 1.2), _row(1.0, 81, 1.0), _row(1.1, 79, 0.5)]
+    assert choose(rows)[0]["value"] == 1.0
+    best, why = choose(rows, gain=2.0)
+    assert best["value"] == 0.8 and "points more time in range" in why
+
+
+def test_choose_with_a_gain_keeps_the_smallest_change_inside_the_margin_or_past_the_limit():
+    rows = [_row(0.9, 82.5, 1.2), _row(1.0, 81, 1.0)]
+    assert choose(rows, gain=2.0)[0]["value"] == 1.0
+    # a value the strengthening limit excluded is never taken, however much it gains
+    rows = [{**_row(0.8, 90, 1.5), "excluded": True}, _row(1.0, 81, 1.0)]
+    assert choose(rows, gain=2.0)[0]["value"] == 1.0
+    # a value that misses the aim is never taken either
+    rows = [_row(0.8, 90, 2.5), _row(1.0, 81, 1.0)]
+    assert choose(rows, gain=2.0)[0]["value"] == 1.0
+
+
+def test_isf_stage_takes_a_stronger_value_that_gains_on_the_whole_period():
+    # the same day as above with a larger effect: a stronger ISF now gains over TIR_GAIN_MIN
+    ramp = [round(110 + 90 * i / 36) for i in range(36)]
+    day = [110] * 100 + ramp + [200] * 12 + [150] * 36 + [110] * 64
+    entries = _readings(day * 4)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    res = run_settings_tests(_shift_sim(lambda sc: (1 - sc["isf_scale"]) * -40), requests,
+                             entries, [], {})
+    isf = res["stages"][1]
+    assert isf["chosen"] < 1.0 and "points more time in range" in isf["why"]
+
+
+def test_choose_gain_counts_exactly_the_margin_and_breaks_ties_towards_less_insulin():
+    rows = [_row(0.9, 83.0, 1.0), _row(1.0, 81.0, 1.0)]
+    assert choose(rows, gain=2.0)[0]["value"] == 0.9
+    rows = [{**_row(0.9, 85, 1), "more_insulin": True}, _row(1.0, 81, 1), _row(1.1, 85, 1)]
+    assert choose(rows, gain=2.0)[0]["value"] == 1.1

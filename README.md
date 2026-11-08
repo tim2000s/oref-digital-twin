@@ -114,7 +114,11 @@ The page offers two aims: time in range above 80% with time below range under 2%
 default since 10 October 2026), or time in range above 70% with the same limit on lows
 (standard). Tested on simulated people (validation/BAD_PROFILES_3.md), the tighter aim reached
 its goal slightly more often with no measured harm. At each stage the page
-picks the smallest change that meets both. When no value does, it keeps time below range
+picks the smallest change that meets both. For basal and ISF it takes instead the value meeting
+both with the most time in range, when that is at least 2 points more than the smallest such
+change gives: the loop often makes up a too-weak basal or ISF, so the smallest change meeting the
+aim would otherwise be none (validation/WEAK_PROFILES.md).
+When no value does, it keeps time below range
 under 2% with the most time in range, and failing that it picks the value with the least
 time below range, because a low is the more immediate harm. A value that gives more insulin than the current
 setting is only considered when the whole period's estimate keeps time below 70 under 2% and
