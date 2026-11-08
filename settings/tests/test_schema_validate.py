@@ -161,3 +161,8 @@ def test_a_name_in_the_file_wins_over_a_derived_one():
     v = validate({"curve": "rapid-acting",
                   "ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin": "true"})
     assert v.values["insulin_curve"] == "rapid-acting"
+
+
+def test_free_peak_without_a_stored_peak_is_aaps_default():
+    v = validate({"ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin": "true"})
+    assert (v.values["insulin_curve"], v.values["insulin_peak_min"]) == ("rapid-acting", 75)

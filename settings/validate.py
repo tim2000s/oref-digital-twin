@@ -73,7 +73,8 @@ def _insulin(raw: dict[str, Any]) -> dict[str, Any]:
     for plugin, (curve, peak) in _AAPS_INSULIN.items():
         if _to_bool(raw.get(f"ConfigBuilder_Enabled_INSULIN_{plugin}", False)):
             if isinstance(peak, str):       # free peak: oref0 takes 50-120 min on rapid-acting,
-                peak = raw.get(peak)        # 35-100 on ultra-rapid, so below 50 needs ultra-rapid
+                peak = raw.get(peak, 75)    # 35-100 on ultra-rapid, so below 50 needs ultra-rapid;
+                                            # 75 is AndroidAPS's default when none was stored
                 try:
                     curve = "ultra-rapid" if float(peak) < 50 else "rapid-acting"
                 except (TypeError, ValueError):
