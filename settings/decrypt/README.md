@@ -1,16 +1,15 @@
 # settings/decrypt
 
 Client-side decryptor for AAPS **encrypted preferences**. Runs in the browser (or Node)
-via WebCrypto so the **master password never leaves the device** (DESIGN §5.2). The server
-only ever receives the minimised, validated settings subset — never the file, never the
-password.
+via WebCrypto so the master password never leaves the device (DESIGN §5.2). There is no
+server: the decrypted keys go to the page's own Python, which uses only the settings in
+`settings/schema.py` and lists the other keys as unrecognised.
 
 ## Why client-side
 
 The export is keyed on the user's AAPS master password — the key to their whole config, not
 just settings. It cannot be decrypted server-side and users must never be asked to send it.
-Every primitive is in WebCrypto, so decryption happens locally and only the allow-listed
-keys are sent onward.
+Every primitive is in WebCrypto, so decryption happens locally and nothing is sent anywhere.
 
 ## Format (from AAPS `CryptoUtil` / `EncryptedPrefsFormat`)
 
@@ -25,9 +24,8 @@ algorithm "none": content is the plaintext settings object (unencrypted export)
 ## API
 
 ```js
-import { decryptAapsPrefs, pickSettings } from './aaps_prefs.mjs';
+import { decryptAapsPrefs } from './aaps_prefs.mjs';
 const content = await decryptAapsPrefs(fileText, masterPassword);   // throws on wrong password
-const minimal = pickSettings(content, ALLOWLIST);                    // only send these onward
 ```
 
 `encryptAapsPrefs` is included to document the byte layout and drive the round-trip

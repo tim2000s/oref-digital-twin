@@ -171,9 +171,9 @@ dynamic-ISF toggles) is not in the NS profile. Options, in order of robustness:
    key via PBKDF2-HMAC-SHA1 (50k iterations, 256-bit), salt+IV in the file, keyed on the
    user's **master password**. It cannot and must not be decrypted server-side. But every
    primitive is in the browser's WebCrypto: the user selects the file and types the
-   master password *in the page*, decryption happens locally, and only the minimised
-   Boost/oref-relevant key set is sent to the backend. Password and full config never
-   leave the device.
+   master password *in the page*, and decryption happens locally. Every decrypted key goes to
+   the page's own Python, which uses only the settings in `settings/schema.py`; the other
+   keys are listed as unrecognised in its output and go no further. There is no backend, so the password and the file never leave the device.
 3. **Screenshots.** Lowest friction. Tractable because the target is a *bounded, known*
    typed key set: vision-extract → validate against the schema (types + ranges) →
    flag low-confidence or out-of-range reads → user confirms before anything runs. Never

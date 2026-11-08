@@ -20,4 +20,4 @@ def test_aaps_decrypt_roundtrip_node():
         cwd=str(DECRYPT_DIR), capture_output=True, text=True, timeout=120,
     )
     assert result.returncode == 0, f"node tests failed:\n{result.stdout}\n{result.stderr}"
-    assert "pass 4" in result.stdout or "# pass 4" in result.stdout
+    assert "pass 3" in result.stdout or "# pass 3" in result.stdout

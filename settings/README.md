@@ -20,8 +20,9 @@ output. See [../DESIGN.md](../DESIGN.md) §5.2.
    out-of-range or low-confidence read is flagged for confirmation rather than accepted.
 2. **Encrypted-prefs decrypt** (more robust). Runs entirely in the browser: the user picks
    the file and types the master password locally; `decrypt/aaps_prefs.mjs` decrypts with
-   WebCrypto and `pickSettings` keeps only the allow-listed subset. The master password and
-   full config **never leave the device** — the server receives only the minimised settings.
+   WebCrypto. Every decrypted key goes to the page's own Python, where `validate` uses only the
+   settings in `schema.py` and lists the other keys as unrecognised. The password and the file never leave the
+   device, since there is no server.
 
 Profile-side settings (basal/ISF/CR/targets/DIA) are not here — they come from `ingestion/`
 via the Nightscout profile.

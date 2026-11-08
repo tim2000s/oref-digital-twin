@@ -250,6 +250,15 @@ def lasting_change(snapshot: ProfileSnapshot, treatments: list[Treatment] | None
     return {"ts_ms": inside[-1].ts_ms, **out}
 
 
+def smb_enabled(settings: dict) -> bool:
+    """SMB on at all: AndroidAPS's master switch, or, from a file without one (Trio), any switch."""
+    if settings.get("enable_smb") is not None:
+        return bool(settings["enable_smb"])
+    return any(settings.get(k) for k in ("enable_smb_always", "enable_smb_with_cob",
+                                         "enable_smb_after_carbs", "enable_smb_with_temptarget",
+                                         "enable_smb_high_bg"))
+
+
 def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int,
                   temp_target: tuple[float, float] | None = None) -> tuple[dict, list[str]]:
     """Assemble an oref profile from the Nightscout profile + the user's settings.
@@ -291,11 +300,12 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int,
     if max_basal is not None and float(max_basal) < 0:
         warnings.append(f"max_basal {max_basal} is negative — clamped to 0 for replay.")
         max_basal = 0.0
+    smb = smb_enabled(settings)
     profile = {
         "dia": snapshot.dia_h or 6.0,
         "current_basal": basal or 0.0,
         "max_basal": max_basal,
-        "max_daily_basal": basal or 0.0,
+        "max_daily_basal": max((b.value for b in snapshot.basal), default=basal or 0.0),
         "max_daily_safety_multiplier": settings.get("max_daily_safety_multiplier", 3),
         "current_basal_safety_multiplier": settings.get("current_basal_safety_multiplier", 4),
         "max_iob": max_iob,
@@ -306,13 +316,23 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int,
         "target_bg": target,
         "min_5m_carbimpact": settings.get("min_5m_carbimpact", 8),
         "type": "current",
-        "enableSMB_always": bool(settings.get("enable_smb", False)),
-        "enableSMB_with_COB": bool(settings.get("enable_smb", False)),
-        "enableSMB_after_carbs": bool(settings.get("enable_smb", False)),
-        "enableSMB_uam": bool(settings.get("enable_smb_uam", settings.get("enable_smb", False))),
+        # A switch the settings do not name follows the master. The low temp target one defaults
+        # as each system does: on in AndroidAPS, which has the master switch, off in Trio.
+        **{f: smb and bool(settings.get(k, k != "enable_smb_with_temptarget"
+                                        or settings.get("enable_smb") is not None)) for f, k in (
+            ("enableSMB_always", "enable_smb_always"), ("enableSMB_with_COB", "enable_smb_with_cob"),
+            ("enableSMB_after_carbs", "enable_smb_after_carbs"),
+            ("enableSMB_with_temptarget", "enable_smb_with_temptarget"))},
+        "allowSMB_with_high_temptarget": bool(settings.get("allow_smb_with_high_temptarget", False)),
+        "enableSMB_high_bg": smb and bool(settings.get("enable_smb_high_bg", False)),
+        # shortcut: UAM unnamed follows SMB; AndroidAPS keys it to use_uam alone, so an export
+        # with SMB off and use_uam never stored is replayed without UAM.
+        "enableUAM": bool(settings.get("enable_smb_uam", smb)),
         "maxSMBBasalMinutes": settings.get("max_smb_minutes", 30),
         "maxUAMSMBBasalMinutes": settings.get("max_uam_minutes", 30),
     }
+    if settings.get("enable_smb_high_bg_target") is not None:   # oref0: no level, no high-BG SMB
+        profile["enableSMB_high_bg_target"] = settings["enable_smb_high_bg_target"]
     if temp_target:
         profile["temptargetSet"] = True
 
@@ -320,7 +340,7 @@ def build_profile(snapshot: ProfileSnapshot, settings: dict, at_ms: int,
     # max basal we assume 4x the scheduled rate. If SMB is on and the real caps are unknown,
     # the replay may allow more insulin than the user's own configuration would. Say so —
     # a substituted dosing bound must never pass silently.
-    if profile["enableSMB_always"] or profile["enableSMB_uam"]:
+    if smb:
         for friendly, oref_field in (("max_smb_minutes", "maxSMBBasalMinutes"),
                                      ("max_uam_minutes", "maxUAMSMBBasalMinutes")):
             if settings.get(friendly) is None:

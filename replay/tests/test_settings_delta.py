@@ -25,7 +25,7 @@ def test_enable_smb_toggles_all_flags():
     out = apply_delta(_req(), {"enable_smb": True})
     p = out["profile"]
     assert all(p[k] for k in ("enableSMB_always", "enableSMB_with_COB",
-                              "enableSMB_after_carbs", "enableSMB_uam"))
+                              "enableSMB_after_carbs", "enableSMB_with_temptarget"))
 
 
 def test_max_iob_clamped_non_negative():

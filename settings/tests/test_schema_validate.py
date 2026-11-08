@@ -13,7 +13,7 @@ def test_validate_clean_mixed_types():
     v = validate({"Max IOB": "6.0", "isf": "50", "enableSMB_always": "true"})
     assert v.values["max_iob"] == 6.0
     assert v.values["sens"] == 50.0
-    assert v.values["enable_smb"] is True
+    assert v.values["enable_smb_always"] is True
     assert v.is_clean()
     assert v.needs_confirm == []
 
@@ -102,3 +102,62 @@ def test_zero_still_suspect_where_withholding_is_safe():
     """max_iob is flagged zero_suspect: from_cycle refuses the cycle rather than defaulting."""
     v = validate({"max_iob": "0"})
     assert "max_iob" in v.blocked and v.replay_settings() == {}
+
+
+def test_alias_order_decides_not_file_order():
+    for raw in ({"openapsma_max_iob": "2", "openapsmb_max_iob": "8"},
+                {"openapsmb_max_iob": "8", "openapsma_max_iob": "2"}):
+        v = validate(raw)
+        assert v.values["max_iob"] == 8.0
+        assert any(i.kind == "conflict" for i in v.issues)
+
+
+def test_unreadable_preferred_name_blocks_instead_of_falling_back():
+    v = validate({"openapsmb_max_iob": "abc", "openapsma_max_iob": "2"})
+    assert "max_iob" not in v.replay_settings() and "max_iob" in v.blocked
+    v = validate({"openapsmb_max_iob": "90", "openapsma_max_iob": "2"})
+    assert "max_iob" not in v.replay_settings() and "max_iob" in v.blocked
+
+
+def test_same_value_twice_is_a_duplicate_not_a_conflict():
+    v = validate({"MAX_IOB": "3", "maxIOB": "3"})
+    assert v.values["max_iob"] == 3.0
+    assert [i.kind for i in v.issues] == ["duplicate"]
+
+
+def test_insulin_from_aaps_plugin_and_trio_custom_peak():
+    v = validate({"ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin": "true",
+                  "ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin": "false"})
+    assert (v.values["insulin_curve"], v.values["insulin_peak_min"]) == ("ultra-rapid", 45)
+    v = validate({"ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin": "true",
+                  "insulin_oref_peak": "60"})
+    assert (v.values["insulin_curve"], v.values["insulin_peak_min"]) == ("rapid-acting", 60)
+    v = validate({"curve": "ultra-rapid", "useCustomPeakTime": True, "insulinPeakTime": 50})
+    assert (v.values["insulin_curve"], v.values["insulin_peak_min"]) == ("ultra-rapid", 50)
+    assert "insulin_peak_min" not in validate({"curve": "rapid-acting", "useCustomPeakTime": False,
+                                               "insulinPeakTime": 50}).values
+
+
+def test_trio_dynamic_isf_and_aaps_multipliers_read():
+    assert validate({"useNewFormula": True}).values["dynamic_isf_enabled"] is True
+    v = validate({"openapsama_max_daily_safety_multiplier": "4",
+                  "openapsama_current_basal_safety_multiplier": "5"})
+    assert v.replay_settings() == {"max_daily_safety_multiplier": 4.0,
+                                   "current_basal_safety_multiplier": 5.0}
+
+
+def test_malformed_free_peak_withholds_the_peak_without_failing():
+    v = validate({"ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin": "true",
+                  "insulin_oref_peak": ""})
+    assert "insulin_curve" not in v.values and "insulin_peak_min" in v.blocked
+
+
+def test_unread_preferred_name_is_not_called_a_conflict():
+    v = validate({"openapsmb_max_iob": "abc", "openapsma_max_iob": "3"})
+    assert not any(i.kind == "conflict" for i in v.issues)
+
+
+def test_a_name_in_the_file_wins_over_a_derived_one():
+    v = validate({"curve": "rapid-acting",
+                  "ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin": "true"})
+    assert v.values["insulin_curve"] == "rapid-acting"

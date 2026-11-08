@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from ingestion.models import GlucoseReading, Treatment
+from replay.inputs import smb_enabled
 
 GOAL_TIR_PCT = 70.0       # time in range, 70-180 mg/dL: more than this
 GOAL_TBR_PCT = 2.0        # time below 70 mg/dL: less than this
@@ -439,7 +440,7 @@ def run_settings_tests(
         "Target", "target", "all", offsets, lambda o: scen(target_offset=o), 0, fmt_target,
         more_insulin=lambda o: o < 0)
 
-    smb_on = bool(settings.get("enable_smb"))
+    smb_on = smb_enabled(settings)
     current_smb = settings.get("max_smb_minutes", 30)
     if smb_on:
         values = sorted(set(SMB_MINUTES) | {current_smb})

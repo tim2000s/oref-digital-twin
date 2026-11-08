@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from .schema import SETTINGS, resolve_alias
+from .schema import SETTINGS, _to_bool, alias_rank, resolve_alias
 
 LOW_CONFIDENCE = 0.8
 
@@ -20,6 +20,7 @@ LOW_CONFIDENCE = 0.8
 class SettingIssue:
     key: str                        # friendly key, or the raw name for unknown_key
     kind: str                       # unknown_key | wrong_type | out_of_range | needs_confirm
+                                    # | duplicate | conflict (a duplicate with another value)
     message: str
     value: Any = None
 
@@ -57,13 +58,46 @@ class ValidatedSettings:
         }
 
 
+# AndroidAPS names its insulin by which plugin is on; these are the oref curves (and peaks) they run.
+_AAPS_INSULIN = {
+    "InsulinOrefRapidActingPlugin": ("rapid-acting", None),
+    "InsulinOrefUltraRapidActingPlugin": ("ultra-rapid", None),
+    "InsulinLyumjevPlugin": ("ultra-rapid", 45),
+    "InsulinOrefFreePeakPlugin": (None, "insulin_oref_peak"),
+}
+
+
+def _insulin(raw: dict[str, Any]) -> dict[str, Any]:
+    """Insulin curve and peak from an AAPS plugin choice or Trio's custom-peak switch."""
+    out: dict[str, Any] = {}
+    for plugin, (curve, peak) in _AAPS_INSULIN.items():
+        if _to_bool(raw.get(f"ConfigBuilder_Enabled_INSULIN_{plugin}", False)):
+            if isinstance(peak, str):       # free peak: oref0 takes 50-120 min on rapid-acting,
+                peak = raw.get(peak)        # 35-100 on ultra-rapid, so below 50 needs ultra-rapid
+                try:
+                    curve = "ultra-rapid" if float(peak) < 50 else "rapid-acting"
+                except (TypeError, ValueError):
+                    curve = None            # left to the peak's own check, and the curve to the fit
+            if curve:
+                out["curve"] = curve
+            if peak is not None:
+                out["insulin_peak_min"] = peak
+    if _to_bool(raw.get("useCustomPeakTime", False)) and raw.get("insulinPeakTime") is not None:
+        out["insulin_peak_min"] = raw["insulinPeakTime"]
+    return out
+
+
 def validate(raw: dict[str, Any], confidences: dict[str, float] | None = None) -> ValidatedSettings:
     confidences = confidences or {}
+    raw = {**_insulin(raw), **raw}      # a name the file gives itself wins over one derived
     out = ValidatedSettings()
     needs: set[str] = set()
     blocked: set[str] = set()
 
-    for raw_name, raw_val in raw.items():
+    used: dict[str, str] = {}
+    # Several source names can fill one setting (an AAPS export holds both max IOB keys);
+    # the alias order decides, not the order of keys in the file.
+    for raw_name, raw_val in sorted(raw.items(), key=lambda kv: alias_rank(kv[0])):
         key = resolve_alias(raw_name)
         if key is None:
             out.issues.append(SettingIssue(raw_name, "unknown_key",
@@ -71,9 +105,20 @@ def validate(raw: dict[str, Any], confidences: dict[str, float] | None = None) -
             continue
         spec = SETTINGS[key]
         coerced, ok = spec.coerce(raw_val)
+        if key in used:
+            differs = ok and key in out.values and coerced != out.values[key]
+            out.issues.append(SettingIssue(
+                key, "conflict" if differs else "duplicate",
+                f"'{raw_name}' ({raw_val}) ignored: {key} was read from '{used[key]}'.", raw_val))
+            continue
+        used[key] = raw_name
         if not ok:
+            # The preferred name is unreadable: withhold the setting rather than fall back to a
+            # lower-ranked name, which may belong to a plugin the person does not run.
             out.issues.append(SettingIssue(key, "wrong_type",
                                            f"'{raw_val}' is not a valid {spec.kind} for {key}.", raw_val))
+            needs.add(key)
+            blocked.add(key)
             continue
 
         out.values[key] = coerced

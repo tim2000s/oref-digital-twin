@@ -22,7 +22,7 @@ DELTA_FIELDS: dict[str, tuple[list[str], Callable[[Any], Any]]] = {
     "max_smb_minutes": (["maxSMBBasalMinutes"], lambda v: max(0.0, float(v))),
     "max_uam_minutes": (["maxUAMSMBBasalMinutes"], lambda v: max(0.0, float(v))),
     "enable_smb": (
-        ["enableSMB_always", "enableSMB_with_COB", "enableSMB_after_carbs", "enableSMB_uam"],
+        ["enableSMB_always", "enableSMB_with_COB", "enableSMB_after_carbs", "enableSMB_with_temptarget"],
         bool,
     ),
 }

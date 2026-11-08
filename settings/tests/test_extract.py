@@ -15,7 +15,7 @@ def test_extract_with_confidences():
 
 def test_extract_plain_values_without_confidence():
     v = extract_settings([b"img"], lambda _i: {"enableSMB_always": "true"})
-    assert v.values["enable_smb"] is True
+    assert v.values["enable_smb_always"] is True
 
 
 def test_low_confidence_read_flags_confirm():

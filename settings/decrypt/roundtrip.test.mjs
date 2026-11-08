@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decryptAapsPrefs, encryptAapsPrefs, pickSettings } from './aaps_prefs.mjs';
+import { decryptAapsPrefs, encryptAapsPrefs } from './aaps_prefs.mjs';
 
 const SAMPLE = { max_iob: '6.0', enableSMB_always: 'true', isf: '50', not_a_setting: 'x' };
 
@@ -23,10 +23,4 @@ test('unencrypted (algorithm none) export is read directly', async () => {
   const file = JSON.stringify({ format: 'aaps', security: { algorithm: 'none' }, content: SAMPLE });
   const out = await decryptAapsPrefs(file, 'ignored');
   assert.deepEqual(out, SAMPLE);
-});
-
-test('pickSettings keeps only the allow-listed subset', () => {
-  const picked = pickSettings(SAMPLE, ['max_iob', 'enableSMB_always', 'isf']);
-  assert.deepEqual(picked, { max_iob: '6.0', enableSMB_always: 'true', isf: '50' });
-  assert.equal(picked.not_a_setting, undefined);
 });

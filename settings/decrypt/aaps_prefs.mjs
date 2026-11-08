@@ -2,8 +2,7 @@
  * Client-side decryptor for AAPS encrypted preferences.
  *
  * Runs in the BROWSER (or Node) via WebCrypto so the master password never leaves the
- * user's device (DESIGN §5.2). The server only ever receives the minimised, validated
- * settings subset — never the file, never the password.
+ * user's device (DESIGN §5.2). There is no server: the decrypted keys stay in the page.
  *
  * Format (from AAPS CryptoUtil / EncryptedPrefsFormat):
  *   container JSON: { format, security: { algorithm, salt(hex) }, content }
@@ -85,16 +84,6 @@ export async function decryptAapsPrefs(fileText, masterPassword) {
     throw new Error('decryption failed — wrong master password or corrupt file');
   }
   return JSON.parse(new TextDecoder().decode(plain));
-}
-
-/** Keep only allow-listed keys, so only the minimised subset is ever sent onward. */
-export function pickSettings(content, allowlist) {
-  const want = new Set(allowlist.map((k) => k.toLowerCase()));
-  const out = {};
-  for (const [k, v] of Object.entries(content || {})) {
-    if (want.has(k.toLowerCase())) out[k] = v;
-  }
-  return out;
 }
 
 /**

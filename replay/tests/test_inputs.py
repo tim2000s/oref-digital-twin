@@ -283,3 +283,37 @@ def test_lasting_change_catches_a_switch_that_went_out_and_came_back():
     assert ch is not None and ch["ts_ms"] == T0 + 4 * 24 * H and ch["basal"] == round(1 / 1.3, 2)
     # a first block after midnight: the last block runs on until it
     assert _daily_mean([ProfileBlock(6 * 3600, 1.0), ProfileBlock(18 * 3600, 2.0)]) == 1.5
+
+
+def test_build_profile_keeps_each_smb_switch_and_turns_uam_on():
+    at = 1_700_000_000_000
+    aaps = {"max_iob": 6.0, "enable_smb": True, "enable_smb_always": False, "enable_smb_with_cob": True}
+    p, _ = build_profile(_snapshot(), aaps, at)
+    assert (p["enableSMB_always"], p["enableSMB_with_COB"], p["enableSMB_after_carbs"],
+            p["enableSMB_with_temptarget"]) == (False, True, True, True)
+    assert p["enableUAM"] is True                  # oref0 reads enableUAM; UAM follows SMB
+    trio = {"max_iob": 6.0, "enable_smb_always": False, "enable_smb_with_cob": True,
+            "enable_smb_uam": False}
+    p, _ = build_profile(_snapshot(), trio, at)    # no master switch: on because one switch is
+    assert (p["enableSMB_always"], p["enableSMB_with_COB"], p["enableUAM"]) == (False, True, False)
+    p, _ = build_profile(_snapshot(), {"max_iob": 6.0, "enable_smb": False,
+                                       "enable_smb_always": True}, at)
+    assert not any(p[k] for k in ("enableSMB_always", "enableSMB_with_COB", "enableUAM"))
+
+
+def test_build_profile_daily_basal_is_the_largest_scheduled_rate():
+    snap = _snapshot()
+    snap = ProfileSnapshot(**{**snap.__dict__, "basal": [ProfileBlock(0, 0.8), ProfileBlock(43200, 1.6)]})
+    p, _ = build_profile(snap, {"max_iob": 6.0}, at_ms=0)     # 00:00 UTC, on the 0.8 block
+    assert (p["current_basal"], p["max_daily_basal"]) == (0.8, 1.6)
+
+
+def test_build_profile_low_tt_default_and_trio_high_bg_switch():
+    p, _ = build_profile(_snapshot(), {"max_iob": 6.0, "enable_smb": True}, 0)
+    assert p["enableSMB_with_temptarget"] is True              # AndroidAPS default
+    p, _ = build_profile(_snapshot(), {"max_iob": 6.0, "enable_smb_always": True}, 0)
+    assert p["enableSMB_with_temptarget"] is False             # Trio default
+    trio = {"max_iob": 6.0, "enable_smb_always": False, "enable_smb_high_bg": True,
+            "enable_smb_high_bg_target": 160}
+    p, _ = build_profile(_snapshot(), trio, 0)
+    assert (p["enableSMB_high_bg"], p["enableSMB_high_bg_target"], p["enableSMB_always"]) == (True, 160, False)

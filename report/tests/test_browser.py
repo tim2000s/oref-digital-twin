@@ -108,16 +108,18 @@ def test_settings_from_raw_aaps_keys():
     raw = {"openapsma_max_iob": "6.0", "enableSMB_always": "true", "maxSMBBasalMinutes": "45"}
     out = settings_from_raw(raw)
     assert out["settings"]["max_iob"] == 6.0
-    assert out["settings"]["enable_smb"] is True
+    assert out["settings"]["enable_smb_always"] is True
     assert out["settings"]["max_smb_minutes"] == 45
 
 
 def test_settings_from_raw_boost_and_smb_keys():
-    # Boost prefs export: boost_max_iob + AAPS SMB minute caps
-    raw = {"boost_max_iob": "11.2", "smbmaxminutes": "60", "uamsmbmaxminutes": "30",
-           "enableSMB_always": "true"}
+    # A Boost export holds Boost's own tier cap and the SMB max IOB; max IOB is the SMB key,
+    # whichever comes last in the file
+    raw = {"openapsmb_max_iob": "11.2", "boost_max_iob": "1.0", "smbmaxminutes": "60",
+           "uamsmbmaxminutes": "30", "enableSMB_always": "true", "openapsma_max_basal": "3.5"}
     out = settings_from_raw(raw)
     assert out["settings"]["max_iob"] == 11.2
+    assert out["settings"]["max_basal"] == 3.5
     assert out["settings"]["max_smb_minutes"] == 60
     assert out["settings"]["max_uam_minutes"] == 30
 
@@ -133,7 +135,7 @@ def test_settings_from_raw_trio_json():
     raw = {"max_iob": 5, "enableSMB_always": True, "maxSMBBasalMinutes": 30, "not_a_key": 1}
     out = settings_from_raw(raw)
     assert out["settings"]["max_iob"] == 5.0
-    assert out["settings"]["enable_smb"] is True
+    assert out["settings"]["enable_smb_always"] is True
     assert any(i["kind"] == "unknown_key" for i in out["issues"])   # unknown key reported
 
 

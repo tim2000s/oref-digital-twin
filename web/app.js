@@ -218,7 +218,7 @@ async function run() {
           + ` ${esc(loaded.collisions.join(', '))}.</span>`;
       }
       for (const i of (parsed.issues || [])) {
-        if (i.kind === 'out_of_range' || i.kind === 'needs_confirm') {
+        if (['out_of_range', 'needs_confirm', 'wrong_type', 'conflict'].includes(i.kind)) {
           settingsNote += ` <span class="warn">${esc(i.message)}</span>`;
         }
       }
