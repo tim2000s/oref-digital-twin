@@ -142,7 +142,7 @@ It is better at ranking settings than at predicting what a change will do. On si
 (validation/SAME_WEEK.md and validation/RESCUE.md) the estimated change in time below 70 came out
 about the right size and ranked the changes well, while the estimated change in time in range was
 about twice too large. Against twelve real setting changes by five AndroidAPS users the estimated
-change in time in range ranked the real one (Spearman 0.72) and the estimated change in lows did
+change in time in range ranked the real one (Spearman 0.74) and the estimated change in lows did
 not. The report gives the simulated figures beside its tables. The tests run stock oref0; if the
 page detects a variant such as Boost or AutoISF, it says that what the variant adds is not
 modelled.
@@ -183,6 +183,7 @@ meals, sensor noise and drift, so the profile was the only difference.
 | Titrated starting profiles | Time below 70 fell by a mean 0.66 points (95% CI 0.30 to 1.09) and time in range by 2.61 (0.85 to 4.40); 11 of 12 met the standard aim, against 5 of 12 before | `validation/TIMSIM_ROUNDTRIP.md` |
 | Eight deliberately mis-set profiles per person, 96 runs, repeated with the tighter aim | The tighter aim was met in 37 of 96, against 35 with the standard aim and 26 with the mis-set profile; no harm criterion fixed before the run was met | `validation/BAD_PROFILES_3.md` |
 | The twin's estimates against the same fortnight replayed with each change, 120 comparisons | Estimates ranked changes well (Spearman correlation 0.86 for time below 70) but were about three times too large | `validation/SAME_WEEK.md` |
+| The settings fixes of 8 November rechecked: same fortnight, real changes and mis-set profiles | With the 10 g rule, time below 70 estimated at about the right size (slope 0.88, 95% CI 0.74 to 1.09); no harm criterion met | `validation/SETTINGS_FIX.md` |
 
 All of this is evidence about TimSim's people under stock oref0, not about real people.
 
