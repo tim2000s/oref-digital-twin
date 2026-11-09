@@ -50,11 +50,6 @@ AIMS = {"standard": (70.0, 2.0), "tighter": (80.0, 2.0)}
 # one subject's time below 54 from 0.01% to 0.81% (validation/BAD_PROFILES.md).
 STRENGTHEN_TBR70_MAX = 2.0
 STRENGTHEN_TBR54_MAX = 0.6
-# Basal and ISF: where the loop makes up a too-weak setting the smallest change meeting the aim is
-# none, so a value meeting it with at least this many points more time in range than that change
-# is taken instead, in either direction (validation/WEAK_PROFILES.md, WEAK_FIX_PLAN.md). A modelling
-# choice, above the estimate's noise.
-TIR_GAIN_MIN = 2.0
 
 SCALES = (0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3)
 TARGET_OFFSETS_MGDL = (-18, -9, 0, 9, 18)      # about -1, -0.5, 0, +0.5, +1 mmol/L
@@ -242,11 +237,8 @@ def _meets(m: dict, goal_tir: float = GOAL_TIR_PCT, goal_tbr: float = GOAL_TBR_P
 
 
 def choose(rows: list[dict], goal_tir: float = GOAL_TIR_PCT,
-           goal_tbr: float = GOAL_TBR_PCT, gain: float | None = None) -> tuple[dict, str]:
+           goal_tbr: float = GOAL_TBR_PCT) -> tuple[dict, str]:
     """Pick a row: meet both goals with the smallest change; else keep lows down first.
-
-    With `gain`, a row meeting both goals with at least that many points more time in range
-    than the smallest such change is taken instead, the most time in range first.
 
     Time below range comes first because a low is the immediate harm: when no value meets
     both goals, the value with time below range under 2% and the most time in range wins,
@@ -260,13 +252,6 @@ def choose(rows: list[dict], goal_tir: float = GOAL_TIR_PCT,
     ok = [r for r in rows if _meets(r["est"], goal_tir, goal_tbr)]
     if ok:
         best = min(ok, key=lambda r: (change(r), -r["est"]["tir"]))
-        if gain is not None:
-            # equal gain and distance either side of current: the one giving less insulin
-            most = max(ok, key=lambda r: (r["est"]["tir"], -round(change(r), 6),
-                                          not r.get("more_insulin")))
-            if most["est"]["tir"] >= best["est"]["tir"] + gain:
-                return most, (f"it meets both goals with {most['est']['tir'] - best['est']['tir']:.1f} "
-                              f"points more time in range than the smallest change that does")
         why = ("already meets both goals" if change(best) == 0 else
                "the smallest change that meets both goals")
         return best, why
@@ -355,8 +340,7 @@ def run_settings_tests(
     has_carbs = any((t.carbs_g or 0) > 0 for t in treatments)
 
     def stage(name: str, lever: str, measured_on: str, values: list, make, neutral,
-              fmt, more_insulin, note: str | None = None, enough_on: str | None = None,
-              gain: float | None = None) -> Any:
+              fmt, more_insulin, note: str | None = None, enough_on: str | None = None) -> Any:
         say(f"Settings tests: {name.lower()} ({len(stages) + 1} of {n_stages}), "
             f"{len(values)} values")
         scenarios = [make(v) for v in values]
@@ -387,7 +371,7 @@ def run_settings_tests(
             entry["why"] = (f"only {gate['hours']} h of {enough_on or measured_on} readings, "
                             f"under the {MIN_SEGMENT_HOURS} h needed to judge it; left unchanged")
         else:
-            best, why = choose(rows, goal_tir, goal_tbr, gain)
+            best, why = choose(rows, goal_tir, goal_tbr)
             entry["chosen"] = best["value"]
             entry["chosen_label"] = best["label"]
             entry["why"] = why
@@ -415,14 +399,14 @@ def run_settings_tests(
 
     chosen["basal_scale"] = stage(
         "Basal", "basal rates", "fasting", list(SCALES),
-        lambda k: scen(basal_scale=k), 1.0, pct, more_insulin=lambda k: k > 1, gain=TIR_GAIN_MIN)
+        lambda k: scen(basal_scale=k), 1.0, pct, more_insulin=lambda k: k > 1)
     # ISF is judged on the whole period. Correction stretches, the readings within 3 h of one
     # above 180, only decide whether there is enough to judge: they are selected for being high,
     # so a time-in-range goal applied to them pushed ISF stronger for nearly everyone.
     chosen["isf_scale"] = stage(
         "ISF", "ISF", "all", list(SCALES),
         lambda k: scen(isf_scale=k), 1.0, pct, more_insulin=lambda k: k < 1,
-        enough_on="correction", gain=TIR_GAIN_MIN)
+        enough_on="correction")
     if has_carbs:
         chosen["cr_scale"] = stage(
             "Carb ratio", "carb ratio", "meal", list(SCALES),
