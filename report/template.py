@@ -195,7 +195,7 @@ def render_settings_tests(result: dict | None, note: str | None = None) -> str:
         for r in st["rows"]:
             mark = " ←" if r["value"] == st["chosen"] else ""
             if r.get("excluded"):
-                mark += " (excluded: more insulin with too many lows)"
+                mark += f" (excluded: {r.get('guard') or 'more insulin with too many lows'})"
             row = (f"| {r['label']}{mark} | {_signed_mgdl(r['mean_shift'])} "
                    f"| {_fmt(r['est']['tir'], '%')} | {_fmt(r['est']['tbr'], '%')} "
                    f"| {r['est']['lows']} |")

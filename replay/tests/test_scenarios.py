@@ -5,6 +5,7 @@ from replay.scenarios import (
     _metrics,
     choose,
     classify,
+    guard_refuses,
     meal_bolus_doses,
     run_settings_tests,
     sample_cycles,
@@ -301,3 +302,68 @@ def test_settings_tests_ask_the_simulator_to_treat_new_lows():
     requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
     run_settings_tests(sim, requests, entries, [], {})
     assert seen and all(p.get("rescue") == RESCUE for p in seen) and RESCUE["mode"] == "new"
+
+
+_NOW = {"before": {"tir": 70.0, "tbr": 1.0}, "after": {"tir": 71.0, "tbr": 1.0}}
+
+
+def test_guard_caps_each_setting_at_twenty_percent_from_the_reference():
+    h = {"cumulative": {"basal": 1.1, "isf": 0.9, "cr": 1.0, "target": -9}}
+    assert guard_refuses("basal", 1.1, h) is not None                 # 1.21
+    assert guard_refuses("basal", 1.2, {"cumulative": {"basal": 1.0}}) is None
+    assert guard_refuses("basal", 1.2, h) is not None                 # 1.32
+    assert guard_refuses("isf", 0.9, h) is None                       # 0.81
+    assert guard_refuses("isf", 0.8, h) is not None                   # 0.72
+    assert guard_refuses("cr", 0.8, h) is None                        # 0.8 is the cap itself
+    assert guard_refuses("cr", 0.7, h) is not None
+    assert guard_refuses("target", -9, h) is not None                 # 18 below
+    assert guard_refuses("target", -9, {"cumulative": {"target": 0}}) is None
+    assert guard_refuses("basal", 1.3, None) is None                  # no history, no guard
+
+
+def test_guard_refuses_a_second_step_unless_the_last_one_showed_its_gain():
+    last = {"cumulative": {"isf": 0.9}, "last": {"isf": 0.9}}
+    assert guard_refuses("isf", 0.9, {**last, **_NOW}) is not None    # +1 point: not shown
+    gained = {**last, "before": {"tir": 70.0, "tbr": 1.0}, "after": {"tir": 72.0, "tbr": 1.0}}
+    assert guard_refuses("isf", 0.9, gained) is None
+    more_lows = {**gained, "after": {"tir": 75.0, "tbr": 1.5}}
+    assert guard_refuses("isf", 0.9, more_lows) is not None
+    assert guard_refuses("isf", 0.9, last) is not None                # no outcomes: not shown
+    # a last change towards less insulin, or one under 5%, does not count
+    assert guard_refuses("isf", 0.9, {"last": {"isf": 1.1}, **_NOW}) is None
+    assert guard_refuses("basal", 1.1, {"last": {"basal": 1.05}, **_NOW}) is None   # not more than 5%
+    assert guard_refuses("isf", 0.9, {"last": {"isf": 0.95}, **_NOW}) is None
+    assert guard_refuses("basal", 1.1, {"last": {"basal": 1.1}, **_NOW}) is not None
+    assert guard_refuses("target", -9, {"last": {"target": -9}, **_NOW}) is not None
+    assert guard_refuses("target", -9, {"last": {"target": -4}, **_NOW}) is None
+
+
+def test_the_guard_reaches_basal_isf_carb_ratio_and_target_and_nothing_else(monkeypatch):
+    import replay.scenarios as S
+    seen = []
+
+    def refuse(key, value, history):
+        seen.append(key)
+        return "refused"
+    monkeypatch.setattr(S, "guard_refuses", refuse)
+    entries = _readings(([120] * 75 + [200] * 25) * 4)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    meals = [Treatment(ts_ms=T0 + 60 * MIN, event_type="Meal Bolus", carbs_g=40)]
+    shift = lambda sc: ((1 - sc["basal_scale"]) * 30 + (sc["isf_scale"] - 1) * 30
+                        + (sc["cr_scale"] - 1) * 30 + sc["target_offset"] * 2.0)
+    settings = {"enable_smb": True, "max_smb_minutes": 30, "max_iob": 5.0}
+    res = run_settings_tests(_shift_sim(shift), requests, entries, meals, settings,
+                             aim="tighter", history={"cumulative": {}})
+    assert set(seen) == {"basal", "isf", "cr", "target"}
+    for st in res["stages"]:
+        stronger = [r for r in st["rows"] if r["more_insulin"]]
+        if st["name"] in ("Basal", "ISF", "Carb ratio", "Target"):
+            assert stronger and all(r["excluded"] and r["guard"] == "refused" for r in stronger)
+        else:
+            assert all(r["guard"] is None for r in st["rows"])
+    # unguarded, the same data is given more insulin somewhere, as the aim asks
+    monkeypatch.undo()
+    free = run_settings_tests(_shift_sim(shift), requests, entries, meals, settings, aim="tighter")
+    towards = lambda c: (c["basal_scale"] > 1 or c["isf_scale"] < 1 or c["cr_scale"] < 1
+                         or c["target_offset"] < 0)
+    assert towards(free["chosen"]) and not towards(res["chosen"])

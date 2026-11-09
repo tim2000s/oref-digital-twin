@@ -50,6 +50,15 @@ AIMS = {"standard": (70.0, 2.0), "tighter": (80.0, 2.0)}
 # one subject's time below 54 from 0.01% to 0.81% (validation/BAD_PROFILES.md).
 STRENGTHEN_TBR70_MAX = 2.0
 STRENGTHEN_TBR54_MAX = 0.6
+# The guard on repeated strengthening (validation/GUARD_PLAN.md). Run every fortnight, the tests
+# kept asking for more insulin because their estimate promises a gain TimSim did not deliver:
+# a setting already strengthened is pushed further only when the readings since show the gain,
+# and never past GUARD_CAP from the reference profile. The thresholds are modelling choices.
+GUARD_CAP = 0.2                 # a fraction for basal, ISF and carb ratio
+GUARD_TARGET_CAP_MGDL = 9
+GUARD_LAST_MIN = 0.05           # a last change smaller than this did not strengthen the setting
+GUARD_LAST_TARGET_MGDL = 5
+GUARD_GAIN_TIR = 2.0
 
 SCALES = (0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3)
 TARGET_OFFSETS_MGDL = (-18, -9, 0, 9, 18)      # about -1, -0.5, 0, +0.5, +1 mmol/L
@@ -232,6 +241,36 @@ def _metrics(ts: list[int], bg: list[float], mask: list[bool], step_min: float) 
             "tbr": round(tbr, 1), "tbr54": round(tbr54, 2), "lows": lows}
 
 
+def guard_refuses(key: str, value: float, history: dict | None) -> str | None:
+    """Why the guard refuses a more-insulin `value` of setting `key`, or None.
+
+    `history` gives, per key ("basal", "isf", "cr", "target"), the current setting against the
+    reference profile ("cumulative": a ratio, or an offset in mg/dL for the target) and against
+    the setting before the last lasting change ("last"), and the observed "before" and "after"
+    {"tir", "tbr"} of that change. Scales are as the tests use them: basal up, ISF and carb ratio
+    down and target down each give more insulin.
+    """
+    if not history:
+        return None
+    if key == "target":
+        cum = history.get("cumulative", {}).get(key, 0) + value
+        if cum < -GUARD_TARGET_CAP_MGDL - 1e-9:
+            return f"more than {GUARD_TARGET_CAP_MGDL} mg/dL below the reference target"
+        last_up = history.get("last", {}).get(key, 0) <= -GUARD_LAST_TARGET_MGDL
+    else:
+        # towards more insulin is up for basal and down for ISF and carb ratio
+        up = (lambda x: x - 1) if key == "basal" else (lambda x: 1 - x)
+        cum = history.get("cumulative", {}).get(key, 1.0) * value
+        if up(cum) > GUARD_CAP + 1e-9:
+            return f"more than {GUARD_CAP:.0%} towards more insulin than the reference profile"
+        last_up = up(history.get("last", {}).get(key, 1.0)) > GUARD_LAST_MIN + 1e-9
+    if last_up:
+        b, a = history.get("before"), history.get("after")
+        if not (b and a and a["tir"] >= b["tir"] + GUARD_GAIN_TIR and a["tbr"] <= b["tbr"]):
+            return "the last change already gave more insulin and the readings since do not show the gain"
+    return None
+
+
 def _meets(m: dict, goal_tir: float = GOAL_TIR_PCT, goal_tbr: float = GOAL_TBR_PCT) -> bool:
     return m["tir"] is not None and m["tir"] > goal_tir and m["tbr"] < goal_tbr
 
@@ -273,11 +312,15 @@ def run_settings_tests(
     settings: dict[str, Any],
     progress: Callable[[str], None] | None = None,
     aim: str = "standard",
+    history: dict | None = None,
 ) -> dict[str, Any]:
     """Run the stages and return the tables and choices for the report.
 
     `aim` is a key of AIMS: the time-in-range and time-below-range goals the stages choose
     against.
+
+    `history`, if given, is the settings' history `guard_refuses` reads; without it no value is
+    refused on history.
 
     `progress`, if given, is called with a short line as each stage starts, so a page can
     say what it is doing.
@@ -340,7 +383,8 @@ def run_settings_tests(
     has_carbs = any((t.carbs_g or 0) > 0 for t in treatments)
 
     def stage(name: str, lever: str, measured_on: str, values: list, make, neutral,
-              fmt, more_insulin, note: str | None = None, enough_on: str | None = None) -> Any:
+              fmt, more_insulin, note: str | None = None, enough_on: str | None = None,
+              guard: str | None = None) -> Any:
         say(f"Settings tests: {name.lower()} ({len(stages) + 1} of {n_stages}), "
             f"{len(values)} values")
         scenarios = [make(v) for v in values]
@@ -349,6 +393,7 @@ def run_settings_tests(
         for v, sc, res in zip(values, scenarios, results):
             est_all = _metrics(ts, res["shifted"], masks["all"], step_min)
             stronger = bool(more_insulin(v))
+            refused = guard_refuses(guard, v, history) if stronger and guard else None
             rows.append({
                 "value": v, "label": fmt(v), "distance": (v - neutral),
                 "du_per_day": res["du_per_day"], "mean_shift": res["mean_shift"],
@@ -356,8 +401,9 @@ def run_settings_tests(
                 "est": _metrics(ts, res["shifted"], masks[measured_on], step_min),
                 "est_all": est_all,
                 "more_insulin": stronger,
-                "excluded": stronger and not (est_all["tbr"] < STRENGTHEN_TBR70_MAX
-                                              and est_all["tbr54"] < STRENGTHEN_TBR54_MAX),
+                "excluded": stronger and (refused is not None or not (
+                    est_all["tbr"] < STRENGTHEN_TBR70_MAX and est_all["tbr54"] < STRENGTHEN_TBR54_MAX)),
+                "guard": refused,
             })
         seg = observed[measured_on]
         gate = observed[enough_on or measured_on]
@@ -399,18 +445,18 @@ def run_settings_tests(
 
     chosen["basal_scale"] = stage(
         "Basal", "basal rates", "fasting", list(SCALES),
-        lambda k: scen(basal_scale=k), 1.0, pct, more_insulin=lambda k: k > 1)
+        lambda k: scen(basal_scale=k), 1.0, pct, more_insulin=lambda k: k > 1, guard="basal")
     # ISF is judged on the whole period. Correction stretches, the readings within 3 h of one
     # above 180, only decide whether there is enough to judge: they are selected for being high,
     # so a time-in-range goal applied to them pushed ISF stronger for nearly everyone.
     chosen["isf_scale"] = stage(
         "ISF", "ISF", "all", list(SCALES),
         lambda k: scen(isf_scale=k), 1.0, pct, more_insulin=lambda k: k < 1,
-        enough_on="correction")
+        enough_on="correction", guard="isf")
     if has_carbs:
         chosen["cr_scale"] = stage(
             "Carb ratio", "carb ratio", "meal", list(SCALES),
-            lambda k: scen(cr_scale=k), 1.0, pct, more_insulin=lambda k: k < 1,
+            lambda k: scen(cr_scale=k), 1.0, pct, more_insulin=lambda k: k < 1, guard="cr",
             note="Logged meal boluses are scaled with the ratio, as the bolus wizard would.")
     else:
         stages.append({"name": "Carb ratio", "lever": "carb ratio", "measured_on": "meal",
@@ -438,7 +484,7 @@ def run_settings_tests(
 
     chosen["target_offset"] = stage(
         "Target", "target", "all", offsets, lambda o: scen(target_offset=o), 0, fmt_target,
-        more_insulin=lambda o: o < 0)
+        more_insulin=lambda o: o < 0, guard="target")
 
     smb_on = smb_enabled(settings)
     current_smb = settings.get("max_smb_minutes", 30)

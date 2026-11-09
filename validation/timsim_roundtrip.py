@@ -246,8 +246,25 @@ def titrate_one(job):
         return {"name": name, "found": False, "fatal": True, "error": str(exc)[:300], "trace": []}
 
 
+def _levers(c):
+    return {"basal": c["basal_scale"], "isf": c["isf_scale"], "cr": c["cr_scale"],
+            "target": c["target_offset"]}
+
+
+def review_history(chosen, reviews, now):
+    """The settings' history GUARD_PLAN.md gives a review: the mis-set profile is the reference
+    (`chosen` is the reviews so far as one change from it), the previous review's choices the
+    last change, and the learning fortnights before and after that change its readings."""
+    history = {"cumulative": _levers(chosen)}
+    if reviews:
+        tt = lambda o: {"tir": o["cgm"]["tir"], "tbr": o["cgm"]["tbr70"]}
+        history.update(last=_levers(reviews[-1]["chosen"]), before=tt(reviews[-1]["learn"]),
+                       after=tt(now))
+    return history
+
+
 def roundtrip_one(job):
-    name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse, n_reviews = job
+    name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse, n_reviews, guard = job
     if isinstance(eval_seeds, int):
         eval_seeds = [eval_seeds]
     _paths()
@@ -275,12 +292,15 @@ def roundtrip_one(job):
         rep = build_report(raw, oref_runner=oracle._runner,
                            settings=twin_settings(p1) if smb_run is None else
                            twin_settings(p1, smb_minutes=smb_run, uam_minutes=smb_run))
-        tests = settings_tests(sim_runner=oracle.simulate, aim=aim)
+        history = review_history(chosen, reviews, outcomes(lr)) if guard else None
+        tests = settings_tests(sim_runner=oracle.simulate, aim=aim, history=history)
         oracle._simulator.close()
         if "skipped" in tests:
             return {"name": name, "error": tests["skipped"]}
         c = tests["result"]["chosen"]
-        reviews.append({"chosen": c, "twin_estimate": tests["result"]["final"], "learn": outcomes(lr)})
+        reviews.append({"chosen": c, "twin_estimate": tests["result"]["final"], "learn": outcomes(lr),
+                        "guard_refused": {st["name"]: [r["label"] for r in st["rows"] if r.get("guard")]
+                                          for st in tests["result"]["stages"]}})
         p1 = apply_choices(p1, c)
         smb1 = c.get("smb_minutes", smb1)
         # the reviews' choices as one change from the mis-set profile
@@ -395,6 +415,11 @@ def main():
     ap.add_argument("--reviews", type=int, default=1,
                     help="reviews in sequence before evaluation, each learning on the next seed "
                          "with the profile the previous one left")
+    ap.add_argument("--guard", action="store_true",
+                    help="give each review the settings' history, so the guard of GUARD_PLAN.md acts")
+    ap.add_argument("--cohort", default="adult", choices=("adult", "hovorka"),
+                    help="TimSim's S2008 adults or its second body; hovorka needs --store, "
+                         "TimSim's own titrated_settings_hovorka.json")
     ap.add_argument("--reuse-arms", dest="reuse_arms",
                     help="a bad_profiles_<tag>.json on the same seeds whose mis-set and null arms "
                          "are reused instead of rerun")
@@ -410,15 +435,20 @@ def main():
 
     os.makedirs(RESULTS, exist_ok=True)
     store = a.store or os.path.join(RESULTS, f"titrated_{a.tag}.json")
-    subjects = list(names("adult"))[: a.subjects]
+    subjects = list(names("hovorka#" if a.cohort == "hovorka" else "adult"))
+    if a.cohort == "hovorka" and not a.store:
+        raise SystemExit("--cohort hovorka needs --store (TimSim's titrated_settings_hovorka.json)")
     t0 = time.time()
     if not os.path.exists(store):
         with ProcessPoolExecutor(a.workers) as ex:
-            tit = list(ex.map(titrate_one, [(n, a.titration_days, seeds.TITRATION) for n in subjects]))
+            tit = list(ex.map(titrate_one, [(n, a.titration_days, seeds.TITRATION)
+                                            for n in subjects[: a.subjects]]))
         titrate.save(tit, path=store, meta={"by": "oref-digital-twin validation/timsim_roundtrip.py"})
         print(f"titrated {sum(r.get('found', False) for r in tit)}/{len(tit)} in {time.time()-t0:.0f}s", flush=True)
-    ok = [n for n, r in json.load(open(store))["subjects"].items() if r.get("found")]
-    ok = [n for n in ok if n in subjects]
+    # the first subjects the titration found settings for: every S2008 adult tried so far,
+    # 68 of 100 on the Hovorka body
+    found = {n for n, r in json.load(open(store))["subjects"].items() if r.get("found")}
+    ok = [n for n in subjects if n in found][: a.subjects]
 
     eval_seeds = ([int(s) for s in a.eval_seeds.split(",")] if a.eval_seeds else [seeds.BENCH])
     reuse = {}
@@ -431,7 +461,7 @@ def main():
                 "_from": os.path.basename(a.reuse_arms), "per_seed": r["per_seed"],
                 "eval_start": r["eval_start"], "eval_null": r.get("eval_null")}
     jobs = [(n, store, eval_seeds, c, a.learn_days, a.eval_days, a.null, a.aim,
-             reuse.get((n, c)), a.reviews) for c in conditions for n in ok]
+             reuse.get((n, c)), a.reviews, a.guard) for c in conditions for n in ok]
     with ProcessPoolExecutor(a.workers) as ex:
         rows = list(ex.map(roundtrip_one, jobs))
     good = [r for r in rows if "error" not in r]
@@ -446,7 +476,8 @@ def main():
                                   "eval_days": a.eval_days, "eval_seeds": eval_seeds,
                                   "eval_seed": eval_seeds[0], "null_arm": a.null,
                                   "aim": a.aim, "reused_arms_from": a.reuse_arms,
-                                  "reviews": a.reviews},
+                                  "reviews": a.reviews, "guard": a.guard,
+                                  "cohort": a.cohort},
                        "failed": [r for r in rows if "error" in r], "rows": good,
                        "seconds": round(time.time() - t0, 1)}, fh, indent=1, default=float)
         print(f"wrote {out} ({len(good)} rows, {time.time()-t0:.0f}s)", flush=True)
