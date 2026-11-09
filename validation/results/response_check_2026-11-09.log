@@ -1,0 +1,23 @@
+36 cases in 914s
+page arm reproduces stored estimates: 72 of 72
+
+page
+  time in range: estimated +3.75, realised +0.95; Spearman -0.02 [-0.35, 0.33]; same sign 26 of 36
+  below 70: estimated +0.65, realised +0.70; Spearman 0.12 [-0.22, 0.44]; same sign 33 of 36
+  below 54: estimated +0.08, realised +0.20; Spearman 0.10 [-0.22, 0.42]; same sign 27 of 36
+  mean glucose: estimated -10.30, realised -5.02; Spearman 0.41 [0.13, 0.63]; same sign 36 of 36
+  insulin: estimated +1.19, realised +3.20 U/day
+
+decay
+  time in range: estimated +2.95, realised +0.95; Spearman 0.17 [-0.17, 0.49]; same sign 26 of 36
+  below 70: estimated +0.10, realised +0.70; Spearman 0.06 [-0.25, 0.38]; same sign 24 of 36
+  below 54: estimated +0.02, realised +0.20; Spearman 0.09 [-0.26, 0.41]; same sign 22 of 36
+  mean glucose: estimated -6.43, realised -5.02; Spearman 0.32 [0.04, 0.56]; same sign 36 of 36
+  insulin: estimated +3.69, realised +3.20 U/day
+
+decay_no_rescue
+  time in range: estimated +2.40, realised +0.95; Spearman 0.12 [-0.21, 0.45]; same sign 26 of 36
+  below 70: estimated +0.90, realised +0.70; Spearman 0.11 [-0.24, 0.43]; same sign 30 of 36
+  below 54: estimated +0.23, realised +0.20; Spearman -0.41 [-0.68, -0.04]; same sign 28 of 36
+  mean glucose: estimated -7.10, realised -5.02; Spearman 0.33 [0.04, 0.58]; same sign 36 of 36
+  insulin: estimated +3.54, realised +3.20 U/day
