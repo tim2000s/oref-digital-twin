@@ -247,7 +247,7 @@ def titrate_one(job):
 
 
 def roundtrip_one(job):
-    name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse = job
+    name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse, n_reviews = job
     if isinstance(eval_seeds, int):
         eval_seeds = [eval_seeds]
     _paths()
@@ -262,17 +262,36 @@ def roundtrip_one(job):
     titrated = titrate._profile(name, rec["scale"],
                                 1.0 if rec.get("basal_scale") is None else rec["basal_scale"])
     p0 = mis_set(titrated, condition)
-    learn, sugg = run_timsim(name, p0, learn_days, LEARN_SEED)
-    raw = to_nightscout(learn, sugg, p0)
-    oracle = OrefOracle()
-    rep = build_report(raw, oref_runner=oracle._runner, settings=twin_settings(p0))
-    tests = settings_tests(sim_runner=oracle.simulate, aim=aim)
-    oracle._simulator.close()
-    if "skipped" in tests:
-        return {"name": name, "error": tests["skipped"]}
-    chosen = tests["result"]["chosen"]
-    p1 = apply_choices(p0, chosen)
-    smb1 = chosen.get("smb_minutes")
+    # Each review learns on the next seed with the profile the previous one left, as a person
+    # rerunning the page each fortnight would; the SMB limit it chose carries forward too.
+    p1, smb1, reviews, learn = p0, None, [], None
+    chosen = {"basal_scale": 1.0, "isf_scale": 1.0, "cr_scale": 1.0, "target_offset": 0}
+    for r in range(n_reviews):
+        smb_run = None if smb1 in (None, 75) else smb1
+        lr, sugg = run_timsim(name, p1, learn_days, LEARN_SEED + r, smb_minutes=smb_run)
+        learn = lr if learn is None else learn
+        raw = to_nightscout(lr, sugg, p1)
+        oracle = OrefOracle()
+        rep = build_report(raw, oref_runner=oracle._runner,
+                           settings=twin_settings(p1) if smb_run is None else
+                           twin_settings(p1, smb_minutes=smb_run, uam_minutes=smb_run))
+        tests = settings_tests(sim_runner=oracle.simulate, aim=aim)
+        oracle._simulator.close()
+        if "skipped" in tests:
+            return {"name": name, "error": tests["skipped"]}
+        c = tests["result"]["chosen"]
+        reviews.append({"chosen": c, "twin_estimate": tests["result"]["final"], "learn": outcomes(lr)})
+        p1 = apply_choices(p1, c)
+        smb1 = c.get("smb_minutes", smb1)
+        # the reviews' choices as one change from the mis-set profile
+        chosen = {"basal_scale": chosen["basal_scale"] * c["basal_scale"],
+                  "isf_scale": chosen["isf_scale"] * c["isf_scale"],
+                  "cr_scale": chosen["cr_scale"] * c["cr_scale"],
+                  "target_offset": chosen["target_offset"] + c["target_offset"],
+                  **{k: v for k, v in chosen.items() if k in ("smb_minutes", "max_iob")},
+                  **{k: c[k] for k in ("smb_minutes", "max_iob") if k in c}}
+    if n_reviews == 1:
+        chosen = reviews[0]["chosen"]
     # Each arm on every evaluation seed, pooled per subject. The null arm is the starting
     # profile with max IOB 0.03 U higher: a change with no clinical meaning, whose effect on a
     # month measures the noise a per-subject harm threshold has to sit above.
@@ -320,6 +339,7 @@ def roundtrip_one(job):
                      "target": [p0.target_lo, p0.target_hi], "max_iob": p0.limits.max_iob_u},
         "chosen": chosen,
         "twin_estimate": tests["result"]["final"],
+        **({"reviews": reviews} if n_reviews > 1 else {}),
         "twin_observed": tests["result"]["observed"]["all"],
         "learn": outcomes(learn),
         "eval_seeds": list(eval_seeds),
@@ -372,6 +392,9 @@ def main():
     ap.add_argument("--null", action="store_true",
                     help="add the null arm: the starting profile with max IOB 0.03 U higher")
     ap.add_argument("--aim", default="standard", help="the twin's aim, a key of replay.scenarios.AIMS")
+    ap.add_argument("--reviews", type=int, default=1,
+                    help="reviews in sequence before evaluation, each learning on the next seed "
+                         "with the profile the previous one left")
     ap.add_argument("--reuse-arms", dest="reuse_arms",
                     help="a bad_profiles_<tag>.json on the same seeds whose mis-set and null arms "
                          "are reused instead of rerun")
@@ -408,7 +431,7 @@ def main():
                 "_from": os.path.basename(a.reuse_arms), "per_seed": r["per_seed"],
                 "eval_start": r["eval_start"], "eval_null": r.get("eval_null")}
     jobs = [(n, store, eval_seeds, c, a.learn_days, a.eval_days, a.null, a.aim,
-             reuse.get((n, c))) for c in conditions for n in ok]
+             reuse.get((n, c)), a.reviews) for c in conditions for n in ok]
     with ProcessPoolExecutor(a.workers) as ex:
         rows = list(ex.map(roundtrip_one, jobs))
     good = [r for r in rows if "error" not in r]
@@ -422,7 +445,8 @@ def main():
                                   "learn_days": a.learn_days, "learn_seed": LEARN_SEED,
                                   "eval_days": a.eval_days, "eval_seeds": eval_seeds,
                                   "eval_seed": eval_seeds[0], "null_arm": a.null,
-                                  "aim": a.aim, "reused_arms_from": a.reuse_arms},
+                                  "aim": a.aim, "reused_arms_from": a.reuse_arms,
+                                  "reviews": a.reviews},
                        "failed": [r for r in rows if "error" in r], "rows": good,
                        "seconds": round(time.time() - t0, 1)}, fh, indent=1, default=float)
         print(f"wrote {out} ({len(good)} rows, {time.time()-t0:.0f}s)", flush=True)
