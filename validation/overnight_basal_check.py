@@ -126,9 +126,6 @@ def main():
     print(path, f"{time.time() - t0:.0f} s")
 
 
-if __name__ == "__main__":
-    main()
-
 
 def relative(path):
     """The amended judgement of BASAL_RULE_PLAN.md: comparisons within a subject on one seed."""
@@ -155,3 +152,7 @@ def relative(path):
            "verdict": {"ordered_10_of_12": len(ordered) >= 10, "isf_cr_under_half_basal": other < basal / 2}}
     print(json.dumps(out, indent=1))
     return out
+
+
+if __name__ == "__main__":
+    main()

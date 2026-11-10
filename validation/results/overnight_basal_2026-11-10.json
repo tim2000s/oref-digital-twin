@@ -1,0 +1,8636 @@
+{
+ "store": "validation/results/titrated_2026-10-09.json",
+ "seed": 202,
+ "days": 14,
+ "seconds": 2773.8,
+ "rows": [
+  {
+   "name": "adult#001",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 131.79277371770684,
+     "mean_iob": 2.567437471606567,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 95.4854151936469,
+     "mean_iob": 0.2753567280518986,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 71,
+     "median_cgm": 112.78782710359387,
+     "mean_iob": 1.4463069369337018,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 113.07888095510127,
+     "mean_iob": 1.72891292943711,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 104.12816187753126,
+     "mean_iob": 1.3242347698065484,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 101.7645786328649,
+     "mean_iob": 0.636102836151568,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 93.15528419110196,
+     "mean_iob": 0.2838876474127012,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 138.35964721537653,
+     "mean_iob": 3.038482637456075,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 130.23641536816987,
+     "mean_iob": 2.0710363900823543,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 110.08111304415934,
+     "mean_iob": 1.5695976935684406,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 134.13348802541427,
+     "mean_iob": 2.411065535033027,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 139.92331326640362,
+     "mean_iob": 2.9081505733083803,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 118.98583141655219,
+     "mean_iob": 2.0388743555132844,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 117.98805805826242,
+     "mean_iob": 1.7259242927042462,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 60,
+     "median_cgm": 116.60826489704087,
+     "mean_iob": 1.8161140950436347,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 71,
+     "median_cgm": 125.33192541463822,
+     "mean_iob": 1.8912738296420553,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 135.51916463307475,
+     "mean_iob": 2.5418486074443063,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 63,
+     "median_cgm": 107.27592750142453,
+     "mean_iob": 1.4745825989351413,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 117.43052443515077,
+     "mean_iob": 1.2201838186597893,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 119.42518935629084,
+     "mean_iob": 1.8418985722194219,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 127.24293621696181,
+     "mean_iob": 1.6433343062218584,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 116.99738857243071,
+     "mean_iob": 1.3454889441975004,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 137.29696032005415,
+     "mean_iob": 2.4433725163752906,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 139.56426586493802,
+     "mean_iob": 2.2027887560044235,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 101.60006455438958,
+     "mean_iob": 0.5869057790125619,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 143.72669400853152,
+     "mean_iob": 2.7249899618190074,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 145.65179010315273,
+     "mean_iob": 2.9992738386035396,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 64,
+     "median_cgm": 165.15242624098363,
+     "mean_iob": 4.523736574434015,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 54,
+     "median_cgm": 125.48840041240467,
+     "mean_iob": 1.7982675705103444,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 109.76234911129941,
+     "mean_iob": 0.7050795927868799,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 164.17895248521734,
+     "mean_iob": 3.0939544353486563,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 127.07085126084034,
+     "mean_iob": 1.9596069121768918,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 139.46170236350267,
+     "mean_iob": 2.7548126955214403,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 122.41966383655522,
+     "mean_iob": 2.2675326906948268,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 153.5491933980012,
+     "mean_iob": 4.158872393753783,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 121.95806342675044,
+     "mean_iob": 2.209440751065956,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 64,
+     "median_cgm": 112.30486150834969,
+     "mean_iob": 1.9672575932173473,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 135.36805637472554,
+     "mean_iob": 2.7206772451872814,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 70,
+     "median_cgm": 126.68263604054547,
+     "mean_iob": 2.6573443859637647,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 98.47323380418753,
+     "mean_iob": 1.2728858502270206,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 118.93475685984836,
+     "mean_iob": 2.7772643445376253,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 91.20395126211466,
+     "mean_iob": 1.508986577202646,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 108.42459343529582,
+     "mean_iob": 2.7064230098079296,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 179.691034174812,
+     "mean_iob": 6.817618847373965,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 136.03799429544995,
+     "mean_iob": 4.211539098380393,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 95.50469755277311,
+     "mean_iob": 1.3365547579935897,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 116.86652661465268,
+     "mean_iob": 3.110270380576392,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 116.52087189879566,
+     "mean_iob": 2.950158970183016,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 227.19670344269701,
+     "mean_iob": 5.525539181424221,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 115.01693558200438,
+     "mean_iob": 2.241771316478957,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 51,
+     "median_cgm": 148.82344431253458,
+     "mean_iob": 4.69989880424843,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 103.8291165530971,
+     "mean_iob": 1.708842702199809,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 113.29994062171433,
+     "mean_iob": 1.0650681489463245,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 158.66555349445383,
+     "mean_iob": 3.540895420924844,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 125.41324083283854,
+     "mean_iob": 1.6494539350135895,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 59,
+     "median_cgm": 132.35562608804236,
+     "mean_iob": 1.5928773966064036,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 195.3068861890809,
+     "mean_iob": 5.820813295544466,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 69,
+     "median_cgm": 98.2826340328099,
+     "mean_iob": 0.6442034688434741,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 119.55141521279964,
+     "mean_iob": 1.6089743649856745,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 50,
+     "median_cgm": 108.17227584124161,
+     "mean_iob": 0.6055476534712771,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 116.9448153308845,
+     "mean_iob": 3.8444009345998325,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 61,
+     "median_cgm": 95.08782537116055,
+     "mean_iob": 1.9980867384209902,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 104.78917805456382,
+     "mean_iob": 0.9938954832248675,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 134.95323368940495,
+     "mean_iob": 2.118898464086437,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 124.50597583783367,
+     "mean_iob": 1.0321739564125432,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 150.35289427361388,
+     "mean_iob": 2.4102597690155423,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 146.19393195896504,
+     "mean_iob": 1.8156055218062543,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 135.84190727827183,
+     "mean_iob": 1.9365516499920001,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 166.10103664180053,
+     "mean_iob": 2.9828313813057,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 130.1249530593023,
+     "mean_iob": 1.3849767764717609,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 147.5786475704602,
+     "mean_iob": 2.301815179848535,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 59,
+     "median_cgm": 200.68979560627093,
+     "mean_iob": 4.67269531721629,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 121.93902691978238,
+     "mean_iob": 1.090266179538046,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 134.73868006535952,
+     "mean_iob": 1.8108862771440348,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 121.45890474164827,
+     "mean_iob": 1.6089439034235256,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 118.22902380287448,
+     "mean_iob": 1.791377907402203,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 109.28155582283414,
+     "mean_iob": 1.0664215248259992,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 128.6721748043808,
+     "mean_iob": 2.458271395990522,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 164.67639229311615,
+     "mean_iob": 3.0201336186086665,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 109.06444127650707,
+     "mean_iob": 1.4308220312108884,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 92.6112897632234,
+     "mean_iob": 0.05870873256630391,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 41,
+     "median_cgm": 113.84301473937204,
+     "mean_iob": 1.4167042628258757,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 88.86364097296337,
+     "mean_iob": 0.055687800802022916,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 120.40692221082324,
+     "mean_iob": 1.3471418551406922,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 111.48555964275967,
+     "mean_iob": 0.7847506597376791,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 70,
+     "median_cgm": 145.69430884971416,
+     "mean_iob": 2.6963636425209954,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 136.50254813659635,
+     "mean_iob": 2.1913683171317686,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 131.27989505280868,
+     "mean_iob": 1.6678224253002563,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 123.88209238631738,
+     "mean_iob": 2.5944173258419037,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 134.24853844618494,
+     "mean_iob": 2.2809324838630873,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 53,
+     "median_cgm": 112.2782366981305,
+     "mean_iob": 1.4305614357033956,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 143.88206221500093,
+     "mean_iob": 2.275328436504983,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 108.31848406163363,
+     "mean_iob": 1.26879253382956,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 39,
+     "median_cgm": 74.74877033323605,
+     "mean_iob": 0.6263782660659387,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 111.77203757846569,
+     "mean_iob": 0.9542492133601436,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 58,
+     "median_cgm": 205.7562970620425,
+     "mean_iob": 6.567677406783632,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 54,
+     "median_cgm": 172.0339245205206,
+     "mean_iob": 5.015775261559198,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 156.64143342563017,
+     "mean_iob": 3.2177661920120633,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 64,
+     "median_cgm": 91.80843098842165,
+     "mean_iob": 0.6514698865832262,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 178.40990276618632,
+     "mean_iob": 5.712348596350716,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 71,
+     "median_cgm": 98.86148558593452,
+     "mean_iob": 0.363042455446898,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 45,
+     "median_cgm": 131.39022961873474,
+     "mean_iob": 2.879572907673761,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 82.2324004244022,
+     "mean_iob": -0.09609697919778215,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 96.51899547241493,
+     "mean_iob": 0.5024419422149581,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 114.10383721484064,
+     "mean_iob": 1.2051915365157262,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 109.0772888118811,
+     "mean_iob": 1.020219826135004,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 50,
+     "median_cgm": 132.3199558531801,
+     "mean_iob": 1.3071724485339136,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 63,
+     "median_cgm": 138.8959766475057,
+     "mean_iob": 2.1137907907199733,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 237.50988515914446,
+     "mean_iob": 4.961637768963694,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 121.42049393273939,
+     "mean_iob": 1.0305695675002493,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 100.71647036382491,
+     "mean_iob": 0.7521880909777816,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 65,
+     "median_cgm": 94.1425245467697,
+     "mean_iob": 1.234121281130734,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 97.55582038360716,
+     "mean_iob": 0.28709767092471644,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 126.89675611532391,
+     "mean_iob": 0.702753150947982,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "titrated",
+   "nights": [
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 119.60634192763932,
+     "mean_iob": 1.3524460732527896,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 163.30585200971095,
+     "mean_iob": 3.6331610366359874,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 37,
+     "median_cgm": 87.03552294801437,
+     "mean_iob": 0.7547803382756441,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 58,
+     "median_cgm": 134.77292544991928,
+     "mean_iob": 2.1659426013697938,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 135.89679432609702,
+     "mean_iob": 2.5931993798555664,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 125.28693297183898,
+     "mean_iob": 1.700823225796057,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 111.10308146865074,
+     "mean_iob": 0.920086126235117,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 95.32544439668655,
+     "mean_iob": 0.12777746529732262,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 64,
+     "median_cgm": 128.83838540912768,
+     "mean_iob": 2.545099188654188,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 107.68639309061751,
+     "mean_iob": 0.49041197257527913,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 120.16354699085396,
+     "mean_iob": 3.1865761604250027,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 93.48062714305196,
+     "mean_iob": 0.6713104247254956,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 147.8260652238946,
+     "mean_iob": 4.51457209985151,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 97.16566657377719,
+     "mean_iob": 1.0798414591801304,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 47,
+     "median_cgm": 108.60128123417564,
+     "mean_iob": 1.4306939902322513,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 92.03991494253225,
+     "mean_iob": 0.5405988121335658,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 51,
+     "median_cgm": 75.14750330857532,
+     "mean_iob": -0.46871585084439943,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 94.31690320481997,
+     "mean_iob": 0.927958281197323,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 124.33122821400791,
+     "mean_iob": 2.5568170751058203,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 103.35411340347156,
+     "mean_iob": 1.6092312292458166,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 71,
+     "median_cgm": 139.0826558238372,
+     "mean_iob": 4.749694104185285,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 99.09834289026331,
+     "mean_iob": 1.718245237896681,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 126.58021466863326,
+     "mean_iob": 2.910641718733844,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 43,
+     "median_cgm": 110.96955587972987,
+     "mean_iob": 1.6560792294888298,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 120.10130743818172,
+     "mean_iob": 2.494811553384419,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 96.66462073115456,
+     "mean_iob": 2.5807648883886856,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 63,
+     "median_cgm": 117.79205546769747,
+     "mean_iob": 2.765907204342204,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 106.00792319648454,
+     "mean_iob": 2.153083292378975,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 121.48062446197987,
+     "mean_iob": 1.8704320382969732,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 125.61088788759722,
+     "mean_iob": 3.3412307254789733,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 117.49076319364526,
+     "mean_iob": 1.9330252787369908,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 118.16600312460938,
+     "mean_iob": 2.463666463895407,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 120.40639164944375,
+     "mean_iob": 2.4446555648976327,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 136.86073194192977,
+     "mean_iob": 3.1494093616039476,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 147.2325752523612,
+     "mean_iob": 4.000288026524536,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 43,
+     "median_cgm": 126.1681862512668,
+     "mean_iob": 2.3045496963935057,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 130.1857181003123,
+     "mean_iob": 2.869016226617513,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 62,
+     "median_cgm": 166.9721413019451,
+     "mean_iob": 4.5458697698304125,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 115.44297889572512,
+     "mean_iob": 1.9498468217988336,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 134.48881721088745,
+     "mean_iob": 3.4881140205323775,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 117.66399332923693,
+     "mean_iob": 2.504617749052219,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 147.55360784714222,
+     "mean_iob": 5.158802831395091,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 116.47806553746639,
+     "mean_iob": 2.5895485529077624,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 64,
+     "median_cgm": 109.4702091470684,
+     "mean_iob": 1.9931688315888696,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 49,
+     "median_cgm": 149.6088416940088,
+     "mean_iob": 4.829158004371155,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 124.41868947154808,
+     "mean_iob": 3.435622484881353,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 70,
+     "median_cgm": 97.94114503494836,
+     "mean_iob": 1.475304529559843,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 98.64756108239398,
+     "mean_iob": 1.0587560948366832,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 113.08746375619349,
+     "mean_iob": 3.0315853775773607,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 91.69265767702666,
+     "mean_iob": 1.793335065774323,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 99.512819978925,
+     "mean_iob": 2.478717929668015,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 178.48129537504818,
+     "mean_iob": 6.872718676361364,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 132.32284601308436,
+     "mean_iob": 4.474678961081343,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 93.51781831488906,
+     "mean_iob": 1.5114850419094235,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 120.08282300245767,
+     "mean_iob": 4.183558399024761,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 52,
+     "median_cgm": 83.3846948988515,
+     "mean_iob": 0.4556660664637976,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 59,
+     "median_cgm": 106.80477456299052,
+     "mean_iob": 2.246852248216066,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 98.84810390954675,
+     "mean_iob": 1.9876276772375627,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 41,
+     "median_cgm": 143.49109594140128,
+     "mean_iob": 6.266879010522995,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 127.97811616105338,
+     "mean_iob": 3.3593514870477583,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 98.79343577365418,
+     "mean_iob": 1.51495509613945,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 108.92153606137674,
+     "mean_iob": 1.1087035052456164,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 148.51342427151405,
+     "mean_iob": 4.535354269847751,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 130.55018884675124,
+     "mean_iob": 2.705246364524282,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 59,
+     "median_cgm": 133.06740478173228,
+     "mean_iob": 2.448493208481136,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 177.89750968658313,
+     "mean_iob": 6.5923176587460475,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 69,
+     "median_cgm": 107.51122762277402,
+     "mean_iob": 1.4827668044704676,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 64,
+     "median_cgm": 125.27456691186595,
+     "mean_iob": 2.2528783820823683,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 50,
+     "median_cgm": 119.93670741016778,
+     "mean_iob": 1.7506116368344078,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 61,
+     "median_cgm": 105.69060625150519,
+     "mean_iob": 1.5766423682997657,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 113.69473025562807,
+     "mean_iob": 1.7950332650137417,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 101.77234094866486,
+     "mean_iob": 0.6459144960649401,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 118.2228427861129,
+     "mean_iob": 1.2414310607800632,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 125.10961556951791,
+     "mean_iob": 1.869490755154876,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 145.11819054544443,
+     "mean_iob": 3.2493618920831326,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 128.6223359497697,
+     "mean_iob": 2.1113450957365725,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 67,
+     "median_cgm": 146.99676392269333,
+     "mean_iob": 3.404442297396967,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 110.77821246086415,
+     "mean_iob": 1.1054927220158126,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 159.2749060684137,
+     "mean_iob": 3.8445038021376328,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 126.28155437008726,
+     "mean_iob": 1.581805066244,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 135.18338923838417,
+     "mean_iob": 2.5497602679279407,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 56,
+     "median_cgm": 188.86612581688817,
+     "mean_iob": 5.388539087190244,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 114.06951644287716,
+     "mean_iob": 1.19814783988841,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 114.38107332446788,
+     "mean_iob": 1.3235811564001927,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 110.9246893833308,
+     "mean_iob": 1.8501762000984316,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 116.33476467936214,
+     "mean_iob": 2.587670810696286,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 107.89501520242662,
+     "mean_iob": 1.7048856740986436,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 70,
+     "median_cgm": 114.29138387623003,
+     "mean_iob": 1.5592643651201867,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 113.68948587239944,
+     "mean_iob": 2.6742462333770285,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 116.2827297944351,
+     "mean_iob": 1.393071328533708,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 120.12298238008283,
+     "mean_iob": 2.1765535530469857,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 90.22712664682456,
+     "mean_iob": 0.6480958631634912,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 41,
+     "median_cgm": 84.66793465011911,
+     "mean_iob": -0.43355969758784024,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 127.80646879200987,
+     "mean_iob": 2.4235140870143885,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 45,
+     "median_cgm": 92.27988733381493,
+     "mean_iob": 0.914688075766252,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 138.68182078498108,
+     "mean_iob": 2.7723089001787398,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 113.62140348935074,
+     "mean_iob": 2.576748666626628,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 111.84056034989662,
+     "mean_iob": 1.3092512097649265,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 102.25842485810374,
+     "mean_iob": 0.6451387878004524,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 68,
+     "median_cgm": 107.88395337657028,
+     "mean_iob": 1.5531041772209615,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 70,
+     "median_cgm": 144.20628054722232,
+     "mean_iob": 4.174613846528054,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 147.50644208589574,
+     "mean_iob": 3.8763228161874945,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 36,
+     "median_cgm": 157.59204568779978,
+     "mean_iob": 4.37361987476837,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 55,
+     "median_cgm": 119.29951997920753,
+     "mean_iob": 1.331912881703808,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 190.7738007273916,
+     "mean_iob": 6.296857640244732,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 112.65962626430881,
+     "mean_iob": 2.0073544844849973,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 136.8056540583292,
+     "mean_iob": 3.0938574723412637,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 163.50156598105784,
+     "mean_iob": 4.839498132167086,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 63,
+     "median_cgm": 129.86692036022274,
+     "mean_iob": 2.34293720259687,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 44,
+     "median_cgm": 110.4859249906929,
+     "mean_iob": 0.9816429312839532,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 98.15599185021506,
+     "mean_iob": 1.1788366366577085,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 48,
+     "median_cgm": 117.72493606612252,
+     "mean_iob": 3.097144911733585,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 53,
+     "median_cgm": 89.37255742976569,
+     "mean_iob": 0.638083617674192,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 101.17022305957062,
+     "mean_iob": 1.1852481405115103,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 152.10051848626802,
+     "mean_iob": 5.540253678925681,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 117.48416527159313,
+     "mean_iob": 2.19502392918921,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 163.72569511604877,
+     "mean_iob": 5.836311740729117,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 105.46179626573311,
+     "mean_iob": 1.5125113365233211,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 100.98576023710714,
+     "mean_iob": 0.08602014411256406,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 106.92423371026335,
+     "mean_iob": 1.577261784174996,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 108.90077611793211,
+     "mean_iob": 0.931898120294443,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 39,
+     "median_cgm": 139.43937522722382,
+     "mean_iob": 2.0671776508029107,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 101.3744434688353,
+     "mean_iob": 2.1577325516616566,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 158.79424434696534,
+     "mean_iob": 2.71893057832537,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 117.40497605266117,
+     "mean_iob": 0.8133070380127191,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 113.50344113514846,
+     "mean_iob": 1.107129565622006,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 214.0217219433016,
+     "mean_iob": 4.239368709741836,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 96.2289911791395,
+     "mean_iob": 0.3764905542951176,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 113.11263041380835,
+     "mean_iob": 1.0759461927004788,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 65,
+     "median_cgm": 125.58869588801414,
+     "mean_iob": 1.7873758721998565,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 76.76871836721789,
+     "mean_iob": 0.0055507167989808,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 134.9215533799836,
+     "mean_iob": 1.3204454727604373,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "isf_strong",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 61,
+     "median_cgm": 136.85624624700725,
+     "mean_iob": 1.981676553672824,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 109.33708981972389,
+     "mean_iob": 2.3124286582465094,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 109.08967280939282,
+     "mean_iob": 1.11551672742519,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 144.58391738464312,
+     "mean_iob": 3.52752387862774,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 103.17005337801562,
+     "mean_iob": 1.2046721332016408,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 58,
+     "median_cgm": 164.4532804445791,
+     "mean_iob": 5.256474944039143,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 128.88588777694076,
+     "mean_iob": 2.4828122241447907,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 118.50999021436692,
+     "mean_iob": 1.8521629713870398,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 109.41797770125766,
+     "mean_iob": 1.026856624981286,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 116.30789653562954,
+     "mean_iob": 1.8986679385838343,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 64,
+     "median_cgm": 96.33376604083111,
+     "mean_iob": 0.6960886483091036,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 104.68745644820511,
+     "mean_iob": 1.4034476109863594,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 140.18027695008206,
+     "mean_iob": 2.2224027278857776,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 96.79158399048484,
+     "mean_iob": 0.39785189124412235,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 71,
+     "median_cgm": 120.78414664245184,
+     "mean_iob": 1.8795473646024,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 109.1632493183959,
+     "mean_iob": 1.045619201701696,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 49,
+     "median_cgm": 145.46794711271437,
+     "mean_iob": 2.814624304486959,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 127.10271911585599,
+     "mean_iob": 2.096842419411732,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 66,
+     "median_cgm": 113.22399912524732,
+     "mean_iob": 1.174433450959862,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 51,
+     "median_cgm": 88.55039124410442,
+     "mean_iob": -0.5046022532429499,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 151.70554169460246,
+     "mean_iob": 3.4699069566008927,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 115.02452049196091,
+     "mean_iob": 0.485873667406584,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 161.57020220575802,
+     "mean_iob": 4.127125506974224,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 135.12211036681495,
+     "mean_iob": 1.7278771242744,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 115.61961267878533,
+     "mean_iob": 1.4001659076385604,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 140.1228284600507,
+     "mean_iob": 2.38026727629032,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 152.81199373108998,
+     "mean_iob": 2.750493976639315,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 125.77727546388789,
+     "mean_iob": 1.86783419051128,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 123.19589662350475,
+     "mean_iob": 1.6195748873968467,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 43,
+     "median_cgm": 91.74519819344312,
+     "mean_iob": 0.18340935332194913,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 71,
+     "median_cgm": 131.7126555089192,
+     "mean_iob": 1.9867047584560027,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 63,
+     "median_cgm": 116.93664324187696,
+     "mean_iob": 1.1854145518882895,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 105.09738863358214,
+     "mean_iob": 0.7870341785335352,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 68,
+     "median_cgm": 122.22794149659717,
+     "mean_iob": 1.5580180936067718,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 131.24276263992857,
+     "mean_iob": 1.4659173275034163,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 122.57006240077504,
+     "mean_iob": 1.2051329550025112,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 42,
+     "median_cgm": 146.91809801282,
+     "mean_iob": 2.2442946176706577,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 133.64506120648474,
+     "mean_iob": 1.8020336275286768,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 123.56626545257018,
+     "mean_iob": 1.4250384156981761,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 140.69217369197406,
+     "mean_iob": 2.440846553339747,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 134.381369878858,
+     "mean_iob": 2.1156565262990954,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 64,
+     "median_cgm": 129.6298318618939,
+     "mean_iob": 1.9934918141812394,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 54,
+     "median_cgm": 114.38042716565008,
+     "mean_iob": 0.6248622433554876,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 115.30520515373446,
+     "mean_iob": 1.1491095127133915,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 49,
+     "median_cgm": 155.57939390503336,
+     "mean_iob": 2.521043094053687,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 125.58536792233457,
+     "mean_iob": 1.435055136192153,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 143.5439256897665,
+     "mean_iob": 2.212601833068518,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 133.29653340144614,
+     "mean_iob": 2.2044344902228237,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 160.01361303011953,
+     "mean_iob": 3.571763355013358,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 127.80497631824213,
+     "mean_iob": 1.903871697145325,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 52,
+     "median_cgm": 120.14598741621779,
+     "mean_iob": 1.415176785072695,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 143.60300791116887,
+     "mean_iob": 2.353128303402105,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 138.1417599799927,
+     "mean_iob": 2.4232420075704946,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 126.87247988070439,
+     "mean_iob": 1.7173902818430673,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 109.69669678212264,
+     "mean_iob": 1.2271966318162795,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 132.17347878723194,
+     "mean_iob": 1.966308056212942,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 122.64070360991029,
+     "mean_iob": 1.3938376114898687,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 126.28402434263815,
+     "mean_iob": 2.505313647341849,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 93.62874288824835,
+     "mean_iob": 1.0220584524300642,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 111.74243771134115,
+     "mean_iob": 2.3630143903886327,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 182.03159685835755,
+     "mean_iob": 6.603057282623735,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 140.09125555939735,
+     "mean_iob": 3.856120081771289,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 96.81658162658812,
+     "mean_iob": 1.0691455777693115,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 88.74159728958605,
+     "mean_iob": 0.5633707155194565,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 142.01537273074274,
+     "mean_iob": 3.175183636913322,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 52,
+     "median_cgm": 131.67278133452788,
+     "mean_iob": 3.082079981362435,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 115.56321157533307,
+     "mean_iob": 1.9377625099120896,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 134.33703502780412,
+     "mean_iob": 3.4197839250047597,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 41,
+     "median_cgm": 100.22842460864577,
+     "mean_iob": 1.7702960272273922,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 51,
+     "median_cgm": 130.82808524590277,
+     "mean_iob": 3.3215836042797493,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 130.06109404580332,
+     "mean_iob": 2.8829203373985295,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 119.29389160001242,
+     "mean_iob": 0.9972808748447423,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 172.54056846852058,
+     "mean_iob": 2.9187326092031687,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 122.815661194429,
+     "mean_iob": 1.5701849629254605,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 58,
+     "median_cgm": 123.2776412201695,
+     "mean_iob": 1.0139470006661138,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 59,
+     "median_cgm": 147.03562925858267,
+     "mean_iob": 2.0538565946920833,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 107.64099823555641,
+     "mean_iob": 0.9106420161433244,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 64,
+     "median_cgm": 145.1358081743847,
+     "mean_iob": 2.7928485059240273,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 54,
+     "median_cgm": 173.57331737808542,
+     "mean_iob": 4.2863288713759635,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 103.62018763658057,
+     "mean_iob": 0.13992364731272616,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 61,
+     "median_cgm": 145.41297571388222,
+     "mean_iob": 3.0578473908787873,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 108.24711889625473,
+     "mean_iob": 0.7841891085040431,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 151.72457657943357,
+     "mean_iob": 2.7735350704169384,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 127.85578175504911,
+     "mean_iob": 0.9337428673037229,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 166.09438407815452,
+     "mean_iob": 2.170021306170624,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 153.65500160812354,
+     "mean_iob": 1.6506575398772518,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 142.94516680121305,
+     "mean_iob": 1.6308589287459632,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 182.2012644847079,
+     "mean_iob": 2.674718625101423,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 137.8029942508099,
+     "mean_iob": 1.2218942301027367,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 154.4874497764606,
+     "mean_iob": 2.048320191831693,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 59,
+     "median_cgm": 224.13190624269683,
+     "mean_iob": 4.266972577698292,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 129.4664999930273,
+     "mean_iob": 1.073979498084939,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 141.7437285361408,
+     "mean_iob": 1.713477977678418,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 127.57445094791393,
+     "mean_iob": 1.281805793865979,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 129.5355356702268,
+     "mean_iob": 1.5579386756755733,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 109.22813384893583,
+     "mean_iob": 0.7808356553557334,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 137.8119875197334,
+     "mean_iob": 2.055602436563857,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 114.07511565361386,
+     "mean_iob": 0.9307162294896705,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 106.41080974489586,
+     "mean_iob": 0.9052533858982803,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 137.24520670143949,
+     "mean_iob": 1.2489861977806618,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 129.32470543471388,
+     "mean_iob": 1.8141244377291084,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 95.52519061318561,
+     "mean_iob": 0.4281960962484546,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 122.23772900112374,
+     "mean_iob": 1.0514465314714607,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 122.16062223298917,
+     "mean_iob": 1.42728239354623,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 127.83523371541249,
+     "mean_iob": 1.2157757803097848,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 120.35888237748983,
+     "mean_iob": 0.9837359400815614,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 70,
+     "median_cgm": 148.14141830443842,
+     "mean_iob": 2.5612124540716303,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 149.05986764936648,
+     "mean_iob": 1.973198652228542,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 36,
+     "median_cgm": 191.1417332784559,
+     "mean_iob": 3.5646556147532014,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 56,
+     "median_cgm": 103.14760188618169,
+     "mean_iob": -0.02507977834416611,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 148.60249559978053,
+     "mean_iob": 2.1030095032492544,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 142.80363830853062,
+     "mean_iob": 2.234120984350535,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 146.19157633355297,
+     "mean_iob": 2.1138158266603346,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 147.88104481471458,
+     "mean_iob": 2.193626905324466,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 109.57374616968416,
+     "mean_iob": 0.5075370268068711,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 113.65013877901922,
+     "mean_iob": 0.8450952757908679,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 144.7787852271716,
+     "mean_iob": 2.2838923966634064,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 53,
+     "median_cgm": 132.38140373212897,
+     "mean_iob": 1.581807391940059,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 121.12347824363943,
+     "mean_iob": 1.0262638701957216,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 58,
+     "median_cgm": 200.709035459001,
+     "mean_iob": 5.143069442942728,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 64,
+     "median_cgm": 122.93384714942601,
+     "mean_iob": 1.1980145739816854,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 129.38655777589895,
+     "mean_iob": 1.4472990604811378,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 138.0422943527467,
+     "mean_iob": 2.963326721831506,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 136.97077771776796,
+     "mean_iob": 2.0036706619805957,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 71,
+     "median_cgm": 160.77581662102943,
+     "mean_iob": 2.896213816706303,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 145.58699907086822,
+     "mean_iob": 2.281355669959357,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 105.1450176954866,
+     "mean_iob": 0.5155707477032191,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 125.10151332494269,
+     "mean_iob": 1.2678076856465992,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 116.29342161166213,
+     "mean_iob": 1.6707671257359902,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 117.6150369305168,
+     "mean_iob": 0.6898072406864527,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 63,
+     "median_cgm": 146.89983569756996,
+     "mean_iob": 1.0627594070326374,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 122.93067103544166,
+     "mean_iob": 1.0774080904212673,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 116.11199096263358,
+     "mean_iob": 1.583305322935562,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 145.7491155590029,
+     "mean_iob": 1.6735198260411712,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 109.89078542955836,
+     "mean_iob": 1.1091561684025297,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "isf_weak",
+   "nights": [
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 125.2602378180392,
+     "mean_iob": 1.2499397609518346,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 176.40075282286296,
+     "mean_iob": 2.9832594427451724,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 37,
+     "median_cgm": 106.63392176054079,
+     "mean_iob": 0.681647183082069,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 130.39087879059792,
+     "mean_iob": 1.4003268014139607,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 118.62953006204472,
+     "mean_iob": 1.016337552851817,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 101.04635132925478,
+     "mean_iob": 0.12235775619884216,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 64,
+     "median_cgm": 140.27763033906186,
+     "mean_iob": 2.3149336122810604,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 115.77409959980777,
+     "mean_iob": 0.7930630107090324,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 127.53793354728832,
+     "mean_iob": 2.37757882347008,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 94.00528257579707,
+     "mean_iob": 0.058175077561561185,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 146.02429166087973,
+     "mean_iob": 3.415679022931807,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 96.69463830416753,
+     "mean_iob": 0.571590398154945,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 49,
+     "median_cgm": 225.33636357935382,
+     "mean_iob": 5.752042115498776,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 47,
+     "median_cgm": 104.08928808078831,
+     "mean_iob": 1.496973306459297,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 93.3304930273481,
+     "mean_iob": 0.13919827195940024,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 89.96625973835424,
+     "mean_iob": 0.03644366516668185,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 114.92301632959305,
+     "mean_iob": 1.6661874160694525,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 125.74481986033702,
+     "mean_iob": 1.7478696868858916,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 101.9877568980916,
+     "mean_iob": 0.9016378993856731,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 71,
+     "median_cgm": 145.635999880403,
+     "mean_iob": 4.18468946122307,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 141.90173982256312,
+     "mean_iob": 2.8391500246282027,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 98.7786255374873,
+     "mean_iob": 0.907521020347406,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 101.13197739023978,
+     "mean_iob": 0.41869036934514925,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 60,
+     "median_cgm": 108.80346117344837,
+     "mean_iob": 0.796642618004103,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 71,
+     "median_cgm": 109.74518285149142,
+     "mean_iob": 0.9656823914977944,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 135.09124272766635,
+     "mean_iob": 2.5502100738834548,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 63,
+     "median_cgm": 108.82429617981043,
+     "mean_iob": 1.2465254517066686,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 111.14738187288668,
+     "mean_iob": 0.9744940242060467,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 39,
+     "median_cgm": 113.83395815985499,
+     "mean_iob": 1.1364702334528647,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 121.44397289385724,
+     "mean_iob": 1.3370740084829749,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 110.46610340329026,
+     "mean_iob": 0.9463096936896096,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 42,
+     "median_cgm": 97.36445544609833,
+     "mean_iob": -0.265984014380902,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 104.36677173587603,
+     "mean_iob": 0.13958051961488727,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 105.85699094816718,
+     "mean_iob": 0.5681448931289832,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 135.2312956782617,
+     "mean_iob": 2.655897784552268,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 64,
+     "median_cgm": 131.9288583280907,
+     "mean_iob": 2.6886383490133765,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 54,
+     "median_cgm": 117.89033769247726,
+     "mean_iob": 1.2228420590330822,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 109.58695430939738,
+     "mean_iob": 0.9773715600451346,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 62,
+     "median_cgm": 134.74603295952252,
+     "mean_iob": 1.9637349471644627,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 109.67102629665351,
+     "mean_iob": 0.8027787948460053,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 137.69706937200803,
+     "mean_iob": 2.628126715870471,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 119.40403646271803,
+     "mean_iob": 1.9749937857585107,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 148.8375563542424,
+     "mean_iob": 3.8220126878014327,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 118.06640667949836,
+     "mean_iob": 1.8419595729173293,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 38,
+     "median_cgm": 88.17046237070133,
+     "mean_iob": 1.0637686813598626,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 122.29784055701045,
+     "mean_iob": 2.9536862146752636,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 115.22098886816991,
+     "mean_iob": 1.7325454749553937,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 128.1607606597134,
+     "mean_iob": 2.2269452713124025,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 70,
+     "median_cgm": 125.18729749519412,
+     "mean_iob": 2.4027745320707385,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 37,
+     "median_cgm": 111.52317597072084,
+     "mean_iob": 1.4739068595893436,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 104.00679720055427,
+     "mean_iob": 0.5875940917599093,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 117.13536695692046,
+     "mean_iob": 2.588764795299681,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 88.76533021026985,
+     "mean_iob": 0.7276710517884135,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 106.11474813411752,
+     "mean_iob": 2.2414199522837763,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 173.9368816658744,
+     "mean_iob": 6.754591549826627,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 130.91154112561858,
+     "mean_iob": 3.8769439090226774,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 85.96810641452035,
+     "mean_iob": 0.4386977642347176,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 52,
+     "median_cgm": 82.91459941948682,
+     "mean_iob": 0.342676261657647,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 111.30581315512765,
+     "mean_iob": 2.4736603158204806,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 41,
+     "median_cgm": 71.34194912662824,
+     "mean_iob": 1.9025327457854435,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 51,
+     "median_cgm": 139.860792293902,
+     "mean_iob": 5.09201333459297,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 108.2863202530185,
+     "mean_iob": 0.6754573045761659,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 142.93004881594055,
+     "mean_iob": 2.946754285467175,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 109.73238293540675,
+     "mean_iob": 1.0847743845728783,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 110.92880886157809,
+     "mean_iob": 1.0343554356566032,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 59,
+     "median_cgm": 150.13809791413337,
+     "mean_iob": 2.5048124473283924,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 116.48978765580782,
+     "mean_iob": 1.5685180969294463,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 69,
+     "median_cgm": 120.19070727891075,
+     "mean_iob": 1.7460783559687387,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 133.56380693734843,
+     "mean_iob": 2.698917595728377,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 50,
+     "median_cgm": 107.71217041096895,
+     "mean_iob": 0.220959866852166,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 109.57696144510143,
+     "mean_iob": 0.8231645667849712,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 126.3429867659454,
+     "mean_iob": 1.4523198808637723,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 118.59793382660864,
+     "mean_iob": 0.8767103895183442,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 126.49493546182713,
+     "mean_iob": 1.4181127399056168,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 145.27777039518048,
+     "mean_iob": 2.698918654427196,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 139.14336091408336,
+     "mean_iob": 1.6924805446136917,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 147.15787309851697,
+     "mean_iob": 2.095936061160816,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 132.83582133402288,
+     "mean_iob": 1.6824571038540788,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 163.6041396448686,
+     "mean_iob": 2.783745211829313,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 124.99517873942455,
+     "mean_iob": 1.2111258613805254,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 144.62217193946003,
+     "mean_iob": 2.016348665112707,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 42,
+     "median_cgm": 193.98078747645565,
+     "mean_iob": 4.336553121577774,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 116.16316043405742,
+     "mean_iob": 0.8403874795033889,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 126.66271590974235,
+     "mean_iob": 1.6353720083386147,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 116.74659795119837,
+     "mean_iob": 1.3689303409629068,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 111.22423783461949,
+     "mean_iob": 1.7020300085851643,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 106.23405594100586,
+     "mean_iob": 0.8781866613423828,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 126.69849999126949,
+     "mean_iob": 2.2699160459075802,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 139.40125055760174,
+     "mean_iob": 1.88166612234932,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 109.54750506760905,
+     "mean_iob": 1.4749976521841315,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 91.17311274053547,
+     "mean_iob": -0.39412297866136625,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 96.04764846194863,
+     "mean_iob": 0.2539789514775441,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 140.08106951163725,
+     "mean_iob": 2.448368887491714,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 45,
+     "median_cgm": 96.17533304945592,
+     "mean_iob": 0.3854894040121825,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 124.88741654036869,
+     "mean_iob": 1.6989621326683817,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 90.57667510612586,
+     "mean_iob": 0.9398969837350689,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 105.9917605064039,
+     "mean_iob": 0.9693495936229133,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 115.24013916150366,
+     "mean_iob": 1.0558369802408925,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 106.18351062222666,
+     "mean_iob": 0.4242853672907106,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 68,
+     "median_cgm": 110.73022303849926,
+     "mean_iob": 0.7822999612113044,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 129.8236378223798,
+     "mean_iob": 2.237212049612358,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 56,
+     "median_cgm": 164.64423452981802,
+     "mean_iob": 3.3851001943385586,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 196.7728532593594,
+     "mean_iob": 5.3165492740484295,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 144.3344649419364,
+     "mean_iob": 2.841882595475467,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 175.50665642424133,
+     "mean_iob": 3.957439945265127,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 97.0144782079135,
+     "mean_iob": 0.16017782941820888,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 121.27050008871632,
+     "mean_iob": 1.3636999529016416,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 53,
+     "median_cgm": 95.4825787655652,
+     "mean_iob": 0.3850182345713073,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 44,
+     "median_cgm": 83.49259963680336,
+     "mean_iob": -0.5954326046062599,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 64,
+     "median_cgm": 92.93044308898264,
+     "mean_iob": 1.5979578033145683,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 118.3155141156225,
+     "mean_iob": 1.6951288245508778,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 64,
+     "median_cgm": 168.69192845271215,
+     "mean_iob": 4.628902139053652,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 112.7377518729688,
+     "mean_iob": 2.0243920724273607,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 49,
+     "median_cgm": 102.36402009012899,
+     "mean_iob": 0.23371345162984558,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 45,
+     "median_cgm": 107.97023635869392,
+     "mean_iob": 1.3862844330640154,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 57,
+     "median_cgm": 128.17322807083517,
+     "mean_iob": 2.1599255206525383,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 91.9105703623962,
+     "mean_iob": 0.2921795008697673,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 108.86567166882818,
+     "mean_iob": 0.9044588493286232,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 115.60006634328039,
+     "mean_iob": 0.9869839176873635,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 50,
+     "median_cgm": 114.53464874258968,
+     "mean_iob": 0.41940911801799935,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 63,
+     "median_cgm": 121.82552026270595,
+     "mean_iob": 1.1012139953747266,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 221.66059303517994,
+     "mean_iob": 4.505273258020556,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 111.93297655594306,
+     "mean_iob": 0.6398663003314223,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 98.4805879869708,
+     "mean_iob": 1.638315383110292,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 169.32423601212844,
+     "mean_iob": 2.180767102826001,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 98.15641797462797,
+     "mean_iob": 1.1941259732379317,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 114.37334059791141,
+     "mean_iob": 0.7220965373798965,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "basal_high",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 61,
+     "median_cgm": 139.3075490589652,
+     "mean_iob": 1.2507838356152805,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 108.10751519353643,
+     "mean_iob": 0.9332197363039967,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 100.46890082391081,
+     "mean_iob": -0.055773506618569835,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 37,
+     "median_cgm": 58.83266615105126,
+     "mean_iob": -1.3998569325817378,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 121.0930516016787,
+     "mean_iob": 1.3521010198856613,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 107.20599402597524,
+     "mean_iob": 0.642577293260951,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 129.53654958059275,
+     "mean_iob": 1.5690886181461772,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 105.65674668991402,
+     "mean_iob": -0.06979231403774808,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 64,
+     "median_cgm": 93.88425611853782,
+     "mean_iob": 0.25892597010875024,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 56,
+     "median_cgm": 123.67519726157501,
+     "mean_iob": 1.2815311161783816,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 135.2587097662201,
+     "mean_iob": 2.8103609307722484,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 102.77387377873347,
+     "mean_iob": 0.8845725021260705,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 71,
+     "median_cgm": 121.57163631373673,
+     "mean_iob": 2.3055710020832803,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 107.83527338579776,
+     "mean_iob": 1.469127926947541,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 49,
+     "median_cgm": 144.3112984094622,
+     "mean_iob": 3.9188118586515603,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 127.38584866588226,
+     "mean_iob": 2.6864958803932484,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 66,
+     "median_cgm": 110.01128992046301,
+     "mean_iob": 1.930504046098463,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 89.52776061439815,
+     "mean_iob": 0.5628484602517846,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 115.02919371383763,
+     "mean_iob": 2.069243814599388,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 133.05031233230469,
+     "mean_iob": 2.36413322510582,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 125.63653126014859,
+     "mean_iob": 2.1593560804295464,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 148.2430792139161,
+     "mean_iob": 2.7509898673095257,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 149.92635271580025,
+     "mean_iob": 3.50778891710296,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 126.26670126084073,
+     "mean_iob": 2.453352700683566,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 126.90124003590216,
+     "mean_iob": 2.1552370528318128,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 43,
+     "median_cgm": 90.36801460890231,
+     "mean_iob": 0.4913305684944376,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 71,
+     "median_cgm": 142.2797608149051,
+     "mean_iob": 3.124054254789259,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 63,
+     "median_cgm": 113.99581353434324,
+     "mean_iob": 1.5826640462050983,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 151.9438674676939,
+     "mean_iob": 3.259051494430892,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 39,
+     "median_cgm": 102.05662258065597,
+     "mean_iob": 0.8510408692652853,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 135.32725690953356,
+     "mean_iob": 1.9451059038429306,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 144.57924903483644,
+     "mean_iob": 2.960471858053234,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 146.8206972171605,
+     "mean_iob": 2.9171409249880482,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 151.177052871684,
+     "mean_iob": 2.674573031556459,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 128.40525379785498,
+     "mean_iob": 1.6811566507805855,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 153.43890646772167,
+     "mean_iob": 3.16706170270662,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 154.85300096143456,
+     "mean_iob": 3.6273397158231577,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 64,
+     "median_cgm": 170.7310658388001,
+     "mean_iob": 5.11730529331221,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 54,
+     "median_cgm": 139.71630928866074,
+     "mean_iob": 2.2743725464549316,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 120.42768618953494,
+     "mean_iob": 1.4420074056668588,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 173.64475984609084,
+     "mean_iob": 3.6260892044736632,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 131.86770701507504,
+     "mean_iob": 2.2123545679109924,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 140.58146608455058,
+     "mean_iob": 2.86933370565896,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 127.30962322589713,
+     "mean_iob": 2.6026612669537412,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 158.5727365651054,
+     "mean_iob": 4.661067124735742,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 124.72850425722993,
+     "mean_iob": 2.4762643878266135,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 52,
+     "median_cgm": 113.24408437247942,
+     "mean_iob": 1.4724211420948063,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 138.11711196408666,
+     "mean_iob": 3.0395868277002385,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 135.95066320152876,
+     "mean_iob": 3.20563492379665,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 70,
+     "median_cgm": 109.10839143837609,
+     "mean_iob": 1.6083751352968823,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 114.19676168880846,
+     "mean_iob": 2.0138962542512298,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 91.959719515407,
+     "mean_iob": 1.2575000307767148,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 125.71419245689388,
+     "mean_iob": 3.083039677604104,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 91.48824164441447,
+     "mean_iob": 1.7601112092339954,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 112.35997872173527,
+     "mean_iob": 2.834563445745736,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 185.91937769775217,
+     "mean_iob": 6.838233880694655,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 147.71141182653335,
+     "mean_iob": 4.594701149167784,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 95.95100768288154,
+     "mean_iob": 1.6405367858972844,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 86.73733563289937,
+     "mean_iob": 0.9390381943688842,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 151.7581399170314,
+     "mean_iob": 3.9095684038355376,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 114.48401709294833,
+     "mean_iob": 3.0602952281834592,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 118.43547678553924,
+     "mean_iob": 2.8493467089122593,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 41,
+     "median_cgm": 130.4455320124535,
+     "mean_iob": 3.963771241335017,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 201.92352222534606,
+     "mean_iob": 5.575461215205134,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 134.6715246530324,
+     "mean_iob": 4.57275148749795,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 122.23974141574472,
+     "mean_iob": 1.4569369287961373,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 167.20108352544554,
+     "mean_iob": 4.046687943192223,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 121.25817816331211,
+     "mean_iob": 2.237885861616594,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 58,
+     "median_cgm": 134.97849942157433,
+     "mean_iob": 2.508423292446493,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 59,
+     "median_cgm": 140.12287480378578,
+     "mean_iob": 2.0609075486358575,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 122.65331579867575,
+     "mean_iob": 2.5539332849020955,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 69,
+     "median_cgm": 134.19154027955062,
+     "mean_iob": 3.549009624740562,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 155.60867989514247,
+     "mean_iob": 3.3891587582016447,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 50,
+     "median_cgm": 117.6226234664867,
+     "mean_iob": 1.3855735223751964,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 165.88005732227333,
+     "mean_iob": 4.22407675328539,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 111.51936963291377,
+     "mean_iob": 1.606171331133036,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 140.94883007379246,
+     "mean_iob": 2.4134091797457,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 128.55031287326463,
+     "mean_iob": 1.1869211475222907,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 153.35929533274992,
+     "mean_iob": 2.573992480335964,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 150.81264455740285,
+     "mean_iob": 2.1389436703539397,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 144.2374963495308,
+     "mean_iob": 2.0729977294480633,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 168.47448553445903,
+     "mean_iob": 3.1508245129576444,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 134.84952729208413,
+     "mean_iob": 1.6568051477183878,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 154.28299158203566,
+     "mean_iob": 2.5716305992427473,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 59,
+     "median_cgm": 214.15230907893036,
+     "mean_iob": 5.153160282711626,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 127.94718266559491,
+     "mean_iob": 1.4363708217010371,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 138.7489900370235,
+     "mean_iob": 2.068613378011871,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 123.7706283428351,
+     "mean_iob": 1.7304299862516501,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 126.71327253949494,
+     "mean_iob": 2.1519666115054443,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 108.29759429890463,
+     "mean_iob": 1.379575258178057,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 135.651832753181,
+     "mean_iob": 2.790120932870241,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 168.76522357055205,
+     "mean_iob": 3.057193258001157,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 102.11170315567901,
+     "mean_iob": 1.7688228075764496,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 85.96131744822067,
+     "mean_iob": 0.053232647811491084,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 125.4961835880735,
+     "mean_iob": 2.1262176429823074,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 117.01953731922234,
+     "mean_iob": 1.3721137680112356,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 121.64022676958945,
+     "mean_iob": 1.809580082581726,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 158.4532561722929,
+     "mean_iob": 3.672811187447263,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 124.00105605635292,
+     "mean_iob": 2.3378057971124857,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 127.61173443869262,
+     "mean_iob": 1.5973590933312547,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 120.87073701576935,
+     "mean_iob": 1.3731903397305363,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 68,
+     "median_cgm": 126.4791381761588,
+     "mean_iob": 1.6579357124467093,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 148.91775420376786,
+     "mean_iob": 3.2498934324151767,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 153.70528564272064,
+     "mean_iob": 2.915502380224652,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 55,
+     "median_cgm": 126.94662812062255,
+     "mean_iob": 1.3572767054340635,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 169.91151195262003,
+     "mean_iob": 3.6085006712964227,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 63,
+     "median_cgm": 158.2026273394972,
+     "mean_iob": 3.046648761309798,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 69,
+     "median_cgm": 116.10887397193297,
+     "mean_iob": 1.30043270272135,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 109.97128136789907,
+     "mean_iob": 1.1234901611791452,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 39,
+     "median_cgm": 75.49562049374371,
+     "mean_iob": 1.40186655809365,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 103.09985170049464,
+     "mean_iob": 0.5996502707193461,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 207.26791950885394,
+     "mean_iob": 6.403079898291292,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 64,
+     "median_cgm": 129.66018828857173,
+     "mean_iob": 2.888349269999611,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 109.78584975855159,
+     "mean_iob": 1.313713015484121,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 64,
+     "median_cgm": 90.16496510734805,
+     "mean_iob": 0.16620571661697078,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 217.9337220935632,
+     "mean_iob": 6.522668227912708,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 49,
+     "median_cgm": 135.31297771572113,
+     "mean_iob": 2.7596479141850696,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 45,
+     "median_cgm": 203.15571058773554,
+     "mean_iob": 6.255171219333503,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 123.53992737065829,
+     "mean_iob": 1.718511121598725,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 105.73159626417652,
+     "mean_iob": 0.7716304199087478,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 122.35014292643447,
+     "mean_iob": 1.5889299219865045,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 142.0603182293695,
+     "mean_iob": 2.3822955018767895,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 50,
+     "median_cgm": 132.8568819860791,
+     "mean_iob": 1.148095267505571,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 63,
+     "median_cgm": 146.46920014758626,
+     "mean_iob": 2.1620262322382438,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 114.0926450019987,
+     "mean_iob": 0.5693598008160334,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 145.42387197815725,
+     "mean_iob": 2.1263302325600657,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 133.07670621525153,
+     "mean_iob": 2.271824214493419,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 60,
+     "median_cgm": 126.18171516884875,
+     "mean_iob": 1.7207824173704942,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 152.53400468152324,
+     "mean_iob": 1.8164887191813421,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "basal_low",
+   "nights": [
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 128.58425955574006,
+     "mean_iob": 1.7345950901818556,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 173.53025983274046,
+     "mean_iob": 4.162062713705295,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 37,
+     "median_cgm": 102.74590499445576,
+     "mean_iob": 1.1952960946310947,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 132.0058938679764,
+     "mean_iob": 1.8250958068219196,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 133.09838466157578,
+     "mean_iob": 2.0169522945466514,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 41,
+     "median_cgm": 94.38819117175,
+     "mean_iob": 0.5831012475469665,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 56,
+     "median_cgm": 117.47299606473729,
+     "mean_iob": 0.9346922011188098,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 131.12503186660098,
+     "mean_iob": 2.7073455329682083,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 97.48103548008324,
+     "mean_iob": 0.41523565472222473,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 71,
+     "median_cgm": 112.84682349629875,
+     "mean_iob": 1.5432346783098532,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 124.19342775941895,
+     "mean_iob": 2.4160029393565745,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 49,
+     "median_cgm": 139.50860101167225,
+     "mean_iob": 3.8188781323111978,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 98.58182123407462,
+     "mean_iob": 1.1050864835118077,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 102.64284250627703,
+     "mean_iob": 0.6856400488575849,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 92.88068712094955,
+     "mean_iob": 0.7082832328628914,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 95.73796464380482,
+     "mean_iob": 0.8888908955023636,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 151.2102280211331,
+     "mean_iob": 3.9273470645566184,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 128.76144439066928,
+     "mean_iob": 2.0923317285983725,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 111.36765673122476,
+     "mean_iob": 1.6831406727457978,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 133.56724602690332,
+     "mean_iob": 2.508213040423197,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 140.69324493835393,
+     "mean_iob": 2.9963089328695895,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 118.65896092197728,
+     "mean_iob": 2.1490019592596616,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 115.35339667340578,
+     "mean_iob": 1.8393960484206373,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 60,
+     "median_cgm": 115.10942577293747,
+     "mean_iob": 2.0001935657067214,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 43,
+     "median_cgm": 95.07369257927004,
+     "mean_iob": 0.12230071192329237,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 63,
+     "median_cgm": 110.6589807081714,
+     "mean_iob": 1.7640971240363752,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 112.46254893629529,
+     "mean_iob": 1.3567479744357742,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 116.64060456204915,
+     "mean_iob": 1.830481370087142,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 68,
+     "median_cgm": 103.47073111557425,
+     "mean_iob": 1.0534470452679452,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 126.14438823907966,
+     "mean_iob": 1.7012343346090109,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 116.34116281157151,
+     "mean_iob": 1.2658531066963075,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 132.5932003883388,
+     "mean_iob": 2.5582187751988066,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 140.0656008080856,
+     "mean_iob": 2.265754171075587,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 100.56581787348273,
+     "mean_iob": 0.6238926200120186,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 143.77502517912498,
+     "mean_iob": 2.867126834964459,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 142.13379744396497,
+     "mean_iob": 2.9765923217175976,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 64,
+     "median_cgm": 163.12820490680616,
+     "mean_iob": 4.605465073072054,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 54,
+     "median_cgm": 129.5970505277308,
+     "mean_iob": 1.9169074045871441,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 108.55661594552328,
+     "mean_iob": 0.6781545191085175,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 163.6983125047544,
+     "mean_iob": 3.1503826452692527,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 127.13019035718068,
+     "mean_iob": 2.119061325822724,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 139.46170236350267,
+     "mean_iob": 2.7548126955214403,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 123.41139107639295,
+     "mean_iob": 2.360477691458455,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 153.90386307640563,
+     "mean_iob": 4.200470252013138,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 122.10771163411542,
+     "mean_iob": 2.245516485993395,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 64,
+     "median_cgm": 112.17520662554728,
+     "mean_iob": 2.015553320113067,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 135.03556319511006,
+     "mean_iob": 2.746558070556491,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 70,
+     "median_cgm": 126.05904159916768,
+     "mean_iob": 2.6727554149383166,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 98.30474826252062,
+     "mean_iob": 1.2047431790446987,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 118.93475685984836,
+     "mean_iob": 2.8181397083110915,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 91.68399897091874,
+     "mean_iob": 1.5980852768070977,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 108.50661311372241,
+     "mean_iob": 2.6772667623610187,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 179.6342783799775,
+     "mean_iob": 6.814780085038481,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 134.23461583754406,
+     "mean_iob": 4.123102459057046,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 91.00435913627204,
+     "mean_iob": 1.1919525930939159,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 115.25517641088578,
+     "mean_iob": 2.83250581748015,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 117.20056403568229,
+     "mean_iob": 2.9953857024427015,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 59,
+     "median_cgm": 130.2754921592444,
+     "mean_iob": 4.028064503440608,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 105.47216740461585,
+     "mean_iob": 1.9629088106268608,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 41,
+     "median_cgm": 111.85439839002116,
+     "mean_iob": 3.003536420746938,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 51,
+     "median_cgm": 198.11394821311697,
+     "mean_iob": 6.436219143251947,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 112.1583064235369,
+     "mean_iob": 1.0598116180086226,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 158.21288546190155,
+     "mean_iob": 3.5612528620764468,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 58,
+     "median_cgm": 161.08425037708452,
+     "mean_iob": 3.819892521086694,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 126.04559575541802,
+     "mean_iob": 1.6586337271714695,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 196.37193126490928,
+     "mean_iob": 6.043454368077426,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 41,
+     "median_cgm": 148.43881064507417,
+     "mean_iob": 2.7076637354090227,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 64,
+     "median_cgm": 146.39972177006513,
+     "mean_iob": 3.4577838434127344,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 110.59071473706214,
+     "mean_iob": 0.6974670734730133,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 109.95260959387497,
+     "mean_iob": 1.7785856011204535,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 128.48785386594324,
+     "mean_iob": 2.355026563248936,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 122.96216647629093,
+     "mean_iob": 1.0788496581513936,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 149.5749833147733,
+     "mean_iob": 2.388509547354154,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 145.56191335055155,
+     "mean_iob": 1.943413788337892,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 134.3555176110231,
+     "mean_iob": 1.9282459570700003,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 165.74673464016533,
+     "mean_iob": 3.0340429788203727,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 129.71155353795479,
+     "mean_iob": 1.4138545594854235,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 146.2699937672602,
+     "mean_iob": 2.364644415107312,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 59,
+     "median_cgm": 199.83416503161908,
+     "mean_iob": 4.71564363907519,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 120.93665666090241,
+     "mean_iob": 1.1421105663057698,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 133.23218337461225,
+     "mean_iob": 1.757088241303058,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 121.45890474164827,
+     "mean_iob": 1.6089439034235256,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 118.69232899245694,
+     "mean_iob": 1.7619661746094009,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 110.36216070219027,
+     "mean_iob": 1.0931550596019983,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 129.0205439609247,
+     "mean_iob": 2.4202110039276166,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 165.3938576299904,
+     "mean_iob": 3.033014464299511,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 108.9919650885999,
+     "mean_iob": 1.4267220100427207,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 91.96196910286243,
+     "mean_iob": 0.054692990679021905,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 41,
+     "median_cgm": 112.58032707152172,
+     "mean_iob": 1.3836363002550145,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 88.48792948998353,
+     "mean_iob": 0.09242328108401966,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 94.04974701104337,
+     "mean_iob": 0.8992211863169154,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 119.96404677927843,
+     "mean_iob": 1.3389985519970125,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 112.49669566006756,
+     "mean_iob": 0.8483199579789319,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 70,
+     "median_cgm": 141.70643033162133,
+     "mean_iob": 3.0105103101456927,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 133.36679928856563,
+     "mean_iob": 2.039663586154806,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 131.22451407519193,
+     "mean_iob": 1.706732245751457,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 123.15460009177193,
+     "mean_iob": 2.4416919432513278,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 134.78019584446105,
+     "mean_iob": 2.3905095193867103,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 134.69569360382422,
+     "mean_iob": 2.0986147991826525,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 146.58320663555162,
+     "mean_iob": 2.8826508854547046,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 69,
+     "median_cgm": 111.10581155818768,
+     "mean_iob": 0.9525843974165228,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 99.01495053144316,
+     "mean_iob": 0.5865762480348107,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 39,
+     "median_cgm": 90.44729369545374,
+     "mean_iob": 0.4319942088051623,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 91.33306774511738,
+     "mean_iob": 0.1286944837909921,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 106.85258447468995,
+     "mean_iob": 0.5857149909421049,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 134.7522130699516,
+     "mean_iob": 2.55162753608383,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 64,
+     "median_cgm": 175.3648773867959,
+     "mean_iob": 5.068291309273863,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 71,
+     "median_cgm": 89.790312501084,
+     "mean_iob": -0.42333218107407466,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 45,
+     "median_cgm": 113.67723056323423,
+     "mean_iob": 1.0542618844732994,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 168.67959035805674,
+     "mean_iob": 4.980396646495937,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 96.2990522316012,
+     "mean_iob": 0.5513522672625163,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 39,
+     "median_cgm": 145.3140436466156,
+     "mean_iob": 1.808380822859723,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 108.91349357376995,
+     "mean_iob": 0.7399328555815582,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 116.74174313814115,
+     "mean_iob": 0.6398730797461935,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 63,
+     "median_cgm": 123.75182028965078,
+     "mean_iob": 1.3945620807950496,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 224.00786144106291,
+     "mean_iob": 4.701180072991889,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 98.48198768504804,
+     "mean_iob": 0.8114893621559096,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 107.6363884697463,
+     "mean_iob": 1.3070714705067328,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 178.48906196355495,
+     "mean_iob": 3.4378537327372,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 65.53281100035036,
+     "mean_iob": -0.3261313844378702,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "cr_strong",
+   "nights": [
+    {
+     "day": 2,
+     "steps": 57,
+     "median_cgm": 128.21664971361957,
+     "mean_iob": 1.4487555471807971,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 105.61163997718575,
+     "mean_iob": 0.8236997855494987,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 37,
+     "median_cgm": 68.81365806811013,
+     "mean_iob": -0.4036734301998182,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 58,
+     "median_cgm": 132.601606267254,
+     "mean_iob": 2.2628148591254558,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 119.33897985348122,
+     "mean_iob": 0.4995151989969249,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 83.78502016073108,
+     "mean_iob": -0.013135581684520527,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 112.011082455152,
+     "mean_iob": 0.348629812409049,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 64,
+     "median_cgm": 98.80128902946547,
+     "mean_iob": 0.8553428699700805,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 56,
+     "median_cgm": 131.90734487537276,
+     "mean_iob": 1.7372762368061683,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 132.39847543851073,
+     "mean_iob": 2.6186986843345443,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 94.11703963697259,
+     "mean_iob": -0.017957789878707754,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 149.4273147535223,
+     "mean_iob": 3.9385578548714832,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 44,
+     "median_cgm": 99.64180192208856,
+     "mean_iob": 0.5560362387804522,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 38,
+     "median_cgm": 105.11607460688609,
+     "mean_iob": 0.4978164391541547,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 66,
+     "median_cgm": 97.78087638544531,
+     "mean_iob": 0.032985439266974836,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 51,
+     "median_cgm": 111.62153402973571,
+     "mean_iob": 1.1139943198582465,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 104.69707090806939,
+     "mean_iob": 1.139162681673189,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 132.76223650063423,
+     "mean_iob": 3.131189101548487,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 130.8280611047395,
+     "mean_iob": 1.9933114987322087,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 110.6567588336312,
+     "mean_iob": 1.4430441509181335,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 136.7022573076789,
+     "mean_iob": 2.379206575349775,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 141.4876048662124,
+     "mean_iob": 2.83495675385827,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 120.22777873974607,
+     "mean_iob": 1.9559940818459118,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 119.62313134469008,
+     "mean_iob": 1.5741657377905562,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 60,
+     "median_cgm": 120.16150521565798,
+     "mean_iob": 1.7220932249192122,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 43,
+     "median_cgm": 98.63770438517675,
+     "mean_iob": 0.16044959411054516,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 63,
+     "median_cgm": 109.70725592475338,
+     "mean_iob": 0.23953633395121343,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 63,
+     "median_cgm": 129.12699547367254,
+     "mean_iob": 2.1473169258098053,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 108.277011017626,
+     "mean_iob": 0.8309277053826752,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 119.41753255676477,
+     "mean_iob": 1.7594868871808376,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 68,
+     "median_cgm": 100.69790456198393,
+     "mean_iob": 0.664520764292113,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 127.66097908337875,
+     "mean_iob": 1.5792819794565602,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 119.74207475974671,
+     "mean_iob": 1.2612702458352936,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 137.09003601835315,
+     "mean_iob": 2.4745644308784307,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 137.04873158262382,
+     "mean_iob": 2.1383160872959426,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 117.75418016246746,
+     "mean_iob": 1.0844246534573676,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 145.4720007606541,
+     "mean_iob": 2.709507050603405,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 146.64329075040038,
+     "mean_iob": 2.985219685809404,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 64,
+     "median_cgm": 162.27092245525836,
+     "mean_iob": 4.52143746918205,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 54,
+     "median_cgm": 130.62867771571126,
+     "mean_iob": 1.817965907718185,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 112.09146675192422,
+     "mean_iob": 0.6661862579531039,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 168.22316809536278,
+     "mean_iob": 3.120736541596433,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 123.56503205515841,
+     "mean_iob": 1.8020623612716338,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 139.46170236350267,
+     "mean_iob": 2.7548126955214403,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 124.03589732982255,
+     "mean_iob": 2.2174679858555586,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 154.1160184235228,
+     "mean_iob": 4.171421491306248,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 123.63777898434842,
+     "mean_iob": 2.185183429925035,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 52,
+     "median_cgm": 110.45369692566811,
+     "mean_iob": 1.1330851819655436,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 138.00303142259696,
+     "mean_iob": 2.795869329257376,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 132.71478215556073,
+     "mean_iob": 2.8114758643675923,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 70,
+     "median_cgm": 106.07390181199727,
+     "mean_iob": 1.184902012693209,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 115.32560994095235,
+     "mean_iob": 1.884557808756266,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 167.3443415928903,
+     "mean_iob": 3.9523214368139694,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 119.03785260187998,
+     "mean_iob": 2.760146033049464,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 91.03117098063898,
+     "mean_iob": 1.4304113783409047,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 107.75138281171277,
+     "mean_iob": 2.6020784888465016,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 179.61361712489605,
+     "mean_iob": 6.817976254968316,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 135.60371107399806,
+     "mean_iob": 4.217430199081963,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 97.68361503845087,
+     "mean_iob": 1.2964898764793955,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 82.06717991544608,
+     "mean_iob": 0.6589278927956371,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 119.96375399707995,
+     "mean_iob": 3.3720431930697172,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 52,
+     "median_cgm": 92.09994300137878,
+     "mean_iob": 0.7480889779516644,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 59,
+     "median_cgm": 127.78154168045883,
+     "mean_iob": 3.920411551723601,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 103.75916228025704,
+     "mean_iob": 1.802012175256744,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 154.5280423026235,
+     "mean_iob": 4.7866327167436005,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 115.40608812324675,
+     "mean_iob": 1.0339231939540805,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 160.4999463140981,
+     "mean_iob": 3.507054486685288,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 127.69142972588907,
+     "mean_iob": 1.65645456356535,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 59,
+     "median_cgm": 122.99436162118127,
+     "mean_iob": 1.2600050534467908,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 198.46859663306407,
+     "mean_iob": 5.800489443492005,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 69,
+     "median_cgm": 100.94327441532248,
+     "mean_iob": 0.670582271523622,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 64,
+     "median_cgm": 159.7529407266686,
+     "mean_iob": 3.561236526392804,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 54,
+     "median_cgm": 98.31793145864634,
+     "mean_iob": 2.8977921033450036,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 50,
+     "median_cgm": 97.24045849444192,
+     "mean_iob": 1.6839040168436923,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 61,
+     "median_cgm": 136.6687665493047,
+     "mean_iob": 2.410915219160169,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 128.15076327276327,
+     "mean_iob": 1.643782433489667,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 119.44582050127295,
+     "mean_iob": 0.9774627882339227,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 125.53834018356666,
+     "mean_iob": 0.9918019353344517,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 151.54109304406649,
+     "mean_iob": 2.385189434935636,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 148.09729627121692,
+     "mean_iob": 1.8193328108877276,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 137.97276596837318,
+     "mean_iob": 1.9635153224025206,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 167.5982412561834,
+     "mean_iob": 2.9571403316080804,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 131.47935178914764,
+     "mean_iob": 1.3528041733772382,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 148.72247327995433,
+     "mean_iob": 2.2598979567159043,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 59,
+     "median_cgm": 208.23783753130377,
+     "mean_iob": 4.969282622221993,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 123.94844826279484,
+     "mean_iob": 1.1107693056221426,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 136.27800243921018,
+     "mean_iob": 1.774088232035158,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 121.40314750983471,
+     "mean_iob": 1.5694651253046616,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 119.89532340815953,
+     "mean_iob": 1.723966976724689,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 106.46201523644315,
+     "mean_iob": 1.0599711603567936,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 129.58900795734513,
+     "mean_iob": 2.3750604420263293,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 166.16573788206387,
+     "mean_iob": 2.9760064311215837,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 109.25622312616196,
+     "mean_iob": 1.4530220985480864,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 93.79323599111947,
+     "mean_iob": 0.047369181034441335,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 41,
+     "median_cgm": 116.55846252778925,
+     "mean_iob": 1.428976405968937,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 90.51793903712561,
+     "mean_iob": 0.005575286737938658,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 122.69297686928415,
+     "mean_iob": 1.2447342688359833,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 116.06925645903453,
+     "mean_iob": 0.8697966771991813,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 70,
+     "median_cgm": 143.50267563288364,
+     "mean_iob": 2.8120643095466518,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 141.22917161526715,
+     "mean_iob": 2.272225713637445,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 131.64242278095753,
+     "mean_iob": 1.6231317416873827,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 125.95241615300091,
+     "mean_iob": 2.567425652018934,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 135.04232260478616,
+     "mean_iob": 2.337680094786313,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 53,
+     "median_cgm": 116.26483653363397,
+     "mean_iob": 1.466688951241542,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 44,
+     "median_cgm": 117.40778997519638,
+     "mean_iob": 0.8439826740719656,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 107.18724718039005,
+     "mean_iob": 0.696908818885171,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 53,
+     "median_cgm": 119.9357759072338,
+     "mean_iob": 3.132834544501862,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 122.22976735630358,
+     "mean_iob": 1.3594062220707,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 58,
+     "median_cgm": 183.64505699962865,
+     "mean_iob": 5.882376734167291,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 64,
+     "median_cgm": 170.59412349074302,
+     "mean_iob": 3.739313477852959,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 132.29638073240432,
+     "mean_iob": 2.023359415631066,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 64,
+     "median_cgm": 177.93674979355376,
+     "mean_iob": 5.195667470142123,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 119.82220109616546,
+     "mean_iob": 2.45771596666391,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 71,
+     "median_cgm": 121.30791489274807,
+     "mean_iob": 0.7412381781215454,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 45,
+     "median_cgm": 119.9824442012366,
+     "mean_iob": 2.5899335164990016,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 139.07012601613536,
+     "mean_iob": 2.36426268543264,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 102.25818447214245,
+     "mean_iob": 0.47330046498815675,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 113.93397649114765,
+     "mean_iob": 1.2198996849122565,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 41,
+     "median_cgm": 179.37648803303998,
+     "mean_iob": 2.401198912271111,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 50,
+     "median_cgm": 129.45779428918345,
+     "mean_iob": 0.9890017323939095,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 121.16203433886217,
+     "mean_iob": 0.9981927024247221,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 225.91194945778318,
+     "mean_iob": 4.681581414030085,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 90.95989056358503,
+     "mean_iob": -0.12473717475869435,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 110.3946796360541,
+     "mean_iob": 0.6555615832540647,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 65,
+     "median_cgm": 185.6400443258558,
+     "mean_iob": 2.935289187071616,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 99.23954792331843,
+     "mean_iob": 0.017172399672176066,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "cr_weak",
+   "nights": [
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 119.89575685331185,
+     "mean_iob": 1.1929076448935267,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 164.79408455138696,
+     "mean_iob": 3.5525096689191495,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 37,
+     "median_cgm": 91.12418245997821,
+     "mean_iob": 0.6547269409650603,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 58,
+     "median_cgm": 134.8390200200085,
+     "mean_iob": 2.142787705208312,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 136.3378627534375,
+     "mean_iob": 2.5438291583759405,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 126.5384995043432,
+     "mean_iob": 1.6821216720549967,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 137.76052949553878,
+     "mean_iob": 2.4848973161289165,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 120.4883873666409,
+     "mean_iob": 0.908873965843691,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 64,
+     "median_cgm": 99.84318551391974,
+     "mean_iob": 1.0492817898608535,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 130.19413942589577,
+     "mean_iob": 1.6554438185543239,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 115.42664423906002,
+     "mean_iob": 3.037872721955444,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 90.46073143956096,
+     "mean_iob": 0.2490331785398909,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 125.20482722671275,
+     "mean_iob": 3.2572101738814063,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 71,
+     "median_cgm": 100.8038078844956,
+     "mean_iob": 1.346985702791699,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 44,
+     "median_cgm": 152.7516513571839,
+     "mean_iob": 5.1240670317897585,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 49,
+     "median_cgm": 174.86491043460248,
+     "mean_iob": 6.438931658606639,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 101.68309074692405,
+     "mean_iob": 1.8184434396905647,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 66,
+     "median_cgm": 112.65838047986185,
+     "mean_iob": 3.5896344225311894,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 117.10919583235199,
+     "mean_iob": 2.1987452742141427,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 180.728159809393,
+     "mean_iob": 5.818612558142252,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 71,
+     "median_cgm": 137.46023060114427,
+     "mean_iob": 3.8267295750629784,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 113.33188364402639,
+     "mean_iob": 3.077682457301007,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 60,
+     "median_cgm": 98.23244189570373,
+     "mean_iob": 1.0809602089024895,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 43,
+     "median_cgm": 111.8939068677875,
+     "mean_iob": 2.031313376597036,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 63,
+     "median_cgm": 97.99294078277374,
+     "mean_iob": 2.9448473373375714,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 114.6712447468863,
+     "mean_iob": 2.45583351129408,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 68,
+     "median_cgm": 96.85815842133914,
+     "mean_iob": 0.9813554532751918,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 114.78424365562651,
+     "mean_iob": 1.6449914327224997,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 121.80666699978931,
+     "mean_iob": 2.759709917503652,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 64,
+     "median_cgm": 109.69564994275132,
+     "mean_iob": 1.26373003415089,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 115.5352096378258,
+     "mean_iob": 1.7789220379485766,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 112.64323386966115,
+     "mean_iob": 1.8277877401104825,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 127.55857468923702,
+     "mean_iob": 2.8998622130535843,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 138.15136485957072,
+     "mean_iob": 3.488134610395983,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 43,
+     "median_cgm": 118.81509357659996,
+     "mean_iob": 2.000529336344445,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 117.8544463745811,
+     "mean_iob": 1.4848627800303302,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 62,
+     "median_cgm": 132.6787755777408,
+     "mean_iob": 3.0880765522905063,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 38,
+     "median_cgm": 114.41976267340878,
+     "mean_iob": 1.8602799103481316,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 131.59358673533936,
+     "mean_iob": 3.227180623421899,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 112.24023347334476,
+     "mean_iob": 2.043677150864097,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 142.36323183452672,
+     "mean_iob": 4.54555738633853,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 110.12645557763972,
+     "mean_iob": 2.203697470687098,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 52,
+     "median_cgm": 95.99194593188167,
+     "mean_iob": 0.37809100693114284,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 107.14918535373863,
+     "mean_iob": 2.7821164408582,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 119.72720694306655,
+     "mean_iob": 2.675759007284064,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 119.43986414725101,
+     "mean_iob": 2.625260429410899,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 119.91787097858179,
+     "mean_iob": 3.0006948727301332,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 101.74522509213024,
+     "mean_iob": 1.8461505138514136,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 37,
+     "median_cgm": 80.70355257437568,
+     "mean_iob": 0.3322589586218033,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 101.07968166974663,
+     "mean_iob": 0.43658146872010756,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 110.82950594620748,
+     "mean_iob": 2.71064941153854,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 105.03734536843349,
+     "mean_iob": 2.752060342312122,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 103.85918081251202,
+     "mean_iob": 2.6315686530238165,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 147.88397813969183,
+     "mean_iob": 4.019268572064744,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 93.6091220007755,
+     "mean_iob": 1.7604677065633132,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 107.75396961132604,
+     "mean_iob": 2.766317367459669,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 52,
+     "median_cgm": 153.4780919193567,
+     "mean_iob": 4.220928020932131,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 59,
+     "median_cgm": 172.4887320936453,
+     "mean_iob": 6.634288236238201,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 95.92500439294898,
+     "mean_iob": 1.4051239991000741,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 41,
+     "median_cgm": 84.59026841389996,
+     "mean_iob": 2.315123939427787,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 37,
+     "median_cgm": 151.04095502200005,
+     "mean_iob": 5.462846719221969,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 104.76834133435119,
+     "mean_iob": 0.8399943068714618,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 122.0351872513532,
+     "mean_iob": 1.5874642037914921,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 58,
+     "median_cgm": 105.28631678873805,
+     "mean_iob": 3.027920135118754,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 59,
+     "median_cgm": 124.04990125591898,
+     "mean_iob": 2.013914225910102,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 162.93481896096262,
+     "mean_iob": 5.592308488993876,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 69,
+     "median_cgm": 134.7810234362054,
+     "mean_iob": 4.500103344631563,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 64,
+     "median_cgm": 115.64878801887886,
+     "mean_iob": 1.913281193561485,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 136.68079513315138,
+     "mean_iob": 4.303424644023418,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 50,
+     "median_cgm": 102.36775439511749,
+     "mean_iob": 0.447245975164898,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 152.8285338145877,
+     "mean_iob": 5.175294207705315,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 61,
+     "median_cgm": 136.17887568425803,
+     "mean_iob": 3.6260375201253097,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 103.96578194911295,
+     "mean_iob": 2.5321249118658713,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 138.10610288001038,
+     "mean_iob": 3.344665200849826,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 113.9834081279714,
+     "mean_iob": 1.029759783047667,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 123.77163065708442,
+     "mean_iob": 1.941629840421898,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 137.1982681590091,
+     "mean_iob": 2.4280353289227454,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 38,
+     "median_cgm": 87.6538283943235,
+     "mean_iob": -0.24169784917248152,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 54,
+     "median_cgm": 150.77354868793753,
+     "mean_iob": 2.9801088448037762,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 124.44044286537715,
+     "mean_iob": 1.9897441519532295,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 104.25259877008979,
+     "mean_iob": 0.4581580960978606,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 117.15595503760821,
+     "mean_iob": 1.2310365289371634,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 205.50604254668474,
+     "mean_iob": 4.980787838225617,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 42,
+     "median_cgm": 127.80195189920948,
+     "mean_iob": 2.0973296106870705,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 108.05398060996289,
+     "mean_iob": 0.8832850383845818,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 119.66932117535558,
+     "mean_iob": 2.009918959339047,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 107.51145243658951,
+     "mean_iob": 1.5745026143147458,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 123.418213624572,
+     "mean_iob": 2.9123434169735294,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 135.06626584246567,
+     "mean_iob": 2.2783152130011013,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 114.40184734775389,
+     "mean_iob": 2.0473305494446317,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 103.47377884615163,
+     "mean_iob": 1.3489174142634373,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 41,
+     "median_cgm": 159.2713763169676,
+     "mean_iob": 3.4336413607408525,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 107.35016591429343,
+     "mean_iob": 1.138949506319635,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 45,
+     "median_cgm": 97.62025004458134,
+     "mean_iob": 1.097154495938898,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 126.69507509905628,
+     "mean_iob": 2.301200046566308,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 120.73862835290507,
+     "mean_iob": 2.1928456010293993,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 97.40070935321276,
+     "mean_iob": 1.363686412103486,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 106.65367109421148,
+     "mean_iob": 1.139337482948217,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 98.45070305349165,
+     "mean_iob": 0.3419187559577655,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 100.03547376597764,
+     "mean_iob": 0.6892583844984621,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 70,
+     "median_cgm": 125.28062496019105,
+     "mean_iob": 3.311564803091205,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 121.78992089524968,
+     "mean_iob": 2.2924544146356163,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 98.92420359270017,
+     "mean_iob": 0.5254711944592105,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 112.27955392043971,
+     "mean_iob": 1.2836715179868312,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 96.12714505343027,
+     "mean_iob": 1.9678492155890797,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 119.96215360736431,
+     "mean_iob": 2.4844005219567897,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 132.55691456398856,
+     "mean_iob": 2.3296522090096983,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 113.04838988441244,
+     "mean_iob": 1.323582308477282,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 96.1652428674404,
+     "mean_iob": 1.0071156045478757,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 53,
+     "median_cgm": 109.9493359489711,
+     "mean_iob": 1.9199921876134158,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 79.4733643683539,
+     "mean_iob": -0.39868991449883356,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 160.68108892431064,
+     "mean_iob": 5.60309178782453,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 155.84161849514135,
+     "mean_iob": 5.491692356040164,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 125.38811601924493,
+     "mean_iob": 2.8850255184832823,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 37,
+     "median_cgm": 90.36492536787459,
+     "mean_iob": -0.6508231555257504,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 49,
+     "median_cgm": 93.8495406268607,
+     "mean_iob": -0.4318844202787816,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 116.09707113657538,
+     "mean_iob": 1.869845218298882,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 116.92817845911367,
+     "mean_iob": 2.0643750291609737,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 105.90353757619849,
+     "mean_iob": 0.7934023051814802,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 118.0118297434316,
+     "mean_iob": 1.1990541254012643,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 50,
+     "median_cgm": 109.0763641317072,
+     "mean_iob": 0.3606202331753763,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 63,
+     "median_cgm": 116.75030494623404,
+     "mean_iob": 1.4582905668057968,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 90.6949299559733,
+     "mean_iob": 0.09975507513907544,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "all_strong",
+   "nights": [
+    {
+     "day": 1,
+     "steps": 61,
+     "median_cgm": 132.26419722879137,
+     "mean_iob": 1.5485424927608742,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 91.68348742719522,
+     "mean_iob": 1.703314257574252,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 101.93323401949596,
+     "mean_iob": 0.26617352715785736,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 78.94701262415467,
+     "mean_iob": -0.1300353875475785,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 112.23162817568958,
+     "mean_iob": 1.4186767481582128,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 108.63104644227494,
+     "mean_iob": 1.0153604494078747,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 88.95654304154431,
+     "mean_iob": 0.08499972442507388,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 41,
+     "median_cgm": 85.38404592324518,
+     "mean_iob": 0.038813206510541515,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 56,
+     "median_cgm": 112.35191098559037,
+     "mean_iob": 0.8368358042013107,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#001",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 142.1737322108729,
+     "mean_iob": 2.3686898249791395,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 62,
+     "median_cgm": 113.53080864570745,
+     "mean_iob": 1.1466526649306976,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 71,
+     "median_cgm": 134.11228233880988,
+     "mean_iob": 2.253495634214871,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 44,
+     "median_cgm": 125.11959550296926,
+     "mean_iob": 1.6403732718366797,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 49,
+     "median_cgm": 208.03365481877034,
+     "mean_iob": 5.6876143810077675,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 147.47076939938955,
+     "mean_iob": 2.860748358105494,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 116.23004611559143,
+     "mean_iob": 1.2124642410463493,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 47,
+     "median_cgm": 187.59824421774587,
+     "mean_iob": 5.25830213542742,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 96.04660791544282,
+     "mean_iob": 0.20043963596562425,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 99.7009360521601,
+     "mean_iob": 0.22846583639534573,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#002",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 138.4579024942762,
+     "mean_iob": 1.964897416210457,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 48,
+     "median_cgm": 107.04580703291498,
+     "mean_iob": 1.1349939632889068,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 61,
+     "median_cgm": 102.81203783770167,
+     "mean_iob": 0.6579478443164676,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 132.671329453804,
+     "mean_iob": 1.653416439804199,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 60,
+     "median_cgm": 143.4597736798697,
+     "mean_iob": 1.9755654429042917,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 144.08091758689037,
+     "mean_iob": 2.341053922427939,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 129.2763625798284,
+     "mean_iob": 1.6998931590703508,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 136.2703348250517,
+     "mean_iob": 1.6486890881819374,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 68,
+     "median_cgm": 105.50553279424457,
+     "mean_iob": 0.7505445577952731,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#003",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 141.53107035871153,
+     "mean_iob": 1.6136561204561954,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 71,
+     "median_cgm": 160.2252377560018,
+     "mean_iob": 2.438643666199024,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 71,
+     "median_cgm": 149.9919164700776,
+     "mean_iob": 3.0756619395264146,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 157.32307162345342,
+     "mean_iob": 2.8327458707849837,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 42,
+     "median_cgm": 172.71546968708077,
+     "mean_iob": 3.11581507509685,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 143.1359257071439,
+     "mean_iob": 1.910967386523545,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 66,
+     "median_cgm": 118.20187612587209,
+     "mean_iob": 1.0826877807427382,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 135.31902342630352,
+     "mean_iob": 1.9179414411193534,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 68,
+     "median_cgm": 150.1749068391827,
+     "mean_iob": 2.599762026617277,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 64,
+     "median_cgm": 142.5298999217233,
+     "mean_iob": 2.378494452075998,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 43,
+     "median_cgm": 129.15914729445487,
+     "mean_iob": 0.9335038671604621,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 43,
+     "median_cgm": 121.71871699839386,
+     "mean_iob": 0.953309030373156,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 38,
+     "median_cgm": 160.56994272871952,
+     "mean_iob": 2.757706836389429,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#004",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 47,
+     "median_cgm": 144.41140293810065,
+     "mean_iob": 2.2358084881104263,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 63,
+     "median_cgm": 137.22307939369023,
+     "mean_iob": 2.352711818895691,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 66,
+     "median_cgm": 165.79361737736178,
+     "mean_iob": 3.8220556845082405,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 133.93377033971126,
+     "mean_iob": 2.235779592701869,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 186.03378099441625,
+     "mean_iob": 3.927827556792934,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 149.34239725279792,
+     "mean_iob": 2.8882786152959747,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 70,
+     "median_cgm": 150.15315979265688,
+     "mean_iob": 2.8733746785861163,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 147.0502575160855,
+     "mean_iob": 2.663106983191579,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 37,
+     "median_cgm": 141.56362737383517,
+     "mean_iob": 2.6311437251418623,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 123.82098021650445,
+     "mean_iob": 1.4702455673412165,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#005",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 130.17710636346712,
+     "mean_iob": 2.7576081603439295,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 59,
+     "median_cgm": 90.25678435673083,
+     "mean_iob": 1.1791309082955197,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 119.53109682837771,
+     "mean_iob": 2.5921780677720876,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 62,
+     "median_cgm": 188.05062997234094,
+     "mean_iob": 6.7087030245744455,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 65,
+     "median_cgm": 153.90648823200075,
+     "mean_iob": 4.454412902072967,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 69,
+     "median_cgm": 101.27987077356154,
+     "mean_iob": 1.5800432128935575,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 93.74069510916532,
+     "mean_iob": 0.8376556197131555,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 153.3142537839945,
+     "mean_iob": 3.738488726723029,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 120.66694841701286,
+     "mean_iob": 2.8577084999991706,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 122.20262782679654,
+     "mean_iob": 2.480856226948491,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 41,
+     "median_cgm": 138.1993591384009,
+     "mean_iob": 3.9098479155011963,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 204.55323472706954,
+     "mean_iob": 5.343493479228736,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 133.3054493319711,
+     "mean_iob": 2.590867330600411,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#006",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 128.79426777710756,
+     "mean_iob": 1.315178309556656,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 172.60376156360473,
+     "mean_iob": 2.6290088631855424,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 144.7492021384699,
+     "mean_iob": 2.0042456223512977,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 124.95528079656725,
+     "mean_iob": 1.7423481363417441,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 69,
+     "median_cgm": 120.14485834914588,
+     "mean_iob": 1.699731217118331,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 64,
+     "median_cgm": 140.90422873111464,
+     "mean_iob": 1.853286135167049,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 50,
+     "median_cgm": 128.69344502444284,
+     "mean_iob": 1.3935778842232585,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 149.44173545642553,
+     "mean_iob": 4.137589212742128,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 110.88780901062756,
+     "mean_iob": 0.9892525190226951,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 59,
+     "median_cgm": 151.10093355578678,
+     "mean_iob": 2.7268066017322585,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#007",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 133.72475399744246,
+     "mean_iob": 1.0018762365637304,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 72,
+     "median_cgm": 172.7966400268831,
+     "mean_iob": 2.4849143868243133,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 163.5930081523627,
+     "mean_iob": 1.8390817349824826,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 67,
+     "median_cgm": 156.72143187976184,
+     "mean_iob": 1.787079401146848,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 186.25217701243145,
+     "mean_iob": 2.7866624808664566,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 146.74808548325086,
+     "mean_iob": 1.4637782928399048,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 168.46374584629174,
+     "mean_iob": 2.2286146040541577,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 59,
+     "median_cgm": 150.76746946201396,
+     "mean_iob": 1.6411677293488505,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 138.51401360290413,
+     "mean_iob": 1.2990124700016596,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 151.8114554371192,
+     "mean_iob": 1.80094057983876,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#008",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 130.17574522485833,
+     "mean_iob": 1.4303946840898356,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 138.1913463062485,
+     "mean_iob": 1.9284066479705497,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 112.67932764172775,
+     "mean_iob": 0.7241962711957401,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 70,
+     "median_cgm": 126.98310562026072,
+     "mean_iob": 1.3853922826326694,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 69,
+     "median_cgm": 122.03501604035522,
+     "mean_iob": 1.3368095470468095,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 41,
+     "median_cgm": 126.71959015414056,
+     "mean_iob": 1.3871114303693417,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 140.70628960124554,
+     "mean_iob": 1.899330432313227,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 134.70640755374077,
+     "mean_iob": 1.7192970588194159,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 136.67253010679713,
+     "mean_iob": 1.5190157700814793,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 72,
+     "median_cgm": 115.47409519887997,
+     "mean_iob": 1.7928443660355167,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#009",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 136.36203089035726,
+     "mean_iob": 1.3774616069377705,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 38,
+     "median_cgm": 127.51830856561541,
+     "mean_iob": 1.3233984017865417,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 68,
+     "median_cgm": 136.22695323352343,
+     "mean_iob": 1.4937019045197641,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 162.78234499885747,
+     "mean_iob": 2.8741817540058943,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 164.89364727949692,
+     "mean_iob": 2.4126489595103755,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 55,
+     "median_cgm": 137.63389192664698,
+     "mean_iob": 1.5440217130747291,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 149.80026198560063,
+     "mean_iob": 2.199246468803664,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 63,
+     "median_cgm": 157.92704434748927,
+     "mean_iob": 2.3978756261133727,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 69,
+     "median_cgm": 136.73385958534902,
+     "mean_iob": 1.5146173603232724,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#010",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 149.94187388867874,
+     "mean_iob": 2.784993326959482,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 39,
+     "median_cgm": 108.10152035021797,
+     "mean_iob": 1.2024006945775305,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 99.53260967768682,
+     "mean_iob": 0.3330370902060362,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 58,
+     "median_cgm": 232.48164568029637,
+     "mean_iob": 6.393823014616048,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 201.29670570071005,
+     "mean_iob": 4.102941309523187,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 145.3573483327646,
+     "mean_iob": 2.461026831674688,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 72,
+     "median_cgm": 131.71835215378954,
+     "mean_iob": 1.8898440742163207,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 71,
+     "median_cgm": 112.11690488195651,
+     "mean_iob": 0.8124629496349929,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 45,
+     "median_cgm": 163.97839755588092,
+     "mean_iob": 3.7567724824202395,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 57,
+     "median_cgm": 147.82850147257705,
+     "mean_iob": 2.3694951159509454,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#011",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 0,
+     "steps": 71,
+     "median_cgm": 118.79560821186337,
+     "mean_iob": 0.7001443599285817,
+     "target": 110.0
+    },
+    {
+     "day": 1,
+     "steps": 72,
+     "median_cgm": 133.8164471527654,
+     "mean_iob": 1.5186800983597029,
+     "target": 110.0
+    },
+    {
+     "day": 2,
+     "steps": 72,
+     "median_cgm": 141.83154002110814,
+     "mean_iob": 1.8584077473629372,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 41,
+     "median_cgm": 156.17990361428363,
+     "mean_iob": 1.8713053145011924,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 98.35203490379831,
+     "mean_iob": 0.47081626970618856,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 63,
+     "median_cgm": 149.90934079837777,
+     "mean_iob": 1.8447276332065337,
+     "target": 110.0
+    },
+    {
+     "day": 6,
+     "steps": 72,
+     "median_cgm": 196.7627468761185,
+     "mean_iob": 2.4802794539122743,
+     "target": 110.0
+    },
+    {
+     "day": 7,
+     "steps": 72,
+     "median_cgm": 122.39109395169694,
+     "mean_iob": 1.0331727604910124,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 116.41946748461518,
+     "mean_iob": 1.0385791487581948,
+     "target": 110.0
+    },
+    {
+     "day": 9,
+     "steps": 72,
+     "median_cgm": 120.41129280396697,
+     "mean_iob": 1.0897843071110234,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 61,
+     "median_cgm": 136.83555229028107,
+     "mean_iob": 1.1824438979565555,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 184.6412968018459,
+     "mean_iob": 2.76670654489582,
+     "target": 110.0
+    }
+   ]
+  },
+  {
+   "name": "adult#012",
+   "condition": "all_weak",
+   "nights": [
+    {
+     "day": 2,
+     "steps": 57,
+     "median_cgm": 98.65331264708173,
+     "mean_iob": 0.6427221996332275,
+     "target": 110.0
+    },
+    {
+     "day": 3,
+     "steps": 72,
+     "median_cgm": 128.8296892940678,
+     "mean_iob": 1.1208215144330826,
+     "target": 110.0
+    },
+    {
+     "day": 4,
+     "steps": 72,
+     "median_cgm": 153.90413946113517,
+     "mean_iob": 2.1056298670957827,
+     "target": 110.0
+    },
+    {
+     "day": 5,
+     "steps": 37,
+     "median_cgm": 73.18425093903508,
+     "mean_iob": 0.07559957117076521,
+     "target": 110.0
+    },
+    {
+     "day": 8,
+     "steps": 72,
+     "median_cgm": 143.50876495484442,
+     "mean_iob": 1.8142171043800666,
+     "target": 110.0
+    },
+    {
+     "day": 10,
+     "steps": 68,
+     "median_cgm": 126.23185183741998,
+     "mean_iob": 1.0217771377972293,
+     "target": 110.0
+    },
+    {
+     "day": 11,
+     "steps": 72,
+     "median_cgm": 130.27711907704696,
+     "mean_iob": 1.3558186151443543,
+     "target": 110.0
+    },
+    {
+     "day": 12,
+     "steps": 64,
+     "median_cgm": 123.22768779034043,
+     "mean_iob": 1.528695879802722,
+     "target": 110.0
+    },
+    {
+     "day": 13,
+     "steps": 72,
+     "median_cgm": 145.18414799021613,
+     "mean_iob": 1.748489226745521,
+     "target": 110.0
+    }
+   ]
+  }
+ ]
+}
