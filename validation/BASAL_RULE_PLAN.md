@@ -61,3 +61,22 @@ false ups in isf_weak and cr_weak, where under-corrected evening highs carry int
 The titrated basal is TimSim's titration under its trend loop, not a basal proven right under
 oref, so "hold" being right in the five basal-right conditions is an assumption. Unannounced meals
 in TimSim are invisible to the rule, as they would be in real data.
+
+## Amendment, 10 November 2026, while the run was going and before any result was read
+
+TimSim supports relative comparisons, not absolute ones: the titrated basal is not known to be
+right for oref, so scoring the rule against "the right answer" above claims more than the simulator
+can give. The judgement above is withdrawn and replaced by two comparisons within each subject on
+the same seed; the counts against the titrated basal are still printed but decide nothing.
+
+- Ordering. Mean overnight net insulin on board, and the share of nights voting up, should rank
+  basal_low above titrated above basal_high. The rule goes forward when the mean net insulin on
+  board is in that order in at least 10 of the 12 subjects. By chance a given order of three
+  comes up one time in six, so 10 of 12 is far beyond chance (P < 0.0001); the bar is set for
+  consistency, not significance.
+- Specificity. The change in the share of nights voting up, against titrated, should be smaller
+  for a 30% ISF or carb-ratio error than for a 30% basal error. The rule goes forward when the
+  median absolute change across isf_strong, isf_weak, cr_strong and cr_weak is under half the
+  median absolute change across basal_low and basal_high. Half is a modelling choice.
+
+Neither decides use on real data; that needs its own test on real records.

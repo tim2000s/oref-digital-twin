@@ -113,6 +113,7 @@ def main():
     a = ap.parse_args()
     if a.summarise:
         summarise(a.summarise)
+        relative(a.summarise)
         return
     names = list(json.load(open(STORE))["subjects"])[: a.subjects]
     jobs = [(n, c) for c in T.CONDITIONS for n in names]
@@ -127,3 +128,30 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def relative(path):
+    """The amended judgement of BASAL_RULE_PLAN.md: comparisons within a subject on one seed."""
+    import statistics as st
+    d = json.load(open(path))
+    by = {(x["name"], x["condition"]): x["nights"] for x in d["rows"]}
+    names = sorted({n for n, _ in by})
+    iob = lambda ns: st.mean(n["mean_iob"] for n in ns) if ns else None
+    ups = lambda ns: (sum(n["median_cgm"] > n["target"] and n["mean_iob"] > IOB_U for n in ns) / len(ns)
+                      if ns else None)
+    ordered = [n for n in names if None not in (iob(by[(n, "basal_low")]), iob(by[(n, "titrated")]),
+                                                 iob(by[(n, "basal_high")]))
+               and iob(by[(n, "basal_low")]) > iob(by[(n, "titrated")]) > iob(by[(n, "basal_high")])]
+    shift = lambda c: [abs(ups(by[(n, c)]) - ups(by[(n, "titrated")])) for n in names
+                       if by[(n, c)] and by[(n, "titrated")]]
+    basal = st.median(shift("basal_low") + shift("basal_high"))
+    other = st.median(sum((shift(c) for c in ("isf_strong", "isf_weak", "cr_strong", "cr_weak")), []))
+    per = {c: {"mean_iob": round(st.median(iob(by[(n, c)]) for n in names if by[(n, c)]), 3),
+               "up_share": round(st.median(ups(by[(n, c)]) for n in names if by[(n, c)]), 3)}
+           for c in T.CONDITIONS}
+    out = {"ordered_subjects": len(ordered), "of": len(names),
+           "median_abs_up_shift": {"basal": basal, "isf_cr": other},
+           "per_condition_median": per,
+           "verdict": {"ordered_10_of_12": len(ordered) >= 10, "isf_cr_under_half_basal": other < basal / 2}}
+    print(json.dumps(out, indent=1))
+    return out
