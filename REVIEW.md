@@ -21,3 +21,11 @@ labelled important (fix before commit), nit (optional) or pre-existing (record, 
   floors only tighten.
 - The optional parts (the summary, a settings file) can fail without costing the person their
   report.
+- A change to how settings are chosen is tested over repeated reviews, since the page is meant to
+  be run again each fortnight. One review passing is not evidence for three: on 9 November 2026
+  the page that passed one review met three of the four harm criteria over three
+  (`validation/GUARD_PLAN.md`).
+- A harm or benefit criterion is applied to the null arm before any arm is judged by it, and one
+  the null arm meets, or one that cannot vary on a body, is fixed before use. On 11 November 2026
+  the pass-rule criterion that failed the pace rule was found to be met by the null arm on S2008
+  and unable to fire on Hovorka (`validation/null_criteria.py`).

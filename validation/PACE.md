@@ -105,6 +105,28 @@ had fewer than both); criteria 2 and 3 met on both bodies (they were); range in 
 too-little-insulin conditions at or below C's (it was, in seven of eight); no row past 20% towards
 more insulin (none was).
 
+## Revision, 11 November 2026, after the results were read
+
+The judgement above stands as the plan wrote it; nothing here changes it.
+
+The criterion arm P failed was checked against the null arm afterwards (`null_criteria.py`,
+`results/null_criteria.json`). On S2008 the null arm, which changes max IOB by 0.03 U and nothing
+else, also has fewer passing than the mis-set start in one condition (isf_weak, 4 to 3), so a
+change doing nothing meets that criterion. On Hovorka no subject-condition passes the pass rule
+with the mis-set profile, so the criterion cannot fire there. It was carried from
+`BAD_PROFILES_PLAN_2.md` into every plan since without this check. Arm A's failure of it in
+`GUARD_PLAN.md` and arm P's here carry no more weight than the null arm's.
+
+"Too little insulin" names how the four weak conditions were made, as `BAD_PROFILES_2.md` notes,
+not what the twin saw. On Hovorka half of them had 2% or more of the learning fortnight below 70,
+and where no value meets the aim the choice rule takes the value with fewest estimated lows, which
+is a weaker one. `WEAK_PROFILES.md` recorded the same fallback cutting basal on 8 November, before
+this plan, and the plan did not take it into account.
+
+The verdict "justified" needs only both intervals below zero. It called 12.8 points of range
+bought with 1.4 points below 70 justified, so it does not weigh the exchange and should not be read
+as approval of it.
+
 ## What follows
 
 On lows pace did what it was built for: no case on either body rose above the null maximum, and

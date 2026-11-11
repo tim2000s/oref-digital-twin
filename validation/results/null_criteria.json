@@ -1,0 +1,80 @@
+{
+ "S2008": {
+  "passing_by_condition": {
+   "all_strong": {
+    "start": 0,
+    "null": 0
+   },
+   "all_weak": {
+    "start": 2,
+    "null": 4
+   },
+   "basal_high": {
+    "start": 1,
+    "null": 1
+   },
+   "basal_low": {
+    "start": 3,
+    "null": 4
+   },
+   "cr_strong": {
+    "start": 2,
+    "null": 3
+   },
+   "cr_weak": {
+    "start": 3,
+    "null": 3
+   },
+   "isf_strong": {
+    "start": 0,
+    "null": 1
+   },
+   "isf_weak": {
+    "start": 4,
+    "null": 3
+   }
+  },
+  "null_fewer_passing": [
+   "isf_weak"
+  ],
+  "start_passing_total": 15
+ },
+ "Hovorka": {
+  "passing_by_condition": {
+   "all_strong": {
+    "start": 0,
+    "null": 0
+   },
+   "all_weak": {
+    "start": 0,
+    "null": 0
+   },
+   "basal_high": {
+    "start": 0,
+    "null": 0
+   },
+   "basal_low": {
+    "start": 0,
+    "null": 0
+   },
+   "cr_strong": {
+    "start": 0,
+    "null": 0
+   },
+   "cr_weak": {
+    "start": 0,
+    "null": 0
+   },
+   "isf_strong": {
+    "start": 0,
+    "null": 0
+   },
+   "isf_weak": {
+    "start": 0,
+    "null": 0
+   }
+  },
+  "null_fewer_passing": [],
+  "start_passing_total": 0
+ }
+}
