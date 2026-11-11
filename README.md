@@ -118,10 +118,16 @@ picks the smallest change that meets both. When no value does, it keeps time bel
 under 2% with the most time in range, and failing that it picks the value with the least
 time below range, because a low is the more immediate harm. A value that gives more insulin than the current
 setting is only considered when the whole period's estimate keeps time below 70 under 2% and
-time below 54 under 0.6%. The tests can also take a history of the settings, which refuses a
-further step towards more insulin after one the readings since did not bear out, and any step
-more than 20% from a reference profile (validation/GUARD_PLAN.md); only the validation runs
-give one, and the page does not yet. A stage is reported but not
+time below 54 under 0.6%. Two further rules use the history of your settings in Nightscout
+(validation/GUARD_PLAN.md and GUARD.md). No value may leave basal, ISF or carb ratio more than
+20% towards more insulin than the profile in force 90 days ago, or the target more than
+0.5 mmol/L below it. And where your last lasting change gave more insulin on a setting, a further
+step the same way is refused unless the readings since it show at least 2 points more time in
+range and no more time below 70 than the fortnight before it. AndroidAPS changes are read from
+lasting Profile Switches, including percentage ones; Trio and Loop changes from the profile
+documents they upload. When the readings before the change cannot be fetched, the evidence counts
+as missing and the further step is refused. A refused value is marked in the table with the
+reason. These rules only ever remove values towards more insulin. A stage is reported but not
 judged when its stretches add up to less than 6 hours, which is common for ISF in someone
 who rarely runs high, and the carb-ratio stage is skipped when no carbs were logged.
 

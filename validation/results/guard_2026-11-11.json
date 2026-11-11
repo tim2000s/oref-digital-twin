@@ -1,0 +1,210 @@
+{
+ "S2008": {
+  "null": {
+   "criteria": {
+    "exceedances_10": false,
+    "above_max_5": false,
+    "more_insulin_p": false,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     15,
+     19
+    ],
+    "passing_can_vary": true
+   }
+  },
+  "A": {
+   "harm": {
+    "exceedances": 9,
+    "above_null_max": 6,
+    "given_more_insulin": 83,
+    "exceedances_more_insulin": 9,
+    "binomial_p_more_insulin": 0.0229
+   },
+   "criteria": {
+    "exceedances_10": false,
+    "above_max_5": true,
+    "more_insulin_p": true,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     15,
+     27
+    ],
+    "passing_can_vary": true
+   },
+   "no_harm": false,
+   "lows_fall_strong": {
+    "median": -0.364,
+    "ci": [
+     -0.769,
+     -0.19
+    ]
+   },
+   "weak_meeting_aim": 20
+  },
+  "C": {
+   "harm": {
+    "exceedances": 5,
+    "above_null_max": 2,
+    "given_more_insulin": 79,
+    "exceedances_more_insulin": 5,
+    "binomial_p_more_insulin": 0.3611
+   },
+   "criteria": {
+    "exceedances_10": false,
+    "above_max_5": false,
+    "more_insulin_p": false,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     15,
+     31
+    ],
+    "passing_can_vary": true
+   },
+   "no_harm": true,
+   "lows_fall_strong": {
+    "median": -0.343,
+    "ci": [
+     -0.814,
+     -0.211
+    ]
+   },
+   "weak_meeting_aim": 22
+  },
+  "P": {
+   "harm": {
+    "exceedances": 1,
+    "above_null_max": 0,
+    "given_more_insulin": 64,
+    "exceedances_more_insulin": 1,
+    "binomial_p_more_insulin": 0.9625
+   },
+   "criteria": {
+    "exceedances_10": false,
+    "above_max_5": false,
+    "more_insulin_p": false,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     15,
+     32
+    ],
+    "passing_can_vary": true
+   },
+   "no_harm": true,
+   "lows_fall_strong": {
+    "median": -0.666,
+    "ci": [
+     -0.914,
+     -0.283
+    ]
+   },
+   "weak_meeting_aim": 20
+  },
+  "weak_meeting_aim_start": 18,
+  "C_non_inferior": true
+ },
+ "Hovorka": {
+  "null": {
+   "criteria": {
+    "exceedances_10": false,
+    "above_max_5": false,
+    "more_insulin_p": false,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     0,
+     0
+    ],
+    "passing_can_vary": false
+   }
+  },
+  "A": {
+   "harm": {
+    "exceedances": 24,
+    "above_null_max": 12,
+    "given_more_insulin": 91,
+    "exceedances_more_insulin": 24,
+    "binomial_p_more_insulin": 0.0
+   },
+   "criteria": {
+    "exceedances_10": true,
+    "above_max_5": true,
+    "more_insulin_p": true,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     0,
+     0
+    ],
+    "passing_can_vary": false
+   },
+   "no_harm": false,
+   "lows_fall_strong": {
+    "median": -0.453,
+    "ci": [
+     -0.632,
+     -0.176
+    ]
+   },
+   "weak_meeting_aim": 0
+  },
+  "C": {
+   "harm": {
+    "exceedances": 7,
+    "above_null_max": 2,
+    "given_more_insulin": 91,
+    "exceedances_more_insulin": 7,
+    "binomial_p_more_insulin": 0.1705
+   },
+   "criteria": {
+    "exceedances_10": false,
+    "above_max_5": false,
+    "more_insulin_p": false,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     0,
+     0
+    ],
+    "passing_can_vary": false
+   },
+   "no_harm": true,
+   "lows_fall_strong": {
+    "median": -0.486,
+    "ci": [
+     -0.72,
+     -0.269
+    ]
+   },
+   "weak_meeting_aim": 0
+  },
+  "P": {
+   "harm": {
+    "exceedances": 0,
+    "above_null_max": 0,
+    "given_more_insulin": 71,
+    "exceedances_more_insulin": 0,
+    "binomial_p_more_insulin": 1.0
+   },
+   "criteria": {
+    "exceedances_10": false,
+    "above_max_5": false,
+    "more_insulin_p": false,
+    "fewer_passing_total": false,
+    "passing_start_end": [
+     0,
+     0
+    ],
+    "passing_can_vary": false
+   },
+   "no_harm": true,
+   "lows_fall_strong": {
+    "median": -0.736,
+    "ci": [
+     -1.207,
+     -0.653
+    ]
+   },
+   "weak_meeting_aim": 0
+  },
+  "weak_meeting_aim_start": 0,
+  "C_non_inferior": true
+ }
+}

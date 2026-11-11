@@ -12,7 +12,7 @@ above the null maximum was among them. Making the estimate the right size did no
 (`BODY.md`): the stages still take any change the twin rates as a gain, and a single review can
 strengthen every setting by up to 30% at once.
 
-Tim's direction, 11 November 2026: the twin should not try to fix everything at once; reducing
+The maintainer's direction, 11 November 2026: the twin should not try to fix everything at once; reducing
 lows and not increasing them come first, so it should strengthen slowly and weaken faster, as long
 as weakening can be done safely.
 
@@ -33,7 +33,7 @@ steps (30%, or 18 mg/dL on the target). That keeps weakening at the pace that, i
 so far, took time below 54 down in the conditions with too much insulin. Its safety rests on what
 it already rests on: a weaker value is chosen only when it meets the aim with the smallest change,
 gives the most time in range with lows under 2%, or has the fewest lows. The step sizes are the
-existing grid and the one-setting rule is a modelling choice, following Tim's order of basal, then
+existing grid and the one-setting rule is a modelling choice, following the maintainer's order of basal, then
 ISF, then carb ratio.
 
 The guard of `GUARD_PLAN.md` (no further strengthening of a setting without evidence the last
@@ -81,7 +81,7 @@ Arm P goes forward to the page wiring when, on both bodies, all of these hold:
    has a bootstrap 95% interval whose upper end is below +0.05 points. The margin is a modelling
    choice: about a seventh of the null arm's 95th percentile.
 
-Time in range is reported, not judged, since Tim has put lows first: paired P minus A and P minus
+Time in range is reported, not judged, since the maintainer has put lows first: paired P minus A and P minus
 C, medians by condition against the mis-set start, and the number of the 48 with too little
 insulin that meet the tighter aim. Also reported: how often each review strengthened a setting and
 which, how often pace and the guard each excluded a value, and the settings each arm ends with
@@ -100,7 +100,7 @@ are not trusted, so only the comparisons between arms count.
 
 ## Amendment, 11 November 2026, while arm P was running and before any result was read
 
-Tim's reply on what safe weakening means: time above 250 mg/dL is not a criterion, provided any
+The maintainer's reply on what safe weakening means: time above 250 mg/dL is not a criterion, provided any
 loss of time in range is justified. A loss is taken as justified where it buys fewer lows. Per
 condition and over all 96, paired P minus A is reported for time in range and time below 70, each
 with a bootstrap 95% interval over subjects. A condition's loss of time in range is called

@@ -19,7 +19,8 @@ from diagnostics import run_diagnostics
 from ingestion.models import ProfileSnapshot
 from ingestion.pull import pull_from_raw
 from replay import OrefOracle, from_cycle
-from replay.inputs import lasting_change, zone
+from ingestion.normalise import normalise_entry
+from replay.inputs import evidence_range, guard_history, lasting_change, settings_timeline, zone
 from variant import detect_variant
 
 from .grounding import check_narrative
@@ -177,6 +178,29 @@ def build_report(
     }
 
 
+def evidence_fetch_range() -> list[int] | None:
+    """Readings the guard needs from before the fetched period, [from, to) ms, or None.
+
+    The guard compares the fortnight before the last lasting settings change with the readings
+    since it; a change near or before the start of the period needs readings Nightscout has
+    not been asked for yet.
+    """
+    pull, profile = _LAST.get("pull"), _LAST.get("profile")
+    if pull is None or profile is None:
+        return None
+    r = evidence_range(settings_timeline(profile, pull.profiles, pull.treatments), pull.end_ms)
+    if r is None or r[0] >= pull.start_ms:
+        return None
+    return [r[0], min(r[1], pull.start_ms)]
+
+
+def add_earlier_entries(raw_entries: list[dict]) -> int:
+    """Keep readings from before the period for the guard; returns how many were usable."""
+    got = [e for e in (normalise_entry(d) for d in raw_entries) if e is not None]
+    _LAST["earlier_entries"] = got
+    return len(got)
+
+
 def settings_tests(sim_runner: Callable | None = None,
                    progress: Callable | None = None, aim: str = "tighter",
                    history: dict | None = None, sim_opts: dict | None = None,
@@ -218,6 +242,9 @@ def settings_tests(sim_runner: Callable | None = None,
     if len(requests) < 288:
         return skipped(f"Settings tests skipped: only {len(requests)} usable loop cycles, under "
                        f"one day's worth. Diagnostic: {_openaps_shape(pull)}")
+    if history is None:
+        history = guard_history(settings_timeline(profile, pull.profiles, pull.treatments),
+                                list(pull.entries) + _LAST.get("earlier_entries", []), requests[-1]["currentTime"])
     result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings,
                                 progress=progress, aim=aim, history=history,
                                 sim_opts=sim_opts, isf_band=isf_band, pace=pace)

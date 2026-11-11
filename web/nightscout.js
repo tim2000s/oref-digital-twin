@@ -236,3 +236,19 @@ async function fetchNightscout(rawBase, token, days, onProgress) {
            devicestatus: dedupe(parts.devicestatus),
            profiles: Array.isArray(profiles) ? profiles : [profiles] };
 }
+
+// Readings from before the report's period, for the guard on repeated strengthening, which
+// compares the fortnight before the last settings change with the readings since. Optional: on
+// any failure the guard treats the evidence as missing and allows no further strengthening of
+// a setting that change strengthened.
+async function fetchEarlierEntries(rawBase, token, lo, hi, onProgress) {
+  const base = normaliseBase(rawBase);
+  const spec = STREAMS.find((s) => s.key === 'entries');
+  const progress = { tick() {}, split() {}, note: (t) => onProgress(`Fetching earlier readings… (${t})`) };
+  onProgress('Fetching the readings from before your last settings change…');
+  const out = [];
+  for (let a = lo; a < hi; a += spec.windowDays * DAY_MS) {
+    out.push(...await fetchWindow(base, token, spec, a, Math.min(a + spec.windowDays * DAY_MS, hi), progress));
+  }
+  return dedupe(out);
+}

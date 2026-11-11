@@ -223,3 +223,32 @@ def test_settings_tests_warn_of_a_lasting_switch_inside_the_period():
     tz = ZoneInfo(fx.PROFILE_MMOL["store"][fx.PROFILE_MMOL["defaultProfile"]]["timezone"])
     local = datetime.fromtimestamp((raw["start_ms"] + 12 * 3_600_000) / 1000, tz=tz).strftime("%d %b %Y")
     assert f"on {local})" in out["report_md"]
+
+
+def test_settings_tests_give_the_guard_the_history_from_nightscout():
+    from report.browser import add_earlier_entries, evidence_fetch_range
+
+    raw = _day_raw()
+    switch = raw["start_ms"] + 12 * 3_600_000
+    raw["treatments"] = raw["treatments"] + [{"_id": "ps", "eventType": "Profile Switch", "date": switch,
+                                              "duration": 0, "percentage": 110, "timeshift": 0}]
+    build_report(raw, oref_runner=_fake_oref_runner)
+    lo, hi = evidence_fetch_range()
+    assert hi == raw["start_ms"] and lo == switch - 14 * 86_400_000
+    assert add_earlier_entries([{"_id": "x", "date": lo, "sgv": 120, "type": "sgv"}]) == 1
+    kept = {}
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        return {"t": t, "scenarios": [
+            {"du": [0.0] * len(t), "failed": 0,
+             "dbg": [(1 - sc["basal_scale"]) * 20] * len(t)} for sc in payload["scenarios"]]}
+
+    out = settings_tests(sim_runner=fake_sim)
+    basal = next(s for s in out["result"]["stages"] if s["name"] == "Basal")
+    # the last change raised basal by 10% and there are too few readings before it to show a gain
+    stronger = [r for r in basal["rows"] if r["value"] > 1]
+    assert stronger and all(r["excluded"] and r["guard"] for r in stronger)
+    assert "the last change already gave more insulin" in out["report_md"]

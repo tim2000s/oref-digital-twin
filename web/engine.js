@@ -79,6 +79,16 @@ const ops = {
     } finally {
       rawPy.destroy();
     }
+    const range = B.evidence_fetch_range();
+    if (range) {
+      const [lo, hi] = toJs(range);
+      try {
+        const earlier = pyodide.toPy(await fetchEarlierEntries(url, token, lo, hi, progress));
+        try { B.add_earlier_entries(earlier); } finally { earlier.destroy(); }
+      } catch (e) {
+        // the guard then counts the evidence as missing, which only removes options
+      }
+    }
     const resultPy = pyodide.toPy(result);
     try {
       return { report_md: result.report_md, source: toJs(B.abstracted_findings(resultPy)) };

@@ -204,6 +204,19 @@ def _daily_mean(blocks) -> float | None:
     return (b[-1].value * head + sum(x.value * (e - x.seconds_from_midnight) for x, e in zip(b, ends))) / 86400
 
 
+def _lasting_switches(treatments: list[Treatment] | None) -> list[Treatment]:
+    return sorted((t for t in treatments or [] if t.event_type == "Profile Switch" and not t.duration_min),
+                  key=lambda t: t.ts_ms)
+
+
+def _means(snap: ProfileSnapshot) -> dict:
+    """Daily mean basal, ISF and carb ratio and mean target of a profile."""
+    tgt = [_daily_mean(snap.target_low_mgdl), _daily_mean(snap.target_high_mgdl)]
+    return {"basal": _daily_mean(snap.basal), "isf": _daily_mean(snap.isf_mgdl),
+            "cr": _daily_mean(snap.carb_ratio),
+            "target": None if None in tgt else (tgt[0] + tgt[1]) / 2}
+
+
 def lasting_change(snapshot: ProfileSnapshot, treatments: list[Treatment] | None,
                    start_ms: int, end_ms: int) -> dict | None:
     """A lasting change of settings inside the period, or None.
@@ -216,16 +229,9 @@ def lasting_change(snapshot: ProfileSnapshot, treatments: list[Treatment] | None
     last lasting switch, after which the settings at the end were in force; each figure is the
     largest difference between an earlier stretch and the end, as a change towards the end.
     """
-    lasting = sorted((t for t in treatments or [] if t.event_type == "Profile Switch" and not t.duration_min),
-                     key=lambda t: t.ts_ms)
-
-    def means(sw):
-        snap = snapshot if sw is None else (_switched(snapshot, sw.profile_json, sw.percentage, sw.timeshift_h)
-                                            or snapshot)
-        tgt = [_daily_mean(snap.target_low_mgdl), _daily_mean(snap.target_high_mgdl)]
-        return {"basal": _daily_mean(snap.basal), "isf": _daily_mean(snap.isf_mgdl),
-                "cr": _daily_mean(snap.carb_ratio),
-                "target": None if None in tgt else (tgt[0] + tgt[1]) / 2}
+    lasting = _lasting_switches(treatments)
+    means = lambda sw: _means(snapshot if sw is None else (
+        _switched(snapshot, sw.profile_json, sw.percentage, sw.timeshift_h) or snapshot))
 
     inside = [t for t in lasting if start_ms < t.ts_ms <= end_ms]
     if not inside:
@@ -532,3 +538,83 @@ def from_cycle(
         "currentTime": cycle.ts_ms,
     }
     return request, warnings
+
+
+# What the guard of replay.scenarios is given in use (validation/GUARD_PLAN.md). A person runs the
+# page, changes what they choose, and comes back later; the page keeps nothing between visits, so
+# the history is read from Nightscout. The reference is the profile in force REFERENCE_DAYS ago, so
+# the 20% cap bounds how far repeated advice can move a setting in that time; 90 days is a
+# modelling choice, about six fortnightly visits.
+REFERENCE_DAYS = 90
+EVIDENCE_DAYS = 14              # readings either side of the last change
+EVIDENCE_MIN_READINGS = 864     # three days of 5-minute readings, or that side counts as missing
+
+
+def settings_timeline(snapshot: ProfileSnapshot, profiles: list[ProfileSnapshot] | None,
+                      treatments: list[Treatment] | None) -> list[tuple[int, dict]]:
+    """(start ms, daily means) of each lasting setting, oldest first.
+
+    AndroidAPS records a change as a lasting Profile Switch, which can scale the profile by a
+    percentage; where there are any, they are the timeline, after the stored profile at 100%,
+    which is what a percentage scales and the best record of what ran before the first switch.
+    Trio and Loop upload a new profile document instead, so without switches the documents'
+    start dates are used.
+    """
+    switches = _lasting_switches(treatments)
+    if switches:
+        return [(0, _means(snapshot))] + [
+            (t.ts_ms, _means(_switched(snapshot, t.profile_json, t.percentage, t.timeshift_h) or snapshot))
+            for t in switches]
+    docs = sorted((p for p in profiles or [] if p.valid_from_ms is not None), key=lambda p: p.valid_from_ms)
+    return [(p.valid_from_ms, _means(p)) for p in docs] or [(0, _means(snapshot))]
+
+
+def _readings(entries: list[GlucoseReading], lo: int, hi: int) -> dict | None:
+    g = [e.sgv_mgdl for e in entries if lo <= e.ts_ms < hi and e.sgv_mgdl]
+    if len(g) < EVIDENCE_MIN_READINGS:
+        return None
+    return {"tir": 100 * sum(70 <= x <= 180 for x in g) / len(g), "tbr": 100 * sum(x < 70 for x in g) / len(g)}
+
+
+def _towards(new: dict, old: dict) -> dict:
+    """Each setting of `new` as the tests' scale or offset from `old`."""
+    out = {k: new[k] / old[k] for k in ("basal", "isf", "cr") if new.get(k) and old.get(k)}
+    if new.get("target") is not None and old.get("target") is not None:
+        out["target"] = new["target"] - old["target"]
+    return out
+
+
+def evidence_range(timeline: list[tuple[int, dict]], now_ms: int) -> tuple[int, int] | None:
+    """The readings the guard needs before the last change, (from, to) ms, or None."""
+    last = _last_change(timeline)
+    return None if last is None else (timeline[last][0] - EVIDENCE_DAYS * 86_400_000, timeline[last][0])
+
+
+def _last_change(timeline: list[tuple[int, dict]]) -> int | None:
+    from replay.scenarios import GUARD_LAST_MIN, GUARD_LAST_TARGET_MGDL
+    for i in range(len(timeline) - 1, 0, -1):
+        d = _towards(timeline[i][1], timeline[i - 1][1])
+        if (any(abs(d.get(k, 1) - 1) > GUARD_LAST_MIN for k in ("basal", "isf", "cr"))
+                or abs(d.get("target", 0)) >= GUARD_LAST_TARGET_MGDL):
+            return i
+    return None
+
+
+def guard_history(timeline: list[tuple[int, dict]], entries: list[GlucoseReading], now_ms: int) -> dict:
+    """The history `replay.scenarios.guard_refuses` reads, from the settings timeline and readings.
+
+    "cumulative" is the settings now against the reference profile, "last" the last lasting
+    change of more than the guard's thresholds, and "before" and "after" the readings in the
+    EVIDENCE_DAYS before it and since it. A side with under three days of readings is left out,
+    so the guard refuses further strengthening of a setting the last change strengthened.
+    """
+    ref_ms = now_ms - REFERENCE_DAYS * 86_400_000
+    ref = max((m for m in timeline if m[0] <= ref_ms), key=lambda m: m[0], default=timeline[0])
+    hist: dict = {"cumulative": _towards(timeline[-1][1], ref[1])}
+    last = _last_change(timeline)
+    if last is not None:
+        ts = timeline[last][0]
+        hist["last"] = _towards(timeline[last][1], timeline[last - 1][1])
+        hist["before"] = _readings(entries, ts - EVIDENCE_DAYS * 86_400_000, ts)
+        hist["after"] = _readings(entries, ts, now_ms + 1)
+    return hist
