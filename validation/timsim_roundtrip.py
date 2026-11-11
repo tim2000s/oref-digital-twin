@@ -264,7 +264,8 @@ def review_history(chosen, reviews, now):
 
 
 def roundtrip_one(job):
-    name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse, n_reviews, guard = job
+    (name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse, n_reviews, guard,
+     sim_opts, isf_band) = job
     if isinstance(eval_seeds, int):
         eval_seeds = [eval_seeds]
     _paths()
@@ -293,7 +294,8 @@ def roundtrip_one(job):
                            settings=twin_settings(p1) if smb_run is None else
                            twin_settings(p1, smb_minutes=smb_run, uam_minutes=smb_run))
         history = review_history(chosen, reviews, outcomes(lr)) if guard else None
-        tests = settings_tests(sim_runner=oracle.simulate, aim=aim, history=history)
+        tests = settings_tests(sim_runner=oracle.simulate, aim=aim, history=history,
+                               sim_opts=sim_opts, isf_band=isf_band)
         oracle._simulator.close()
         if "skipped" in tests:
             return {"name": name, "error": tests["skipped"]}
@@ -417,6 +419,12 @@ def main():
                          "with the profile the previous one left")
     ap.add_argument("--guard", action="store_true",
                     help="give each review the settings' history, so the guard of GUARD_PLAN.md acts")
+    ap.add_argument("--body", choices=("hovorka",),
+                    help="the twin's simulator carries each dose's effect with this body model "
+                         "(BODY_PLAN.md) instead of keeping it for the whole period")
+    ap.add_argument("--isf-band", dest="isf_band",
+                    help="comma-separated scales on the body's sensitivity, including 1; each "
+                         "value is judged on its least favourable one (BODY_PLAN.md)")
     ap.add_argument("--cohort", default="adult", choices=("adult", "hovorka"),
                     help="TimSim's S2008 adults or its second body; hovorka needs --store, "
                          "TimSim's own titrated_settings_hovorka.json")
@@ -460,8 +468,11 @@ def main():
             reuse[(r["name"], r["condition"])] = {
                 "_from": os.path.basename(a.reuse_arms), "per_seed": r["per_seed"],
                 "eval_start": r["eval_start"], "eval_null": r.get("eval_null")}
+    sim_opts = {"body": {"model": a.body}} if a.body else None
+    isf_band = tuple(float(x) for x in a.isf_band.split(",")) if a.isf_band else None
     jobs = [(n, store, eval_seeds, c, a.learn_days, a.eval_days, a.null, a.aim,
-             reuse.get((n, c)), a.reviews, a.guard) for c in conditions for n in ok]
+             reuse.get((n, c)), a.reviews, a.guard, sim_opts, isf_band)
+            for c in conditions for n in ok]
     with ProcessPoolExecutor(a.workers) as ex:
         rows = list(ex.map(roundtrip_one, jobs))
     good = [r for r in rows if "error" not in r]
@@ -477,6 +488,7 @@ def main():
                                   "eval_seed": eval_seeds[0], "null_arm": a.null,
                                   "aim": a.aim, "reused_arms_from": a.reuse_arms,
                                   "reviews": a.reviews, "guard": a.guard,
+                                  "body": a.body, "isf_band": isf_band,
                                   "cohort": a.cohort},
                        "failed": [r for r in rows if "error" in r], "rows": good,
                        "seconds": round(time.time() - t0, 1)}, fh, indent=1, default=float)

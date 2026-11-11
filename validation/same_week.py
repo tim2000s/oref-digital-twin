@@ -44,9 +44,10 @@ def changed_profile(p, ch):
 
 
 def one(job):
-    """job: a subject name, or (name, options, stored row list) to re-estimate with the twin's
-    optional decay and take the TimSim truth from an earlier run (--truth-from)."""
-    name, opts, stored = (job, {}, None) if isinstance(job, str) else job
+    """job: (name, store, options, stored row list or None). With options the twin re-estimates
+    with its optional decay, rescue or body, and the TimSim truth comes from an earlier run
+    (--truth-from)."""
+    name, store, opts, stored = job
     T._paths()
     from ingestion.pull import pull_from_raw
     from ingestion.models import GlucoseReading
@@ -55,7 +56,7 @@ def one(job):
     from report.browser import _active_profile
     from timsim.therapy import titrate
 
-    rec = json.load(open(STORE))["subjects"][name]
+    rec = json.load(open(store))["subjects"][name]
     p0 = titrate._profile(name, rec["scale"], 1.0 if rec.get("basal_scale") is None else rec["basal_scale"])
     learn, sugg = T.run_timsim(name, p0, T.LEARN_DAYS, T.LEARN_SEED)
     raw = T.to_nightscout(learn, sugg, p0)
@@ -123,16 +124,21 @@ def main():
                     help="re-estimate with the twin's decay at this time constant; needs --truth-from")
     ap.add_argument("--rescue", help="re-estimate with the twin's rescue rule, given as JSON "
                     "{grams, threshold, refractory_min, delay, rise_min, mode}; needs --truth-from")
+    ap.add_argument("--body", choices=("hovorka",),
+                    help="re-estimate with the twin's body model (BODY_PLAN.md); needs --truth-from")
+    ap.add_argument("--store", default=STORE,
+                    help="the titration store; TimSim's titrated_settings_hovorka.json for its second body")
     ap.add_argument("--truth-from", help="an earlier results file whose TimSim truth is reused")
     ap.add_argument("--out", default=os.path.join(HERE, "results", "same_week_2026-10-10.json"))
     a = ap.parse_args()
-    names = [n for n, r in json.load(open(STORE))["subjects"].items() if r.get("found")][: a.subjects]
-    jobs = names
+    names = [n for n, r in json.load(open(a.store))["subjects"].items() if r.get("found")][: a.subjects]
+    jobs = [(n, a.store, {}, None) for n in names]
     opts = {**({"decay_tau_min": a.decay_tau_min} if a.decay_tau_min else {}),
-            **({"rescue": json.loads(a.rescue)} if a.rescue else {})}
+            **({"rescue": json.loads(a.rescue)} if a.rescue else {}),
+            **({"body": {"model": a.body}} if a.body else {})}
     if opts:
         stored = {s["name"]: s["rows"] for s in json.load(open(a.truth_from))["subjects"]}
-        jobs = [(n, opts, stored[n]) for n in names]
+        jobs = [(n, a.store, opts, stored[n]) for n in names]
     t0 = time.time()
     with ProcessPoolExecutor(a.workers) as ex:
         out = list(ex.map(one, jobs))

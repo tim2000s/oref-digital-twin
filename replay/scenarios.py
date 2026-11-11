@@ -271,6 +271,15 @@ def guard_refuses(key: str, value: float, history: dict | None) -> str | None:
     return None
 
 
+def _worst(ms: list[dict]) -> dict[str, Any]:
+    """The least favourable of several estimates of one value: least time in range, most time
+    below range and most lows. With a single estimate it is that estimate."""
+    if len(ms) == 1 or ms[0]["tir"] is None:
+        return ms[0]
+    return {**ms[0], "tir": min(m["tir"] for m in ms), "tbr": max(m["tbr"] for m in ms),
+            "tbr54": max(m["tbr54"] for m in ms), "lows": max(m["lows"] for m in ms)}
+
+
 def _meets(m: dict, goal_tir: float = GOAL_TIR_PCT, goal_tbr: float = GOAL_TBR_PCT) -> bool:
     return m["tir"] is not None and m["tir"] > goal_tir and m["tbr"] < goal_tbr
 
@@ -313,6 +322,8 @@ def run_settings_tests(
     progress: Callable[[str], None] | None = None,
     aim: str = "standard",
     history: dict | None = None,
+    sim_opts: dict | None = None,
+    isf_band: tuple[float, ...] | None = None,
 ) -> dict[str, Any]:
     """Run the stages and return the tables and choices for the report.
 
@@ -324,10 +335,20 @@ def run_settings_tests(
 
     `progress`, if given, is called with a short line as each stage starts, so a page can
     say what it is doing.
+
+    `sim_opts`, if given, is merged into every simulator call (a body model, for instance).
+
+    `isf_band`, if given, is a set of scales on the body's sensitivity. Each value is then
+    simulated under each, with the profile ISF times the scale as the power of a unit, and judged
+    on the least favourable result, so a change is chosen only if it holds whichever of those
+    sensitivities the body has. The tables and the final estimate show scale 1.
     """
     if aim not in AIMS:
         raise ValueError(f"unknown aim {aim!r}; known: {sorted(AIMS)}")
     goal_tir, goal_tbr = AIMS[aim]
+    bands = tuple(isf_band) if isf_band else (1.0,)
+    if 1.0 not in bands:
+        raise ValueError("isf_band must include 1.0, the scale the tables show")
     say = progress or (lambda _msg: None)
     n_stages = 6
     pts = [r for r in entries if r.sgv_mgdl is not None]
@@ -349,22 +370,26 @@ def run_settings_tests(
     done: dict[str, dict] = {}
     sent = [False]
 
-    def key_of(sc: dict) -> str:
-        return json.dumps({k: v for k, v in sc.items() if k != "label"}, sort_keys=True)
+    def key_of(sc: dict, scale: float = 1.0) -> str:
+        return json.dumps({**{k: v for k, v in sc.items() if k != "label"}, "_scale": scale},
+                          sort_keys=True)
 
-    def run(scenarios: list[dict]) -> list[dict]:
+    def run(scenarios: list[dict], scale: float = 1.0) -> list[dict]:
         # each stage's no-change row is the previous stage's choice; run it once
-        todo = [sc for sc in scenarios if key_of(sc) not in done]
+        todo = [sc for sc in scenarios if key_of(sc, scale) not in done]
         if todo:
             # the cycles cross to the simulator once; later calls reuse them by cache_key
-            payload = {"scenarios": todo, "cache_key": cache_key, "rescue": RESCUE}
+            payload = {**(sim_opts or {}), "scenarios": todo, "cache_key": cache_key,
+                       "rescue": RESCUE}
+            if scale != 1.0:
+                payload["body_isf_scale"] = scale
             if not sent[0]:
                 payload["cycles"] = requests
                 sent[0] = True
             sim = sim_runner(payload)
             for sc, res in zip(todo, sim["scenarios"]):
-                done[key_of(sc)] = _summarise(sc, res, sim["t"])
-        return [done[key_of(sc)] for sc in scenarios]
+                done[key_of(sc, scale)] = _summarise(sc, res, sim["t"])
+        return [done[key_of(sc, scale)] for sc in scenarios]
 
     def _summarise(sc: dict, res: dict, st: list[int]) -> dict:
         dbg = [d if d is not None else 0.0 for d in res["dbg"]]
@@ -388,17 +413,20 @@ def run_settings_tests(
         say(f"Settings tests: {name.lower()} ({len(stages) + 1} of {n_stages}), "
             f"{len(values)} values")
         scenarios = [make(v) for v in values]
-        results = run(scenarios)
+        by_scale = [run(scenarios, b) for b in bands]
+        results = by_scale[bands.index(1.0)]
         rows = []
-        for v, sc, res in zip(values, scenarios, results):
-            est_all = _metrics(ts, res["shifted"], masks["all"], step_min)
+        for j, (v, sc, res) in enumerate(zip(values, scenarios, results)):
+            judged = lambda mask: _worst([_metrics(ts, rs[j]["shifted"], mask, step_min)
+                                          for rs in by_scale])
+            est_all = judged(masks["all"])
             stronger = bool(more_insulin(v))
             refused = guard_refuses(guard, v, history) if stronger and guard else None
             rows.append({
                 "value": v, "label": fmt(v), "distance": (v - neutral),
                 "du_per_day": res["du_per_day"], "mean_shift": res["mean_shift"],
                 "failed": res["failed"],
-                "est": _metrics(ts, res["shifted"], masks[measured_on], step_min),
+                "est": judged(masks[measured_on]),
                 "est_all": est_all,
                 "more_insulin": stronger,
                 "excluded": stronger and (refused is not None or not (

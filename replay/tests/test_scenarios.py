@@ -1,5 +1,7 @@
 """Staged settings tests (replay.scenarios) against a fake simulator: no Node needed."""
 
+import pytest
+
 from ingestion.models import GlucoseReading, Treatment
 from replay.scenarios import (
     _metrics,
@@ -367,3 +369,38 @@ def test_the_guard_reaches_basal_isf_carb_ratio_and_target_and_nothing_else(monk
     towards = lambda c: (c["basal_scale"] > 1 or c["isf_scale"] < 1 or c["cr_scale"] < 1
                          or c["target_offset"] < 0)
     assert towards(free["chosen"]) and not towards(res["chosen"])
+
+
+def test_isf_band_judges_each_value_on_its_least_favourable_sensitivity():
+    # highs at 190 and a floor at 80, and a target 9 mg/dL lower that the fake simulator turns into
+    # a fall of 10 mg/dL times the body's sensitivity scale. As the profile ISF says, that brings
+    # the highs to 180 without a low; with insulin 30% stronger it takes 80 to 67, so under the
+    # band it is refused. The target stage judges the whole period with no gate.
+    vals = ([190] * 20 + [80] * 16) * 24
+    entries = _readings(vals)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    payloads, kept = [], {}
+
+    def fake_sim(payload):
+        payloads.append({k: v for k, v in payload.items() if k not in ("cycles", "scenarios")})
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        b = payload.get("body_isf_scale", 1.0)
+        out = [{"label": sc["label"], "du": [0.0] * len(t),
+                "dbg": [sc["target_offset"] * 10 / 9 * b] * len(t), "failed": 0}
+               for sc in payload["scenarios"]]
+        return {"t": t, "baseline": [0.0] * len(t), "scenarios": out}
+
+    plain = run_settings_tests(fake_sim, requests, entries, [], {"enable_smb": False})
+    assert plain["stages"][3]["chosen"] == -9
+    payloads.clear()
+    band = run_settings_tests(fake_sim, requests, entries, [], {"enable_smb": False},
+                              sim_opts={"body": {"model": "hovorka"}}, isf_band=(0.7, 1.0, 1.3))
+    assert band["stages"][3]["chosen"] == 0
+    assert all(p["body"] == {"model": "hovorka"} for p in payloads)
+    assert {p.get("body_isf_scale") for p in payloads} == {None, 0.7, 1.3}
+    row = next(r for r in band["stages"][3]["rows"] if r["value"] == -9)
+    assert row["est"]["tbr"] > 0 and row["excluded"]
+    with pytest.raises(ValueError):
+        run_settings_tests(fake_sim, requests, entries, [], {"enable_smb": False}, isf_band=(0.7, 1.3))

@@ -172,6 +172,34 @@ def test_decay_is_off_by_default_and_shrinks_a_lasting_shift():
     assert late(plain) > 1.0 and late(decayed) < 0.8 * late(plain)
 
 
+def test_body_with_no_change_matches_the_baseline_exactly():
+    cycles = _flat_day()
+    sim = OrefOracle().simulate({"cycles": cycles, "scenarios": [{"label": "same"}],
+                                 "body": {"model": "hovorka"}, "rescue": {**RESCUE, "mode": "new"}})
+    s = sim["scenarios"][0]
+    assert all(d == 0 for d in s["du"]) and all(g == 0 for g in s["dbg"])
+
+
+def test_body_pulls_a_lasting_shift_back_and_sensitivity_scale_sizes_it():
+    cycles = _flat_day(hours=16)
+    scen = [{"label": "more", "basal_scale": 1.3}]
+    run = lambda **kw: OrefOracle().simulate({"cycles": cycles, "scenarios": scen, **kw})["scenarios"][0]
+    plain, body = run(), run(body={"model": "hovorka"})
+    late = lambda s: sum(abs(x) for x in s["dbg"][-36:]) / 36
+    assert late(plain) > 1.0 and late(body) < late(plain)
+    # a faster pull-back gives a smaller late shift: the rates reach the integration
+    assert late(run(body={"model": "hovorka", "x2": 0.02})) < late(body)
+    assert run(body_isf_scale=1) == plain
+    early = lambda s: sum(abs(x) for x in s["dbg"][12:48]) / 36
+    assert early(run(body_isf_scale=1.3)) > early(plain) > early(run(body_isf_scale=0.7))
+
+
+def test_body_and_decay_cannot_both_be_given():
+    with pytest.raises(Exception):
+        OrefOracle().simulate({"cycles": _flat_day(), "scenarios": [{"label": "x", "basal_scale": 1.2}],
+                               "body": {"model": "hovorka"}, "decay_tau_min": 144})
+
+
 def test_target_change_leaves_a_running_temp_target_alone():
     cycles = _flat_day()
     for c in cycles:

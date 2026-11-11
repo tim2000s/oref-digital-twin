@@ -188,6 +188,31 @@ function simulate(payload) {
   const gap = t.map((ti, i) => (i + 1 < t.length ? Math.min((t[i + 1] - ti) / 60000, maxGap) : 5));
   // the body's sensitivity at each cycle, as oref itself would take it
   const isf = cycles.map((c) => c.profile.sens / ((c.autosens_data && c.autosens_data.ratio) || 1));
+  // Optional scale on the body's sensitivity, payload.body_isf_scale (1 unless given): each dose
+  // difference acts with the profile ISF times this, while oref still doses with the profile ISF.
+  // Rescue carbohydrate keeps the profile ISF, since its rise is a carbohydrate property.
+  const isfScale = payload.body_isf_scale || 1;
+  const bodyIsf = isf.map((v) => v * isfScale);
+  // Optional body, payload.body = {model: "hovorka"} with any rate below overridden (off unless
+  // given). Without it, a dose's effect is kept for the rest of the period. With it, the dose
+  // still acts as units x ISF along the insulin curve, but the glucose offset it leaves is then
+  // carried by the glucose system of Hovorka et al. 2004 at basal insulin: a plasma and a remote
+  // compartment whose exchange and disposal depend on how much glucose there is, uptake not
+  // driven by insulin that eases below 81 mg/dL, and renal loss above 162 mg/dL. The rates are
+  // the medians of the 68 TimSim Hovorka subjects with titrated settings at their basal steady
+  // state (validation/BODY_PLAN.md), per minute; f01 and renal are in mg/dL per minute.
+  const H = payload.body ? { x1: 0.02772, x2: 0.00425, k12: 0.066, f01: 1.09125, renal: 0.003,
+    ...payload.body } : null;
+  if (H && H.model !== 'hovorka') throw new Error(`unknown body model ${H.model}`);
+  if (H && tau > 0) throw new Error('body and decay_tau_min are alternatives; give one');
+  const obsAt = (time) => {      // the logged glucose at `time`, linear between cycles
+    let lo = 0, hi = t.length - 1;
+    if (time <= t[0]) return cycles[0].glucose_status.glucose;
+    if (time >= t[hi]) return cycles[hi].glucose_status.glucose;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (t[mid] <= time) lo = mid; else hi = mid; }
+    const a = cycles[lo].glucose_status.glucose, b = cycles[hi].glucose_status.glucose;
+    return a + (b - a) * (time - t[lo]) / (t[hi] - t[lo]);
+  };
   // Optional rescue eating, payload.rescue = {grams, threshold, refractory_min, delay, rise_min,
   // mode} (off unless given; the page's settings tests give mode "new", replay/scenarios.py
   // RESCUE). A person below `threshold` eats `grams`
@@ -266,7 +291,7 @@ function simulate(payload) {
     const isfAt = (time) => {
       let j = 0;
       while (j + 1 < t.length && t[j + 1] <= time) j++;
-      return isf[j];
+      return bodyIsf[j];
     };
     for (const d of doses) d.isf = isfAt(d.t);
 
@@ -284,6 +309,59 @@ function simulate(payload) {
       return e;
     }
 
+    // The body: offsets b1 (plasma) and b2 (remote) from the logged glucose, integrated in steps
+    // of about a minute up to each cycle. The input is each live dose's action in that minute and
+    // the rescues' rise, so the offset follows the doses as without the body, while the body pulls
+    // it back by how far, and from what level, glucose has been moved.
+    let b1 = 0, b2 = 0, bt = null;
+    const bHist = [];
+    const rescueRate = (list, time) => {
+      let e = 0;
+      for (const r of list) {
+        if (r.t > time) break;
+        const m = Math.floor((time - r.t) / 60000) + 1;
+        if (m < rescueShape.length) e += r.rise * (rescueShape[m] - rescueShape[m - 1]);
+      }
+      return e;
+    };
+    const inputAt = (time) => {
+      let r = 0;
+      for (const d of live) {
+        if (d.t > time) continue;
+        const m = Math.floor((time - d.t) / 60000) + 1;
+        if (m <= tab.n) r -= d.u * d.isf * (tab.left[m - 1] - tab.left[m]);
+      }
+      if (rescue) r += rescueRate(ownRescues, time) - rescueRate(realRescues, time);
+      return r;
+    };
+    const advance = (to) => {
+      if (bt === null) { bt = to; bHist.push([to, 0]); return 0; }
+      const steps = Math.max(1, Math.round((to - bt) / 60000));
+      const h = (to - bt) / steps;
+      for (let k = 0; k < steps; k++) {
+        const tm = bt + h * (k + 0.5);
+        const g = obsAt(tm);
+        const f = H.f01 * (Math.min(1, Math.max(0, g + b1) / 81) - Math.min(1, g / 81));
+        const r = H.renal * (Math.max(0, g + b1 - 162) - Math.max(0, g - 162));
+        const d1 = -H.x1 * b1 + H.k12 * b2 - f - r + inputAt(tm);
+        const d2 = H.x1 * b1 - (H.k12 + H.x2) * b2;
+        b1 += (h / 60000) * d1;
+        b2 += (h / 60000) * d2;
+      }
+      bt = to;
+      bHist.push([to, b1]);
+      return b1;
+    };
+    const bodyAt = (time) => {   // the offset at an earlier time, linear between cycles
+      let j = bHist.length - 1;
+      while (j > 0 && bHist[j][0] > time) j--;
+      if (bHist[j][0] > time) return 0;
+      if (j === bHist.length - 1) return bHist[j][1];
+      const [ta, va] = bHist[j], [tb, vb] = bHist[j + 1];
+      return va + (vb - va) * (time - ta) / (tb - ta);
+    };
+    const past = (time) => (H ? bodyAt(time) : settled + effectAt(time));
+
     const du = new Array(cycles.length).fill(null);
     const dbg = new Array(cycles.length).fill(null);
     let failed = 0;
@@ -295,28 +373,30 @@ function simulate(payload) {
       const keep = [];
       for (const d of live) {
         const age = (now - d.t) / 60000;
-        if (shape) {
+        if (H) {
+          if (age <= tab.n + 60) keep.push(d);                 // the body now carries its effect
+        } else if (shape) {
           if (age < shape.length + 60) keep.push(d);          // its effect has relaxed to nothing
         } else if (age > tab.n + 60) settled -= d.u * d.isf; else keep.push(d);
       }
       live = keep;
 
-      let shift = settled + effectAt(now);
+      let shift = H ? advance(now) : settled + effectAt(now);
       const gs0 = c.glucose_status;
       if (rescue && gs0.glucose + shift < rescue.threshold && now - lastRescue >= (rescue.refractory_min - 1) * 60000
           && (rescue.mode !== 'new' || gs0.glucose >= rescue.threshold)) {
         ownRescues.push({ t: now, rise: rescueRise(i) });
         lastRescue = now;
-        shift = settled + effectAt(now);
+        if (!H) shift = settled + effectAt(now);            // the body takes a rescue as later input
       }
       // Left untouched when nothing has shifted, so a scenario that changes nothing gives the
       // baseline decision exactly.
       const gs = shift === 0 ? gs0 : {
         ...gs0,
         glucose: Math.max(39, gs0.glucose + shift),
-        delta: gs0.delta + shift - (settled + effectAt(now - 5 * 60000)),
-        short_avgdelta: gs0.short_avgdelta + (shift - (settled + effectAt(now - 15 * 60000))) / 3,
-        long_avgdelta: gs0.long_avgdelta + (shift - (settled + effectAt(now - 45 * 60000))) / 9,
+        delta: gs0.delta + shift - past(now - 5 * 60000),
+        short_avgdelta: gs0.short_avgdelta + (shift - past(now - 15 * 60000)) / 3,
+        long_avgdelta: gs0.long_avgdelta + (shift - past(now - 45 * 60000)) / 9,
       };
 
       // insulin on board: the logged history at this basal scale, plus every dose difference
@@ -354,9 +434,9 @@ function simulate(payload) {
       const dSmb = alt.smb - base[i].smb;
       const dBasal = alt.basal - base[i].basal;
       du[i] = Math.round((dSmb + dBasal) * 1000) / 1000;
-      if (Math.abs(dSmb) > 1e-4) live.push({ t: now, u: dSmb, bolus: true, isf: isf[i] });
+      if (Math.abs(dSmb) > 1e-4) live.push({ t: now, u: dSmb, bolus: true, isf: bodyIsf[i] });
       // a basal difference is spread over the gap; it is entered at the gap's midpoint
-      if (Math.abs(dBasal) > 1e-4) live.push({ t: now + gap[i] * 30000, u: dBasal, bolus: false, isf: isf[i] });
+      if (Math.abs(dBasal) > 1e-4) live.push({ t: now + gap[i] * 30000, u: dBasal, bolus: false, isf: bodyIsf[i] });
     }
     return { label: sc.label, du, dbg, failed };
   });
