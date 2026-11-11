@@ -547,7 +547,7 @@ def from_cycle(
 # modelling choice, about six fortnightly visits.
 REFERENCE_DAYS = 90
 EVIDENCE_DAYS = 14              # readings either side of the last change
-EVIDENCE_MIN_READINGS = 864     # three days of 5-minute readings, or that side counts as missing
+EVIDENCE_MIN_READINGS = 864     # three days of 5-minute slots, or that side counts as missing
 
 
 def settings_timeline(snapshot: ProfileSnapshot, profiles: list[ProfileSnapshot] | None,
@@ -570,7 +570,10 @@ def settings_timeline(snapshot: ProfileSnapshot, profiles: list[ProfileSnapshot]
 
 
 def _readings(entries: list[GlucoseReading], lo: int, hi: int) -> dict | None:
-    g = [e.sgv_mgdl for e in entries if lo <= e.ts_ms < hi and e.sgv_mgdl]
+    # one reading per 5-minute slot, so 1-minute sensors and duplicate uploads count as time
+    slots = {e.ts_ms // 300_000: e.sgv_mgdl for e in sorted(entries, key=lambda e: -e.ts_ms)
+             if lo <= e.ts_ms < hi and e.sgv_mgdl}
+    g = list(slots.values())
     if len(g) < EVIDENCE_MIN_READINGS:
         return None
     return {"tir": 100 * sum(70 <= x <= 180 for x in g) / len(g), "tbr": 100 * sum(x < 70 for x in g) / len(g)}
@@ -584,7 +587,7 @@ def _towards(new: dict, old: dict) -> dict:
     return out
 
 
-def evidence_range(timeline: list[tuple[int, dict]], now_ms: int) -> tuple[int, int] | None:
+def evidence_range(timeline: list[tuple[int, dict]]) -> tuple[int, int] | None:
     """The readings the guard needs before the last change, (from, to) ms, or None."""
     last = _last_change(timeline)
     return None if last is None else (timeline[last][0] - EVIDENCE_DAYS * 86_400_000, timeline[last][0])
@@ -594,7 +597,7 @@ def _last_change(timeline: list[tuple[int, dict]]) -> int | None:
     from replay.scenarios import GUARD_LAST_MIN, GUARD_LAST_TARGET_MGDL
     for i in range(len(timeline) - 1, 0, -1):
         d = _towards(timeline[i][1], timeline[i - 1][1])
-        if (any(abs(d.get(k, 1) - 1) > GUARD_LAST_MIN for k in ("basal", "isf", "cr"))
+        if (any(abs(d.get(k, 1) - 1) > GUARD_LAST_MIN + 1e-9 for k in ("basal", "isf", "cr"))
                 or abs(d.get("target", 0)) >= GUARD_LAST_TARGET_MGDL):
             return i
     return None

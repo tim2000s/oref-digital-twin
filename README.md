@@ -121,7 +121,8 @@ setting is only considered when the whole period's estimate keeps time below 70 
 time below 54 under 0.6%. Two further rules use the history of your settings in Nightscout
 (validation/GUARD_PLAN.md and GUARD.md). No value may leave basal, ISF or carb ratio more than
 20% towards more insulin than the profile in force 90 days ago, or the target more than
-0.5 mmol/L below it. And where your last lasting change gave more insulin on a setting, a further
+0.5 mmol/L below it. Where Nightscout holds no record that old, the oldest profile it returns is
+the reference. And where your last lasting change gave more insulin on a setting, a further
 step the same way is refused unless the readings since it show at least 2 points more time in
 range and no more time below 70 than the fortnight before it. AndroidAPS changes are read from
 lasting Profile Switches, including percentage ones; Trio and Loop changes from the profile

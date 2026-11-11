@@ -21,6 +21,7 @@ importScripts('./oref-bundle.js', './nightscout.js');
 
 let pyodide = null;
 let B = null;
+let source = null;     // the last analysed site, for the settings tests' extra fetch
 
 async function importVerified(url, sri) {
   const buf = await (await fetch(url)).arrayBuffer();
@@ -79,16 +80,7 @@ const ops = {
     } finally {
       rawPy.destroy();
     }
-    const range = B.evidence_fetch_range();
-    if (range) {
-      const [lo, hi] = toJs(range);
-      try {
-        const earlier = pyodide.toPy(await fetchEarlierEntries(url, token, lo, hi, progress));
-        try { B.add_earlier_entries(earlier); } finally { earlier.destroy(); }
-      } catch (e) {
-        // the guard then counts the evidence as missing, which only removes options
-      }
-    }
+    source = { url, token };
     const resultPy = pyodide.toPy(result);
     try {
       return { report_md: result.report_md, source: toJs(B.abstracted_findings(resultPy)) };
@@ -97,8 +89,21 @@ const ops = {
     }
   },
 
-  settings_tests({ aim }) {
-    return toJs(B.settings_tests.callKwargs({ progress, aim: aim || 'tighter' })).report_md;
+  // The guard needs readings from before the last settings change, fetched here so the main
+  // report is not held back. Any failure leaves the evidence missing, which only removes options
+  // towards more insulin.
+  async settings_tests({ aim }) {
+    try {
+      const range = B.evidence_fetch_range();
+      if (range && source) {
+        const [lo, hi] = toJs(range);
+        const earlier = pyodide.toPy(await fetchEarlierEntries(source.url, source.token, lo, hi, progress));
+        try { B.add_earlier_entries(earlier); } finally { earlier.destroy(); }
+      }
+    } catch (e) {
+      progress('Could not fetch the readings from before your last settings change; carrying on.');
+    }
+    return toJs(B.settings_tests.callKwargs({ progress, aim: aim || 'tighter', nightscout_history: true })).report_md;
   },
 
   gate({ narrative, source }) {

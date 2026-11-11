@@ -246,7 +246,9 @@ def test_settings_tests_give_the_guard_the_history_from_nightscout():
             {"du": [0.0] * len(t), "failed": 0,
              "dbg": [(1 - sc["basal_scale"]) * 20] * len(t)} for sc in payload["scenarios"]]}
 
-    out = settings_tests(sim_runner=fake_sim)
+    assert not any(r["guard"] for s in settings_tests(sim_runner=fake_sim)["result"]["stages"]
+                   for r in s["rows"])          # without the page's opt-in, no guard
+    out = settings_tests(sim_runner=fake_sim, nightscout_history=True)
     basal = next(s for s in out["result"]["stages"] if s["name"] == "Basal")
     # the last change raised basal by 10% and there are too few readings before it to show a gain
     stronger = [r for r in basal["rows"] if r["value"] > 1]

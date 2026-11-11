@@ -188,7 +188,7 @@ def evidence_fetch_range() -> list[int] | None:
     pull, profile = _LAST.get("pull"), _LAST.get("profile")
     if pull is None or profile is None:
         return None
-    r = evidence_range(settings_timeline(profile, pull.profiles, pull.treatments), pull.end_ms)
+    r = evidence_range(settings_timeline(profile, pull.profiles, pull.treatments))
     if r is None or r[0] >= pull.start_ms:
         return None
     return [r[0], min(r[1], pull.start_ms)]
@@ -204,7 +204,8 @@ def add_earlier_entries(raw_entries: list[dict]) -> int:
 def settings_tests(sim_runner: Callable | None = None,
                    progress: Callable | None = None, aim: str = "tighter",
                    history: dict | None = None, sim_opts: dict | None = None,
-                   isf_band: tuple | None = None, pace: bool = False) -> dict[str, Any]:
+                   isf_band: tuple | None = None, pace: bool = False,
+                   nightscout_history: bool = False) -> dict[str, Any]:
     """Basal, ISF, carb-ratio, target and SMB tests on the last report's data.
 
     Returns {"report_md": section, "result": tables} or {"report_md": note, "skipped": why}.
@@ -242,7 +243,7 @@ def settings_tests(sim_runner: Callable | None = None,
     if len(requests) < 288:
         return skipped(f"Settings tests skipped: only {len(requests)} usable loop cycles, under "
                        f"one day's worth. Diagnostic: {_openaps_shape(pull)}")
-    if history is None:
+    if history is None and nightscout_history:   # the page; validation runs pass their own or none
         history = guard_history(settings_timeline(profile, pull.profiles, pull.treatments),
                                 list(pull.entries) + _LAST.get("earlier_entries", []), requests[-1]["currentTime"])
     result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings,

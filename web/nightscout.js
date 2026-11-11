@@ -196,7 +196,9 @@ async function fetchNightscout(rawBase, token, days, onProgress) {
   let profiles = [];
   const jobs = [async () => {
     try {
-      profiles = await withRetry(() => nsGet(base, 'profile.json', {}, token), 'profile', progress);
+      // up to 100 documents, so the guard can find the profile in force 90 days ago on sites
+      // (Trio, Loop) that record a change as a new profile document
+      profiles = await withRetry(() => nsGet(base, 'profile.json', { count: 100 }, token), 'profile', progress);
     } catch (e) {
       throw e.retryable ? tooSlow('the profile', e) : e;
     }
@@ -218,6 +220,20 @@ async function fetchNightscout(rawBase, token, days, onProgress) {
       progress.tick();
     });
   }
+  // Every Profile Switch in the 90 days before the start, for the guard's reference profile and
+  // last change; the latest 20 above can all be temporary ones. Optional, as above.
+  jobs.push(async () => {
+    try {
+      const docs = await withRetry(() => nsGet(base, 'treatments.json', {
+        'find[eventType]': 'Profile Switch', 'find[created_at][$lt]': new Date(startMs).toISOString(),
+        'find[created_at][$gte]': new Date(startMs - 90 * DAY_MS).toISOString(), count: 1000,
+      }, token), 'profile switches', progress);
+      if (Array.isArray(docs)) parts.treatments.push(...docs);
+    } catch (e) {
+      // as for PRIOR_EVENTS
+    }
+    progress.tick();
+  });
   for (const spec of STREAMS) {
     for (let lo = startMs; lo < endMs; lo += spec.windowDays * DAY_MS) {
       const hi = Math.min(lo + spec.windowDays * DAY_MS, endMs);

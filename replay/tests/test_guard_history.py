@@ -66,7 +66,7 @@ def test_missing_readings_before_the_change_refuse_only_further_strengthening():
     # target did not move, so a lower target is judged by the cap alone
     assert guard_refuses("cr", 0.9, h) is not None
     assert guard_refuses("target", -9, h) is None
-    assert evidence_range(tl, NOW) == (change - EVIDENCE_DAYS * DAY, change)
+    assert evidence_range(tl) == (change - EVIDENCE_DAYS * DAY, change)
 
 
 def test_reference_is_the_profile_in_force_reference_days_ago():
@@ -111,3 +111,14 @@ def test_more_lows_since_the_change_refuse_despite_more_time_in_range():
     h = guard_history(tl, entries, NOW)
     assert h["after"]["tir"] >= h["before"]["tir"] + 2 and h["after"]["tbr"] > h["before"]["tbr"]
     assert guard_refuses("basal", 1.05, h) is not None
+
+
+def test_evidence_counts_time_not_readings():
+    from replay.inputs import _readings
+    one_minute = [GlucoseReading(ts_ms=NOW - i * 60_000, sgv_mgdl=120) for i in range(2 * 1440)]
+    assert _readings(one_minute, NOW - 3 * DAY, NOW + 1) is None          # two days, however dense
+    assert _readings(_readings_fn(3), NOW - 3 * DAY - 1, NOW + 1) is not None
+
+
+def _readings_fn(days):
+    return [GlucoseReading(ts_ms=NOW - i * 300_000, sgv_mgdl=120) for i in range(days * 288)]
