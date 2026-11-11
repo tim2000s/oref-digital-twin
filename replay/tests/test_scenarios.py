@@ -404,3 +404,49 @@ def test_isf_band_judges_each_value_on_its_least_favourable_sensitivity():
     assert row["est"]["tbr"] > 0 and row["excluded"]
     with pytest.raises(ValueError):
         run_settings_tests(fake_sim, requests, entries, [], {"enable_smb": False}, isf_band=(0.7, 1.3))
+
+
+def _more(c):
+    return {"basal": c["basal_scale"] > 1, "isf": c["isf_scale"] < 1, "cr": c["cr_scale"] < 1,
+            "target": c["target_offset"] < 0}
+
+
+def test_pace_strengthens_one_setting_by_one_step_per_review():
+    # Highs spread over 185 to 215 that a stronger ISF brings into range step by step, and a lower
+    # target that helps too, with nothing going low. Without pace ISF goes two steps, the
+    # smallest change meeting the aim; with it one step, and no later stage adds insulin.
+    entries = _readings(([120] * 60 + [185, 195, 205, 215] * 10) * 4)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    meals = [Treatment(ts_ms=T0 + 60 * MIN, event_type="Meal Bolus", carbs_g=40)]
+    shift = lambda sc: (sc["isf_scale"] - 1) * 130 + sc["target_offset"] * 2.0
+    settings = {"enable_smb": True, "max_smb_minutes": 30, "max_iob": 5.0}
+    free = run_settings_tests(_shift_sim(shift), requests, entries, meals, settings, aim="tighter")
+    paced = run_settings_tests(_shift_sim(shift), requests, entries, meals, settings, aim="tighter",
+                               pace=True)
+    assert free["chosen"]["isf_scale"] == 0.8
+    c = paced["chosen"]
+    assert c["isf_scale"] == 0.9 and sum(_more(c).values()) == 1
+    assert c["smb_minutes"] == 30 and c["max_iob"] == 5.0
+    reasons = set()
+    for st in paced["stages"]:
+        for r in st["rows"]:
+            assert not r["excluded"] or r["more_insulin"]
+            if r["guard"]:
+                reasons.add(r["guard"].split(" ")[0])
+        if st["name"] in ("Carb ratio", "Target", "SMB limit", "Max IOB"):
+            assert all(r["excluded"] and r["guard"].startswith("another setting")
+                       for r in st["rows"] if r["more_insulin"])
+    assert reasons == {"more", "another"}
+
+
+def test_pace_leaves_weakening_alone():
+    # Frequent lows that only a large cut in basal clears: pace must not slow the cut.
+    entries = _readings(([62] * 10 + [110] * 30) * 20)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    shift = lambda sc: (1 - sc["basal_scale"]) * 30
+    free = run_settings_tests(_shift_sim(shift), requests, entries, [], {})
+    paced = run_settings_tests(_shift_sim(shift), requests, entries, [], {}, pace=True)
+    assert free["stages"][0]["chosen"] == 0.7
+    assert paced["stages"][0]["chosen"] == 0.7
+    weaker = lambda res: [r for r in res["stages"][0]["rows"] if not r["more_insulin"]]
+    assert weaker(paced) == weaker(free)

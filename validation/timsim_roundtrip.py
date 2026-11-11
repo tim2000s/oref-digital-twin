@@ -265,7 +265,7 @@ def review_history(chosen, reviews, now):
 
 def roundtrip_one(job):
     (name, store, eval_seeds, condition, learn_days, eval_days, null_arm, aim, reuse, n_reviews, guard,
-     sim_opts, isf_band) = job
+     sim_opts, isf_band, pace) = job
     if isinstance(eval_seeds, int):
         eval_seeds = [eval_seeds]
     _paths()
@@ -295,7 +295,7 @@ def roundtrip_one(job):
                            twin_settings(p1, smb_minutes=smb_run, uam_minutes=smb_run))
         history = review_history(chosen, reviews, outcomes(lr)) if guard else None
         tests = settings_tests(sim_runner=oracle.simulate, aim=aim, history=history,
-                               sim_opts=sim_opts, isf_band=isf_band)
+                               sim_opts=sim_opts, isf_band=isf_band, pace=pace)
         oracle._simulator.close()
         if "skipped" in tests:
             return {"name": name, "error": tests["skipped"]}
@@ -425,6 +425,8 @@ def main():
     ap.add_argument("--isf-band", dest="isf_band",
                     help="comma-separated scales on the body's sensitivity, including 1; each "
                          "value is judged on its least favourable one (BODY_PLAN.md)")
+    ap.add_argument("--pace", action="store_true",
+                    help="towards more insulin one step on one setting per review (PACE_PLAN.md)")
     ap.add_argument("--cohort", default="adult", choices=("adult", "hovorka"),
                     help="TimSim's S2008 adults or its second body; hovorka needs --store, "
                          "TimSim's own titrated_settings_hovorka.json")
@@ -471,7 +473,7 @@ def main():
     sim_opts = {"body": {"model": a.body}} if a.body else None
     isf_band = tuple(float(x) for x in a.isf_band.split(",")) if a.isf_band else None
     jobs = [(n, store, eval_seeds, c, a.learn_days, a.eval_days, a.null, a.aim,
-             reuse.get((n, c)), a.reviews, a.guard, sim_opts, isf_band)
+             reuse.get((n, c)), a.reviews, a.guard, sim_opts, isf_band, a.pace)
             for c in conditions for n in ok]
     with ProcessPoolExecutor(a.workers) as ex:
         rows = list(ex.map(roundtrip_one, jobs))
@@ -488,7 +490,7 @@ def main():
                                   "eval_seed": eval_seeds[0], "null_arm": a.null,
                                   "aim": a.aim, "reused_arms_from": a.reuse_arms,
                                   "reviews": a.reviews, "guard": a.guard,
-                                  "body": a.body, "isf_band": isf_band,
+                                  "body": a.body, "isf_band": isf_band, "pace": a.pace,
                                   "cohort": a.cohort},
                        "failed": [r for r in rows if "error" in r], "rows": good,
                        "seconds": round(time.time() - t0, 1)}, fh, indent=1, default=float)

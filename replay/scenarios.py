@@ -59,6 +59,9 @@ GUARD_TARGET_CAP_MGDL = 9
 GUARD_LAST_MIN = 0.05           # a last change smaller than this did not strengthen the setting
 GUARD_LAST_TARGET_MGDL = 5
 GUARD_GAIN_TIR = 2.0
+# Pace (validation/PACE_PLAN.md): towards more insulin one step on one setting per review;
+# towards less insulin the whole grid, since lows come first (Tim Street, 11 November 2026).
+PACE_STEPS_UP = 1
 
 SCALES = (0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3)
 TARGET_OFFSETS_MGDL = (-18, -9, 0, 9, 18)      # about -1, -0.5, 0, +0.5, +1 mmol/L
@@ -324,6 +327,7 @@ def run_settings_tests(
     history: dict | None = None,
     sim_opts: dict | None = None,
     isf_band: tuple[float, ...] | None = None,
+    pace: bool = False,
 ) -> dict[str, Any]:
     """Run the stages and return the tables and choices for the report.
 
@@ -342,6 +346,9 @@ def run_settings_tests(
     simulated under each, with the profile ISF times the scale as the power of a unit, and judged
     on the least favourable result, so a change is chosen only if it holds whichever of those
     sensitivities the body has. The tables and the final estimate show scale 1.
+
+    `pace`, if true, refuses values more than PACE_STEPS_UP steps towards more insulin, and every
+    value towards more insulin once an earlier stage has chosen one; weaker values are untouched.
     """
     if aim not in AIMS:
         raise ValueError(f"unknown aim {aim!r}; known: {sorted(AIMS)}")
@@ -405,6 +412,7 @@ def run_settings_tests(
     chosen: dict[str, Any] = {"basal_scale": 1.0, "isf_scale": 1.0, "cr_scale": 1.0,
                               "target_offset": 0}
     stages: list[dict] = []
+    strengthened = [False]          # pace: an earlier stage has chosen more insulin
     has_carbs = any((t.carbs_g or 0) > 0 for t in treatments)
 
     def stage(name: str, lever: str, measured_on: str, values: list, make, neutral,
@@ -422,6 +430,13 @@ def run_settings_tests(
             est_all = judged(masks["all"])
             stronger = bool(more_insulin(v))
             refused = guard_refuses(guard, v, history) if stronger and guard else None
+            if stronger and pace and not refused:
+                # steps counted on the grid, which need not hold the current value
+                steps = sum(min(v, neutral) < x <= max(v, neutral) for x in values)
+                if strengthened[0]:
+                    refused = "another setting is already given more insulin in this review"
+                elif steps > PACE_STEPS_UP:
+                    refused = f"more than {PACE_STEPS_UP} step towards more insulin in one review"
             rows.append({
                 "value": v, "label": fmt(v), "distance": (v - neutral),
                 "du_per_day": res["du_per_day"], "mean_shift": res["mean_shift"],
@@ -449,6 +464,7 @@ def run_settings_tests(
             entry["chosen"] = best["value"]
             entry["chosen_label"] = best["label"]
             entry["why"] = why
+            strengthened[0] = strengthened[0] or bool(best["more_insulin"])
         stages.append(entry)
         return entry["chosen"]
 

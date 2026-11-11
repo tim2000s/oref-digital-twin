@@ -180,7 +180,7 @@ def build_report(
 def settings_tests(sim_runner: Callable | None = None,
                    progress: Callable | None = None, aim: str = "tighter",
                    history: dict | None = None, sim_opts: dict | None = None,
-                   isf_band: tuple | None = None) -> dict[str, Any]:
+                   isf_band: tuple | None = None, pace: bool = False) -> dict[str, Any]:
     """Basal, ISF, carb-ratio, target and SMB tests on the last report's data.
 
     Returns {"report_md": section, "result": tables} or {"report_md": note, "skipped": why}.
@@ -220,7 +220,7 @@ def settings_tests(sim_runner: Callable | None = None,
                        f"one day's worth. Diagnostic: {_openaps_shape(pull)}")
     result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings,
                                 progress=progress, aim=aim, history=history,
-                                sim_opts=sim_opts, isf_band=isf_band)
+                                sim_opts=sim_opts, isf_band=isf_band, pace=pace)
     result["insulin_curve"] = curve
     change = lasting_change(profile, pull.treatments, requests[0]["currentTime"], requests[-1]["currentTime"])
     if change:
