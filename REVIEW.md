@@ -21,10 +21,14 @@ labelled important (fix before commit), nit (optional) or pre-existing (record, 
   floors only tighten.
 - The optional parts (the summary, a settings file) can fail without costing the person their
   report.
-- A change to how settings are chosen is tested over repeated reviews, since the page is meant to
-  be run again each fortnight. One review passing is not evidence for three: on 9 November 2026
-  the page that passed one review met three of the four harm criteria over three
-  (`validation/GUARD_PLAN.md`).
+- A change to how settings are chosen is tested as a person uses the page: one review on the
+  profile in force, after which the person decides what to change and comes back later. So each
+  review is judged from the profiles people actually reach, including ones earlier advice
+  produced, and not only from a mis-set start. A round trip that applies every change in full at
+  every review is the upper bound on compounding, not the use. On the same fortnight, one review
+  from the mis-set start choosing more insulin changed time below 54 by +0.00 points
+  (0.00 to +0.05), and a third review choosing it again by +0.11 (+0.03 to +0.45)
+  (`validation/per_use_lows.py`).
 - A harm or benefit criterion is applied to the null arm before any arm is judged by it, and one
   the null arm meets, or one that cannot vary on a body, is fixed before use. On 11 November 2026
   the pass-rule criterion that failed the pace rule was found to be met by the null arm on S2008
