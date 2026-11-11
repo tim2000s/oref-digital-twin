@@ -116,6 +116,19 @@ def body(files):
                                       - arms[old][k]["eval_twin"]["cgm"][m]))
             pair[m] = {"median": round(med, 3), "ci": [round(c, 3) for c in ci], "upper": ci[1]}
         out["paired"][f"{new}-{old}"] = pair
+    # PACE_PLAN.md amendment: a loss of time in range is justified where lows fall with it
+    out["tir_cost"] = {}
+    for label, ks in [("all", keys)] + [(c, [k for k in keys if k[1] == c])
+                                         for c in dict.fromkeys(k[1] for k in keys)]:
+        d = {}
+        for m in ("tir", "tbr70"):
+            med, ci = boot(by_subject(ks, lambda k: P[k]["eval_twin"]["cgm"][m]
+                                      - arms["A"][k]["eval_twin"]["cgm"][m]))
+            d[m] = {"median": round(med, 3), "ci": [round(c, 3) for c in ci], "upper": ci[1]}
+        loss = d["tir"]["upper"] < 0
+        d["verdict"] = ("no loss" if not loss else
+                        "justified" if d["tbr70"]["upper"] < 0 else "unjustified")
+        out["tir_cost"][label] = d
     out["criteria"] = {
         "1_no_harm": not any(out["harm"]["P"]["met"].values()),
         "2_lows_fall_strong": out["lows_fall_strong"]["P"]["below_zero"],

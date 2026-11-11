@@ -97,3 +97,14 @@ more than 20% towards more insulin on any setting.
 Three reviews show the first six weeks of use. A weak profile corrected one 10% step a fortnight
 on one setting takes several months, and these runs do not reach that far. TimSim's absolute levels
 are not trusted, so only the comparisons between arms count.
+
+## Amendment, 11 November 2026, while arm P was running and before any result was read
+
+Tim's reply on what safe weakening means: time above 250 mg/dL is not a criterion, provided any
+loss of time in range is justified. A loss is taken as justified where it buys fewer lows. Per
+condition and over all 96, paired P minus A is reported for time in range and time below 70, each
+with a bootstrap 95% interval over subjects. A condition's loss of time in range is called
+justified when the interval for time in range lies below zero and the interval for time below 70
+also lies below zero; it is called unjustified when time in range falls with its interval below
+zero and time below 70 does not. Neither verdict changes the judgement above. They say whether
+the cost the plan already reports was paid for.
