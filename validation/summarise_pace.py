@@ -146,6 +146,10 @@ def body(files):
                                **{a: sum(aim_met(arms[a][k]["eval_twin"]["cgm"]) for k in keys if k[1] in WEAK)
                                   for a in arms}}
     out["ending_over_20pct_more_insulin"] = {a: sum(far(end_scales(arms[a][k])) for k in keys) for a in arms}
+    # among the 48 with too little insulin: rows ending with any of basal, ISF or carb ratio weaker still
+    weaker = lambda e: e["basal_scale"] < 1 - 1e-9 or e["isf_scale"] > 1 + 1e-9 or e["cr_scale"] > 1 + 1e-9
+    out["weak_ending_weaker_still"] = {a: sum(weaker(end_scales(arms[a][k])) for k in keys if k[1] in WEAK)
+                                       for a in arms}
     # per review of P: which settings were strengthened (rows record refused labels, not reasons)
     strengthened = []
     for i in range(max(len(P[k].get("reviews", [])) for k in keys)):
