@@ -194,6 +194,23 @@ def test_body_pulls_a_lasting_shift_back_and_sensitivity_scale_sizes_it():
     assert early(run(body_isf_scale=1.3)) > early(plain) > early(run(body_isf_scale=0.7))
 
 
+def test_body_with_every_rate_zero_carries_doses_and_rescues_exactly_as_without_it():
+    # with no exchange, disposal, uptake or renal loss the body only integrates its input, so it
+    # must reproduce the plain offset: every dose's minutes and every rescue's rise, in full
+    cycles = _flat_day(hours=12, mid=76)
+    t0 = cycles[0]["currentTime"]
+    scen = [{"label": "more", "basal_scale": 1.4},
+            {"label": "doses", "extra_doses": [{"t": t0 + 3_600_000, "u": 1.0},
+                                               {"t": t0 + 7_200_000, "u": -0.5}]}]
+    zero = {"model": "hovorka", "x1": 0, "x2": 0, "k12": 0, "f01": 0, "renal": 0}
+    for mode in ("both", "new"):
+        kw = {"cycles": cycles, "scenarios": scen, "rescue": {**RESCUE, "mode": mode}}
+        plain = OrefOracle().simulate(kw)["scenarios"]
+        body = OrefOracle().simulate({**kw, "body": zero})["scenarios"]
+        for p, b in zip(plain, body):
+            assert max(abs(x - y) for x, y in zip(p["dbg"], b["dbg"])) < 0.15, (mode, p["label"])
+
+
 def test_body_and_decay_cannot_both_be_given():
     with pytest.raises(Exception):
         OrefOracle().simulate({"cycles": _flat_day(), "scenarios": [{"label": "x", "basal_scale": 1.2}],

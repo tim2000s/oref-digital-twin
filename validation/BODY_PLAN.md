@@ -100,3 +100,13 @@ The parameters are the Hovorka population's medians, the same for every person; 
 fitted to anyone's records. The band does not learn the sensitivity, it only refuses changes that
 fail at either end. Both are tested only in TimSim, whose two bodies bracket the twin's error
 without measuring it in people.
+
+## Amendment, 11 November 2026, while part 1 was running and before any result was read
+
+A fresh-context review of 0f8be5d found the sentence "The tables and final estimate show × 1"
+wrong in part: each row's time in range, time below 70 and 54 and lows are the least favourable
+across the band, as the choice uses them; only the insulin difference, the mean shift and the final
+estimate are at × 1. The code does what the rest of this plan says, so nothing is rerun. Three
+nits wait for the runs to finish, since the runs read the same files: a `body_isf_scale` of 0 is
+taken as 1; an extra dose dated before the first cycle loses, with the body, the part absorbed
+before it; an integer 1 in the band misses the cache once.
