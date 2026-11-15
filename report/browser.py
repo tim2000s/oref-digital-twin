@@ -271,7 +271,7 @@ def settings_tests(sim_runner: Callable | None = None,
 
 
 def settings_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
-    """Validate uploaded raw key/values (AAPS prefs / Trio JSON) into replay settings.
+    """Validate uploaded raw key/values (AAPS prefs / Trio export) into replay settings.
 
     Returns the replay-lever settings plus any validation issues / values needing
     confirmation, so the caller can feed `settings` into build_report and warn the user.

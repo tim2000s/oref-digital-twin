@@ -112,6 +112,16 @@
     #report h3 { font-size: 1rem; margin: 1.1rem 0 .3rem; }
     #report strong { color: var(--green); }
     #report hr { border: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--edge), transparent); margin: 1.5rem 0; }
+    .labelrow { display: flex; align-items: baseline; gap: .5rem; }
+    button.info {
+      flex: none; width: 1.5rem; height: 1.5rem; margin: 0; padding: 0; font: italic 700 .9rem Georgia, serif;
+      color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 50%; box-shadow: none;
+    }
+    /* Without popover support the text shows in place, which still reads. */
+    [popover] {
+      max-width: min(30rem, calc(100vw - 2rem)); padding: .4rem 1.1rem; color: var(--text); font-size: .92rem;
+      background: var(--bg-2); border: 1px solid var(--edge); border-radius: 14px; box-shadow: 0 10px 30px #0006;
+    }
     .muted { color: var(--muted); font-size: .88rem; }
     .warn { color: var(--amber); }
     .scroll { overflow-x: auto; border-radius: 10px; border: 1px solid var(--edge); margin: .5rem 0; }
@@ -187,8 +197,20 @@
     <h2>Optional settings</h2>
     <label for="maxiob">Max IOB <span class="muted">(enables settings experiments)</span></label>
     <input id="maxiob" type="number" step="0.1" min="0" placeholder="e.g. 6" />
-    <label for="prefsfile">Settings file <span class="muted">(AAPS prefs export or Trio settings JSON; stays in your browser)</span></label>
-    <input id="prefsfile" type="file" accept=".json,application/json" />
+    <div class="labelrow">
+      <label for="prefsfile">Settings file <span class="muted">(AAPS preferences export or Trio settings export; stays in your browser)</span></label>
+      <button type="button" class="info" popovertarget="trio-export-help" aria-label="How to export your settings from Trio">i</button>
+    </div>
+    <div id="trio-export-help" popover>
+      <p>In Trio 0.7.0 or later, open Settings and scroll down to Trio Backup. Tap Export Settings,
+        leave Therapy and Algorithm ticked, then tap the Export Settings button and choose Save to
+        Files. Pick that file here: its name starts with TrioSettings_ and ends in .csv.</p>
+      <p>The page takes max IOB, max basal, the SMB switches and limits, the basal safety
+        multipliers and a custom insulin peak from it. It reads the export as Trio writes it in
+        English. With Trio in another language, type max IOB in the box above. A value Trio marks
+        as overridden by the dosing mode is left out and named above the report.</p>
+    </div>
+    <input id="prefsfile" type="file" accept=".json,application/json,.csv,text/csv" />
     <label for="prefspw">Master password <span class="muted">(AAPS encrypted files only; never leaves your device)</span></label>
     <input id="prefspw" type="password" />
   </section>

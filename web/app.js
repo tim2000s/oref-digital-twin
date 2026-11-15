@@ -188,7 +188,7 @@ async function run() {
     // thousand windowed requests at someone's Nightscout.
     const days = Math.min(90, Math.max(1, parseInt($('days').value, 10) || 7));
 
-    // Optional settings file (AAPS prefs / Trio JSON): decrypted here, validated in the engine.
+    // Optional settings file (AAPS prefs / Trio export): read here, validated in the engine.
     const file = $('prefsfile').files[0];
     let settingsNote = '';
     let settings = null;
@@ -212,6 +212,10 @@ async function run() {
         settingsNote = 'No recognised settings found in that file.'
           + (blocked.length ? ` Withheld pending confirmation: ${esc(blocked.join(', '))}.` : '')
           + (parsed.unmapped_iob_keys.length ? ` IOB-like keys present: ${esc(parsed.unmapped_iob_keys.join(', '))}.` : '');
+      }
+      if (loaded.unread && loaded.unread.length) {
+        settingsNote += ` <span class="warn">Not read from that file, the value being neither a`
+          + ` number nor Enabled or Disabled: ${esc(loaded.unread.join(', '))}.</span>`;
       }
       if (loaded.collisions && loaded.collisions.length) {
         settingsNote += ` <span class="warn">Duplicate keys in that file (last value used):`

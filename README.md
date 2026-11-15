@@ -42,7 +42,8 @@ Choose how many days to analyse; the default is 7. Your Nightscout must have `co
 
 Two optional inputs make the settings tests more faithful. Max IOB can be typed in, and a
 settings file can be loaded: an AndroidAPS preferences export, decrypted in the page with
-your master password, or a Trio settings JSON. Without them the page reads max IOB from the
+your master password, or the file Trio writes from Settings, Trio Backup, Export Settings (a
+CSV, read as Trio writes it in English). Without them the page reads max IOB from the
 loop's own reason text and assumes 30 minutes for the SMB limit.
 
 Pick which country's driving rules the report quotes: the UK (DVLA), the EU (Directive
