@@ -186,6 +186,13 @@
       <label><input type="radio" name="aim" value="standard" /> <span>Time in range above 70%,
         time below 70 mg/dL under 2% <span class="muted">(standard)</span></span></label>
     </fieldset>
+    <label style="margin-top:1rem"><input type="checkbox" id="no-night-rescue" /> <span>Disable
+      overnight rescue <span class="muted">(when a setting would cause a new low, the estimates
+      normally assume it is treated with 10 g of fast carbohydrate every 15 minutes, and between
+      23:00 and 07:00 that you sleep through it until glucose falls below 54 mg/dL (3.0 mmol/L),
+      when the very-low alert wakes you. Ticking this leaves every new low between 23:00 and 07:00
+      untreated, however low it goes, as for someone who would not wake to the alert, so the
+      estimated night-time lows are larger.)</span></span></label>
     <label id="narrate-row" style="margin-top:1rem"><input type="checkbox" id="narrate" /> <span>Also write a
       plain-language summary <span class="muted">(runs a language model on this device; the first
       time it downloads about 5 GB, which the browser keeps, and it needs a computer with a

@@ -246,7 +246,8 @@ async function run() {
     let section;
     try {
       const aim = document.querySelector('input[name="aim"]:checked')?.value || 'tighter';
-      section = await ask('settings_tests', { aim });
+      const overnightRescue = !$('no-night-rescue').checked;
+      section = await ask('settings_tests', { aim, overnightRescue });
     } catch (err) {
       section = `## Settings tests (estimated)\n\n_Settings tests errored: ${err.message.split('\n').slice(-2).join(' ')}_`;
     }

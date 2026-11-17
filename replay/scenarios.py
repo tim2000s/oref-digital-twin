@@ -92,6 +92,10 @@ CAVEAT = (
     "treatments would have been the same, and that your profile ISF is your real sensitivity. "
     "Treat any change as a trial to test, one setting at a time."
 )
+CAVEAT_NO_NIGHT = CAVEAT.replace(
+    "when it is taken to be slept through unless it falls below 54 mg/dL (3.0 mmol/L)",
+    "when it is left untreated however low it goes, because overnight rescue was turned off")
+assert CAVEAT_NO_NIGHT != CAVEAT
 
 # How the simulator treats a low the changed setting causes (oracle/request.js, `rescue`): 10 g
 # every 15 minutes below 70 mg/dL, each rising by 10 x ISF / carb ratio after 10 minutes and over
@@ -104,6 +108,9 @@ CAVEAT = (
 # ranking improved, validation/NIGHT_RESCUE.md.
 RESCUE = {"grams": 10, "threshold": 70, "refractory_min": 15, "delay": 10, "rise_min": 30,
           "mode": "new", "night": {"from_h": 23, "to_h": 7, "wake_mgdl": 54}}
+# The page's "Disable overnight rescue": nothing wakes the person, so every new low between 23:00
+# and 07:00 counts untreated, however deep.
+RESCUE_NO_NIGHT = {**RESCUE, "night": {**RESCUE["night"], "wake_mgdl": None}}
 
 
 @dataclass
@@ -333,6 +340,7 @@ def run_settings_tests(
     sim_opts: dict | None = None,
     isf_band: tuple[float, ...] | None = None,
     pace: bool = False,
+    overnight_rescue: bool = True,
 ) -> dict[str, Any]:
     """Run the stages and return the tables and choices for the report.
 
@@ -346,6 +354,9 @@ def run_settings_tests(
     say what it is doing.
 
     `sim_opts`, if given, is merged into every simulator call (a body model, for instance).
+
+    `overnight_rescue` False leaves every new low between 23:00 and 07:00 untreated, where by
+    default the very-low alert at 54 mg/dL wakes the person to treat it.
 
     `isf_band`, if given, is a set of scales on the body's sensitivity. Each value is then
     simulated under each, with the profile ISF times the scale as the power of a unit, and judged
@@ -392,7 +403,7 @@ def run_settings_tests(
         if todo:
             # the cycles cross to the simulator once; later calls reuse them by cache_key
             payload = {**(sim_opts or {}), "scenarios": todo, "cache_key": cache_key,
-                       "rescue": RESCUE}
+                       "rescue": RESCUE if overnight_rescue else RESCUE_NO_NIGHT}
             if scale != 1.0:
                 payload["body_isf_scale"] = scale
             if not sent[0]:
@@ -583,5 +594,5 @@ def run_settings_tests(
         "chosen": chosen,
         "final": {"est_all": _metrics(ts, final["shifted"], masks["all"], step_min),
                   "du_per_day": final["du_per_day"], "mean_shift": final["mean_shift"]},
-        "caveat": CAVEAT,
+        "caveat": CAVEAT if overnight_rescue else CAVEAT_NO_NIGHT,
     }

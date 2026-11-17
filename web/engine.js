@@ -92,7 +92,7 @@ const ops = {
   // The guard needs readings from before the last settings change, fetched here so the main
   // report is not held back. Any failure leaves the evidence missing, which only removes options
   // towards more insulin.
-  async settings_tests({ aim }) {
+  async settings_tests({ aim, overnightRescue }) {
     try {
       const range = B.evidence_fetch_range();
       if (range && source) {
@@ -103,7 +103,8 @@ const ops = {
     } catch (e) {
       progress('Could not fetch the readings from before your last settings change; carrying on.');
     }
-    return toJs(B.settings_tests.callKwargs({ progress, aim: aim || 'tighter', nightscout_history: true })).report_md;
+    return toJs(B.settings_tests.callKwargs({ progress, aim: aim || 'tighter', nightscout_history: true,
+      overnight_rescue: overnightRescue !== false })).report_md;
   },
 
   gate({ narrative, source }) {

@@ -222,7 +222,8 @@ function simulate(payload) {
   // lows are gone (the two cancel exactly when the times agree); mode "new" treats only lows the
   // real glucose did not have. With `night` = {from_h, to_h, wake_mgdl}, a person is taken to be
   // asleep between those local hours and sleeps through a low until glucose falls below
-  // `wake_mgdl`, the very-low alert; from the first rescue of that low the rule above applies.
+  // `wake_mgdl`, the very-low alert (null: never, so night lows go untreated); from the first
+  // rescue of that low the rule above applies.
   const rescue = payload.rescue || null;
   const night = rescue && rescue.night;
   // local hours, one formatter per zone; a zone the runtime does not know falls back to UTC
@@ -241,7 +242,7 @@ function simulate(payload) {
   // whether a rescue is due at cycle i with glucose g, in a low that began at cycle `from` and
   // was last rescued at `last`
   const rescueDue = (i, g, from, last) => t[i] - last >= (rescue.refractory_min - 1) * 60000
-    && (last >= t[from] || !asleep(i) || g < night.wake_mgdl);
+    && (last >= t[from] || !asleep(i) || (night.wake_mgdl != null && g < night.wake_mgdl));
   let rescueShape = null;
   const realRescues = [];
   // the spacing allows a minute's slack: loop cycles drift by seconds, so a strict 15 would wait 20

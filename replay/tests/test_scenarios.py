@@ -450,3 +450,24 @@ def test_pace_leaves_weakening_alone():
     assert paced["stages"][0]["chosen"] == 0.7
     weaker = lambda res: [r for r in res["stages"][0]["rows"] if not r["more_insulin"]]
     assert weaker(paced) == weaker(free)
+
+
+def test_disabling_overnight_rescue_sends_no_wake_and_says_so():
+    entries = _readings(([110] * 30 + [62] * 6) * 8)
+    requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
+    kept, rescues = {}, []
+
+    def fake_sim(payload):
+        if "cycles" in payload:
+            kept[payload["cache_key"]] = payload["cycles"]
+        t = [r["currentTime"] for r in kept[payload["cache_key"]]]
+        rescues.append(payload["rescue"])
+        return {"t": t, "scenarios": [{"du": [0.0] * len(t), "dbg": [0.0] * len(t), "failed": 0}
+                                      for _ in payload["scenarios"]]}
+
+    on = run_settings_tests(fake_sim, requests, entries, [], {"max_iob": 6.0})
+    assert {r["night"]["wake_mgdl"] for r in rescues} == {54}
+    rescues.clear()
+    off = run_settings_tests(fake_sim, requests, entries, [], {"max_iob": 6.0}, overnight_rescue=False)
+    assert {r["night"]["wake_mgdl"] for r in rescues} == {None}
+    assert "slept" in on["caveat"] and "overnight rescue was turned off" in off["caveat"]

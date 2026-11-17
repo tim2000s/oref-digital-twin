@@ -148,7 +148,8 @@ sensitivity. A low that only the changed setting causes is treated as people are
 one: 10 g of fast carbohydrate every 15 minutes until glucose is back above 70 mg/dL, each raising
 it by 10 × your ISF ÷ your carb ratio. Between 23:00 and 07:00 in your profile's time zone you are taken to be asleep, so a
 new low goes untreated until it falls below 54 mg/dL (3.0 mmol/L), where the very-low alert would
-wake you. Otherwise it assumes your meals, activity and own
+wake you. Ticking "Disable overnight rescue" on the page leaves every such low between 23:00 and
+07:00 untreated however low it goes, for someone who would not wake to the alert. Otherwise it assumes your meals, activity and own
 treatments would have been the same under the new setting.
 
 It is better at ranking settings than at predicting what a change will do. On simulated people

@@ -311,3 +311,18 @@ def test_once_woken_by_the_alert_the_low_is_treated_every_15_minutes_until_above
     sim = lambda rescue: OrefOracle().simulate({"cycles": real_low, "scenarios": less,
                                                 **({"rescue": rescue} if rescue else {})})["scenarios"][0]["dbg"]
     assert sim({**RESCUE, "mode": "both", "night": asleep}) == sim(None) != sim({**RESCUE, "mode": "both"})
+
+
+def test_with_no_wake_threshold_a_night_low_goes_untreated_however_deep():
+    cycles = _flat_day()
+    scen = [{"label": "dose", "extra_doses": [{"t": cycles[0]["currentTime"], "u": 12.0}]}]   # below zero, as only a model can
+    plain = OrefOracle().simulate({"cycles": cycles, "scenarios": scen})["scenarios"][0]["dbg"]
+    never = OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "rescue": {
+        **RESCUE, "mode": "new", "night": {"from_h": 0, "to_h": 24, "wake_mgdl": None}}})["scenarios"][0]["dbg"]
+    assert never == plain
+
+
+def test_the_browser_bundle_carries_the_overnight_rule():
+    # the page runs web/oref-bundle.js, not request.js; rebuild with web/build-oref.sh
+    bundle = (ORACLE_DIR.parent.parent / "web" / "oref-bundle.js").read_text()
+    assert "night.wake_mgdl != null" in bundle and "refractory_min - 1" in bundle

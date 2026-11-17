@@ -205,7 +205,7 @@ def settings_tests(sim_runner: Callable | None = None,
                    progress: Callable | None = None, aim: str = "tighter",
                    history: dict | None = None, sim_opts: dict | None = None,
                    isf_band: tuple | None = None, pace: bool = False,
-                   nightscout_history: bool = False) -> dict[str, Any]:
+                   nightscout_history: bool = False, overnight_rescue: bool = True) -> dict[str, Any]:
     """Basal, ISF, carb-ratio, target and SMB tests on the last report's data.
 
     Returns {"report_md": section, "result": tables} or {"report_md": note, "skipped": why}.
@@ -248,7 +248,8 @@ def settings_tests(sim_runner: Callable | None = None,
                                 list(pull.entries) + _LAST.get("earlier_entries", []), requests[-1]["currentTime"])
     result = run_settings_tests(sim_runner, requests, pull.entries, pull.treatments, settings,
                                 progress=progress, aim=aim, history=history,
-                                sim_opts=sim_opts, isf_band=isf_band, pace=pace)
+                                sim_opts=sim_opts, isf_band=isf_band, pace=pace,
+                                overnight_rescue=overnight_rescue)
     result["insulin_curve"] = curve
     change = lasting_change(profile, pull.treatments, requests[0]["currentTime"], requests[-1]["currentTime"])
     if change:

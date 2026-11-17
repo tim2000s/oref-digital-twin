@@ -12817,7 +12817,7 @@
         };
         const hours = night ? cycles.map((c, i) => Number(formatFor(c.iob_inputs.tz || "UTC").format(new Date(t[i])))) : null;
         const asleep = (i) => !!night && (night.from_h > night.to_h ? hours[i] >= night.from_h || hours[i] < night.to_h : hours[i] >= night.from_h && hours[i] < night.to_h);
-        const rescueDue = (i, g, from, last) => t[i] - last >= (rescue.refractory_min - 1) * 6e4 && (last >= t[from] || !asleep(i) || g < night.wake_mgdl);
+        const rescueDue = (i, g, from, last) => t[i] - last >= (rescue.refractory_min - 1) * 6e4 && (last >= t[from] || !asleep(i) || night.wake_mgdl != null && g < night.wake_mgdl);
         let rescueShape = null;
         const realRescues = [];
         const rescueRise = (i) => cycles[i].profile.carb_ratio ? rescue.grams * isf[i] / cycles[i].profile.carb_ratio : 0;
