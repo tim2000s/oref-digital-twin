@@ -146,13 +146,16 @@ The glucose figures in the settings tests are estimates from a deliberately simp
 and the page labels them that way. The model takes your profile ISF as your real
 sensitivity. A low that only the changed setting causes is treated as people are taught to treat
 one: 10 g of fast carbohydrate every 15 minutes until glucose is back above 70 mg/dL, each raising
-it by 10 × your ISF ÷ your carb ratio. Otherwise it assumes your meals, activity and own
+it by 10 × your ISF ÷ your carb ratio. Between 23:00 and 07:00 in your profile's time zone you are taken to be asleep, so a
+new low goes untreated until it falls below 54 mg/dL (3.0 mmol/L), where the very-low alert would
+wake you. Otherwise it assumes your meals, activity and own
 treatments would have been the same under the new setting.
 
 It is better at ranking settings than at predicting what a change will do. On simulated people
-(validation/SAME_WEEK.md and validation/RESCUE.md) the estimated change in time below 70 came out
-about the right size and ranked the changes well, while the estimated change in time in range was
-about twice too large. Against twelve real setting changes by five AndroidAPS users the estimated
+(validation/SAME_WEEK.md, RESCUE.md and NIGHT_RESCUE.md) the estimated change in time below 70
+ranked the changes well and came out about one and a half times too large, and the estimated change
+in time in range about twice too large. Without the overnight rule the change in lows was about the
+right size; the rule makes the estimate of lows larger because TimSim's people treat lows at night. Against twelve real setting changes by five AndroidAPS users the estimated
 change in time in range ranked the real one (Spearman 0.74) and the estimated change in lows did
 not. The report gives the simulated figures beside its tables. The tests run stock oref0; if the
 page detects a variant such as Boost or AutoISF, it says that what the variant adds is not

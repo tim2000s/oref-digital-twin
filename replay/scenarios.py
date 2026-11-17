@@ -87,7 +87,8 @@ CAVEAT = (
     "insulin the loop would have given, times your profile ISF, with the loop reacting to "
     "the shifted glucose at every step. A low that only the changed setting causes is "
     "treated as people are taught to treat one, with 10 g of fast carbohydrate every 15 minutes until "
-    "glucose is back above 70 mg/dL. Otherwise it assumes your meals, activity and own "
+    "glucose is back above 70 mg/dL, except between 23:00 and 07:00, when it is taken to be slept "
+    "through unless it falls below 54 mg/dL (3.0 mmol/L). Otherwise it assumes your meals, activity and own "
     "treatments would have been the same, and that your profile ISF is your real sensitivity. "
     "Treat any change as a trial to test, one setting at a time."
 )
@@ -97,8 +98,12 @@ CAVEAT = (
 # 30, all taught practice rather than fitted. Lows already in the record were treated in the
 # record. On TimSim this brought the estimated change in time below 70 to the right size out of
 # sample (slope 0.874 [0.745, 1.078], against 0.348 without it), validation/RESCUE.md.
+# Between 23:00 and 07:00 a person is taken to be asleep: a new low goes untreated until it falls
+# below 54 mg/dL, where the very-low alert wakes them. The hours are a modelling choice. TimSim's
+# people treat lows at night too, so against them the slope fell to 0.679 [0.579, 0.816] while the
+# ranking improved, validation/NIGHT_RESCUE.md.
 RESCUE = {"grams": 10, "threshold": 70, "refractory_min": 15, "delay": 10, "rise_min": 30,
-          "mode": "new"}
+          "mode": "new", "night": {"from_h": 23, "to_h": 7, "wake_mgdl": 54}}
 
 
 @dataclass

@@ -83,5 +83,5 @@ def test_settings_tests_section_says_how_far_to_trust_the_estimates():
     entries = _readings([120] * 300)
     requests = [{"currentTime": r.ts_ms, "profile": {"target_bg": 100}} for r in entries]
     md = render_settings_tests(run_settings_tests(_shift_sim(lambda sc: 0.0), requests, entries, [], {}))
-    assert "time below 70 came out about the right size" in md and "about twice too large" in md
+    assert "about one and a half times and twice" in md
     assert "UVA/Padova" in md

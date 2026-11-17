@@ -85,7 +85,8 @@ loop that runs every minute.
 
 What the estimate assumes, each a modelling choice rather than a finding: the profile ISF
 is the body's real sensitivity; a low only the change causes is treated with 10 g every 15
-minutes, each rising by 10 x ISF / carb ratio (taught practice, not fitted; validation/RESCUE.md);
+minutes, each rising by 10 x ISF / carb ratio (taught practice, not fitted; validation/RESCUE.md),
+except that from 23:00 to 07:00 it is slept through until glucose falls below 54 mg/dL;
 otherwise meals, activity and the person's own treatments would have been the same; logged meal
 boluses scale with 1 / carb ratio. It is a model of the loop's response, not of the body's. On one week of an
 AndroidAPS user's data a −30% basal left daily insulin almost unchanged (−0.07 U over seven

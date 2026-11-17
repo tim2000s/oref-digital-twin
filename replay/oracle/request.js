@@ -220,8 +220,28 @@ function simulate(payload) {
   // / carb ratio at that cycle, after `delay` minutes and over `rise_min`. Mode "both" applies the
   // rule to the real glucose too, so the shifted trace loses the real trace's rescues where its
   // lows are gone (the two cancel exactly when the times agree); mode "new" treats only lows the
-  // real glucose did not have.
+  // real glucose did not have. With `night` = {from_h, to_h, wake_mgdl}, a person is taken to be
+  // asleep between those local hours and sleeps through a low until glucose falls below
+  // `wake_mgdl`, the very-low alert; from the first rescue of that low the rule above applies.
   const rescue = payload.rescue || null;
+  const night = rescue && rescue.night;
+  // local hours, one formatter per zone; a zone the runtime does not know falls back to UTC
+  const formats = {};
+  const formatFor = (tz) => {
+    if (!(tz in formats)) {
+      try { formats[tz] = new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hourCycle: 'h23', timeZone: tz }); }
+      catch (e) { formats[tz] = formatFor('UTC'); }
+    }
+    return formats[tz];
+  };
+  const hours = night ? cycles.map((c, i) => Number(formatFor(c.iob_inputs.tz || 'UTC').format(new Date(t[i])))) : null;
+  const asleep = (i) => !!night && (night.from_h > night.to_h
+    ? hours[i] >= night.from_h || hours[i] < night.to_h
+    : hours[i] >= night.from_h && hours[i] < night.to_h);
+  // whether a rescue is due at cycle i with glucose g, in a low that began at cycle `from` and
+  // was last rescued at `last`
+  const rescueDue = (i, g, from, last) => t[i] - last >= (rescue.refractory_min - 1) * 60000
+    && (last >= t[from] || !asleep(i) || g < night.wake_mgdl);
   let rescueShape = null;
   const realRescues = [];
   // the spacing allows a minute's slack: loop cycles drift by seconds, so a strict 15 would wait 20
@@ -235,9 +255,11 @@ function simulate(payload) {
       rescueShape[m] = rescueShape[m - 1] * keepFrac + ramp;
     }
     if (rescue.mode !== 'new') {
-      let last = -Infinity;
+      let last = -Infinity, from = -1;
       cycles.forEach((c, i) => {
-        if (c.glucose_status.glucose < rescue.threshold && t[i] - last >= (rescue.refractory_min - 1) * 60000) {
+        if (c.glucose_status.glucose >= rescue.threshold) { from = -1; return; }
+        if (from < 0) from = i;
+        if (rescueDue(i, c.glucose_status.glucose, from, last)) {
           realRescues.push({ t: t[i], rise: rescueRise(i) });
           last = t[i];
         }
@@ -296,7 +318,7 @@ function simulate(payload) {
     for (const d of doses) d.isf = isfAt(d.t);
 
     const ownRescues = [];
-    let lastRescue = -Infinity;
+    let lastRescue = -Infinity, lowFrom = -1;
 
     function effectAt(time) {
       let e = 0;
@@ -383,7 +405,8 @@ function simulate(payload) {
 
       let shift = H ? advance(now) : settled + effectAt(now);
       const gs0 = c.glucose_status;
-      if (rescue && gs0.glucose + shift < rescue.threshold && now - lastRescue >= (rescue.refractory_min - 1) * 60000
+      if (rescue) lowFrom = gs0.glucose + shift < rescue.threshold ? (lowFrom < 0 ? i : lowFrom) : -1;
+      if (rescue && lowFrom >= 0 && rescueDue(i, gs0.glucose + shift, lowFrom, lastRescue)
           && (rescue.mode !== 'new' || gs0.glucose >= rescue.threshold)) {
         ownRescues.push({ t: now, rise: rescueRise(i) });
         lastRescue = now;

@@ -267,3 +267,47 @@ def test_one_rescue_raises_glucose_by_grams_times_isf_over_carb_ratio():
     assert resc[:first + 2] == plain[:first + 2]            # nothing within the 10-minute delay
     gained = resc[first + 8] - plain[first + 8]             # 40 minutes on, the first rise is in
     assert 0.8 * rise <= gained <= 1.05 * rise, (gained, rise)
+
+
+
+def test_a_low_while_asleep_is_slept_through_until_the_very_low_alert():
+    cycles = _flat_day()                                   # real glucose 118 to 142, never low
+    t0 = cycles[0]["currentTime"]
+    def run(units, night=None):
+        rescue = {**RESCUE, "mode": "new", **({"night": night} if night else {})}
+        scen = [{"label": "dose", "extra_doses": [{"t": t0, "u": units}]}]
+        return OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "rescue": rescue})["scenarios"][0]["dbg"]
+    always, never = {"from_h": 0, "to_h": 24, "wake_mgdl": 54}, {"from_h": 0, "to_h": 0, "wake_mgdl": 54}
+    assert run(10, never) == run(10)                       # a night with no hours in it changes nothing
+    # 8 U takes glucose to about 57: treated awake, slept through asleep
+    plain = OrefOracle().simulate({"cycles": cycles, "scenarios": [
+        {"label": "dose", "extra_doses": [{"t": t0, "u": 8.0}]}]})["scenarios"][0]["dbg"]
+    assert min(c["glucose_status"]["glucose"] + d for c, d in zip(cycles, plain)) >= 54
+    assert run(8) != plain and run(8, always) == plain
+    # 10 U goes below 54: the alert wakes them, so the rescue comes one cycle after the awake one
+    awake, asleep = run(10), run(10, always)
+    first = next(i for i, (a, b) in enumerate(zip(awake, asleep)) if a != b)
+    assert awake[first] > asleep[first] and asleep[first + 8] > asleep[first - 1] + 20
+    # the hours are local: this low starts near 15:00 UTC, which is about midnight in Tokyo
+    night = {"from_h": 23, "to_h": 7, "wake_mgdl": 54}
+    assert run(8, night) != plain
+    cycles = [{**c, "iob_inputs": {**c["iob_inputs"], "tz": "Asia/Tokyo"}} for c in cycles]
+    assert run(8, night) == plain
+
+
+def test_once_woken_by_the_alert_the_low_is_treated_every_15_minutes_until_above_70():
+    cycles = _flat_day()
+    scen = [{"label": "dose", "extra_doses": [{"t": cycles[0]["currentTime"], "u": 8.4}]}]   # below 54 briefly, then 54 to 70
+    asleep = {"from_h": 0, "to_h": 24, "wake_mgdl": 54}
+    run = lambda **kw: OrefOracle().simulate({"cycles": cycles, "scenarios": scen, "rescue": {
+        **RESCUE, "mode": "new", "night": asleep, **kw}})["scenarios"][0]["dbg"]
+    every15, once = run(), run(refractory_min=600)
+    assert every15 != once                                # a second rescue, though above 54 by then
+    # mode "both" (not used by the page): real lows that stay above 54 are slept through too, so
+    # there are no real rescues for less insulin to take away
+    real_low = _flat_day(mid=76)
+    assert min(c["glucose_status"]["glucose"] for c in real_low) >= 54
+    less = [{"label": "less", "basal_scale": 0.5}]
+    sim = lambda rescue: OrefOracle().simulate({"cycles": real_low, "scenarios": less,
+                                                **({"rescue": rescue} if rescue else {})})["scenarios"][0]["dbg"]
+    assert sim({**RESCUE, "mode": "both", "night": asleep}) == sim(None) != sim({**RESCUE, "mode": "both"})

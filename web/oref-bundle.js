@@ -12778,7 +12778,46 @@
         const t = cycles.map((c) => c.currentTime);
         const gap = t.map((ti, i) => i + 1 < t.length ? Math.min((t[i + 1] - ti) / 6e4, maxGap) : 5);
         const isf = cycles.map((c) => c.profile.sens / (c.autosens_data && c.autosens_data.ratio || 1));
+        const isfScale = payload.body_isf_scale || 1;
+        const bodyIsf = isf.map((v) => v * isfScale);
+        const H = payload.body ? {
+          x1: 0.02772,
+          x2: 425e-5,
+          k12: 0.066,
+          f01: 1.09125,
+          renal: 3e-3,
+          ...payload.body
+        } : null;
+        if (H && H.model !== "hovorka") throw new Error(`unknown body model ${H.model}`);
+        if (H && tau > 0) throw new Error("body and decay_tau_min are alternatives; give one");
+        const obsAt = (time) => {
+          let lo = 0, hi = t.length - 1;
+          if (time <= t[0]) return cycles[0].glucose_status.glucose;
+          if (time >= t[hi]) return cycles[hi].glucose_status.glucose;
+          while (hi - lo > 1) {
+            const mid = lo + hi >> 1;
+            if (t[mid] <= time) lo = mid;
+            else hi = mid;
+          }
+          const a = cycles[lo].glucose_status.glucose, b = cycles[hi].glucose_status.glucose;
+          return a + (b - a) * (time - t[lo]) / (t[hi] - t[lo]);
+        };
         const rescue = payload.rescue || null;
+        const night = rescue && rescue.night;
+        const formats = {};
+        const formatFor = (tz) => {
+          if (!(tz in formats)) {
+            try {
+              formats[tz] = new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: tz });
+            } catch (e) {
+              formats[tz] = formatFor("UTC");
+            }
+          }
+          return formats[tz];
+        };
+        const hours = night ? cycles.map((c, i) => Number(formatFor(c.iob_inputs.tz || "UTC").format(new Date(t[i])))) : null;
+        const asleep = (i) => !!night && (night.from_h > night.to_h ? hours[i] >= night.from_h || hours[i] < night.to_h : hours[i] >= night.from_h && hours[i] < night.to_h);
+        const rescueDue = (i, g, from, last) => t[i] - last >= (rescue.refractory_min - 1) * 6e4 && (last >= t[from] || !asleep(i) || g < night.wake_mgdl);
         let rescueShape = null;
         const realRescues = [];
         const rescueRise = (i) => cycles[i].profile.carb_ratio ? rescue.grams * isf[i] / cycles[i].profile.carb_ratio : 0;
@@ -12791,9 +12830,14 @@
             rescueShape[m] = rescueShape[m - 1] * keepFrac + ramp;
           }
           if (rescue.mode !== "new") {
-            let last = -Infinity;
+            let last = -Infinity, from = -1;
             cycles.forEach((c, i) => {
-              if (c.glucose_status.glucose < rescue.threshold && t[i] - last >= rescue.refractory_min * 6e4) {
+              if (c.glucose_status.glucose >= rescue.threshold) {
+                from = -1;
+                return;
+              }
+              if (from < 0) from = i;
+              if (rescueDue(i, c.glucose_status.glucose, from, last)) {
                 realRescues.push({ t: t[i], rise: rescueRise(i) });
                 last = t[i];
               }
@@ -12848,11 +12892,11 @@
           const isfAt = (time) => {
             let j = 0;
             while (j + 1 < t.length && t[j + 1] <= time) j++;
-            return isf[j];
+            return bodyIsf[j];
           };
           for (const d of doses) d.isf = isfAt(d.t);
           const ownRescues = [];
-          let lastRescue = -Infinity;
+          let lastRescue = -Infinity, lowFrom = -1;
           function effectAt(time) {
             let e = 0;
             for (const d of live) {
@@ -12863,6 +12907,58 @@
             if (rescue) e += rescueEffect(ownRescues, time) - rescueEffect(realRescues, time);
             return e;
           }
+          let b1 = 0, b2 = 0, bt = null;
+          const bHist = [];
+          const rescueRate = (list, time) => {
+            let e = 0;
+            for (const r of list) {
+              if (r.t > time) break;
+              const m = Math.floor((time - r.t) / 6e4) + 1;
+              if (m < rescueShape.length) e += r.rise * (rescueShape[m] - rescueShape[m - 1]);
+            }
+            return e;
+          };
+          const inputAt = (time) => {
+            let r = 0;
+            for (const d of live) {
+              if (d.t > time) continue;
+              const m = Math.floor((time - d.t) / 6e4) + 1;
+              if (m <= tab.n) r -= d.u * d.isf * (tab.left[m - 1] - tab.left[m]);
+            }
+            if (rescue) r += rescueRate(ownRescues, time) - rescueRate(realRescues, time);
+            return r;
+          };
+          const advance = (to) => {
+            if (bt === null) {
+              bt = to;
+              bHist.push([to, 0]);
+              return 0;
+            }
+            const steps = Math.max(1, Math.round((to - bt) / 6e4));
+            const h = (to - bt) / steps;
+            for (let k2 = 0; k2 < steps; k2++) {
+              const tm = bt + h * (k2 + 0.5);
+              const g = obsAt(tm);
+              const f = H.f01 * (Math.min(1, Math.max(0, g + b1) / 81) - Math.min(1, g / 81));
+              const r = H.renal * (Math.max(0, g + b1 - 162) - Math.max(0, g - 162));
+              const d1 = -H.x1 * b1 + H.k12 * b2 - f - r + inputAt(tm);
+              const d2 = H.x1 * b1 - (H.k12 + H.x2) * b2;
+              b1 += h / 6e4 * d1;
+              b2 += h / 6e4 * d2;
+            }
+            bt = to;
+            bHist.push([to, b1]);
+            return b1;
+          };
+          const bodyAt = (time) => {
+            let j = bHist.length - 1;
+            while (j > 0 && bHist[j][0] > time) j--;
+            if (bHist[j][0] > time) return 0;
+            if (j === bHist.length - 1) return bHist[j][1];
+            const [ta, va] = bHist[j], [tb, vb] = bHist[j + 1];
+            return va + (vb - va) * (time - ta) / (tb - ta);
+          };
+          const past = (time) => H ? bodyAt(time) : settled + effectAt(time);
           const du = new Array(cycles.length).fill(null);
           const dbg = new Array(cycles.length).fill(null);
           let failed = 0;
@@ -12873,25 +12969,28 @@
             const keep = [];
             for (const d of live) {
               const age = (now - d.t) / 6e4;
-              if (shape) {
+              if (H) {
+                if (age <= tab.n + 60) keep.push(d);
+              } else if (shape) {
                 if (age < shape.length + 60) keep.push(d);
               } else if (age > tab.n + 60) settled -= d.u * d.isf;
               else keep.push(d);
             }
             live = keep;
-            let shift = settled + effectAt(now);
+            let shift = H ? advance(now) : settled + effectAt(now);
             const gs0 = c.glucose_status;
-            if (rescue && gs0.glucose + shift < rescue.threshold && now - lastRescue >= rescue.refractory_min * 6e4 && (rescue.mode !== "new" || gs0.glucose >= rescue.threshold)) {
+            if (rescue) lowFrom = gs0.glucose + shift < rescue.threshold ? lowFrom < 0 ? i : lowFrom : -1;
+            if (rescue && lowFrom >= 0 && rescueDue(i, gs0.glucose + shift, lowFrom, lastRescue) && (rescue.mode !== "new" || gs0.glucose >= rescue.threshold)) {
               ownRescues.push({ t: now, rise: rescueRise(i) });
               lastRescue = now;
-              shift = settled + effectAt(now);
+              if (!H) shift = settled + effectAt(now);
             }
             const gs = shift === 0 ? gs0 : {
               ...gs0,
               glucose: Math.max(39, gs0.glucose + shift),
-              delta: gs0.delta + shift - (settled + effectAt(now - 5 * 6e4)),
-              short_avgdelta: gs0.short_avgdelta + (shift - (settled + effectAt(now - 15 * 6e4))) / 3,
-              long_avgdelta: gs0.long_avgdelta + (shift - (settled + effectAt(now - 45 * 6e4))) / 9
+              delta: gs0.delta + shift - past(now - 5 * 6e4),
+              short_avgdelta: gs0.short_avgdelta + (shift - past(now - 15 * 6e4)) / 3,
+              long_avgdelta: gs0.long_avgdelta + (shift - past(now - 45 * 6e4)) / 9
             };
             const arr = iob1[i].map((tick, s) => {
               const z = iob0 ? iob0[i][s] : null;
@@ -12929,8 +13028,8 @@
             const dSmb = alt.smb - base[i].smb;
             const dBasal = alt.basal - base[i].basal;
             du[i] = Math.round((dSmb + dBasal) * 1e3) / 1e3;
-            if (Math.abs(dSmb) > 1e-4) live.push({ t: now, u: dSmb, bolus: true, isf: isf[i] });
-            if (Math.abs(dBasal) > 1e-4) live.push({ t: now + gap[i] * 3e4, u: dBasal, bolus: false, isf: isf[i] });
+            if (Math.abs(dSmb) > 1e-4) live.push({ t: now, u: dSmb, bolus: true, isf: bodyIsf[i] });
+            if (Math.abs(dBasal) > 1e-4) live.push({ t: now + gap[i] * 3e4, u: dBasal, bolus: false, isf: bodyIsf[i] });
           }
           return { label: sc.label, du, dbg, failed };
         });
